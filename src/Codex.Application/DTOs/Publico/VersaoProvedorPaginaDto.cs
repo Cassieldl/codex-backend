@@ -1,0 +1,172 @@
+using System.Text.Json.Serialization;
+
+namespace Codex.Application.DTOs.Publico;
+
+/// <summary>
+/// Agregado da página de versão de provedor (P4, analise-backend.md §4.3) — a tabela exaustiva
+/// de campos com âncora por campo. <see cref="Avisos"/> aqui é só de escopo VERSÃO (avisos de
+/// provedor ficam em <see cref="ProvedorDetalheDto"/>, nunca duplicados — U8).
+/// </summary>
+public sealed record VersaoProvedorPaginaDto
+{
+    public required ProvedorResumoPaginaDto Provedor { get; init; }
+
+    public required VersaoResumoPaginaDto Versao { get; init; }
+
+    public required IReadOnlyCollection<GrupoCamposPublicoDto> CamposPorGrupo { get; init; }
+
+    public required int TotalCampos { get; init; }
+
+    public required IReadOnlyCollection<AvisoPublicoDto> Avisos { get; init; }
+
+    public required ErrosResumoPublicoDto ErrosResumo { get; init; }
+
+    public required IReadOnlyCollection<VersaoResumoMinimaDto> OutrasVersoes { get; init; }
+}
+
+public sealed record ProvedorResumoPaginaDto
+{
+    public required string Slug { get; init; }
+
+    public required string Nome { get; init; }
+
+    public required string Categoria { get; init; }
+
+    public required string IdentificadorInvoicy { get; init; }
+}
+
+public sealed record VersaoResumoPaginaDto
+{
+    public required string Slug { get; init; }
+
+    public required string Rotulo { get; init; }
+
+    public DateOnly? VerificadoEm { get; init; }
+
+    public string? Introducao { get; init; }
+
+    public required string VersaoLayoutRotulo { get; init; }
+
+    /// <summary>
+    /// xmin (concorrência otimista) da <c>VersaoProvedor</c> — usado só para compor o header
+    /// <c>ETag</c> em <c>ProvedoresController</c> (P4). Nunca serializado: não faz parte do
+    /// contrato público (§4.3), é detalhe de infraestrutura de cache.
+    /// </summary>
+    [JsonIgnore]
+    public uint VersaoConcorrencia { get; init; }
+}
+
+/// <summary>Grupo de campos ordenado pela menor <c>Ordem</c> de <c>CampoLayout</c> entre seus campos (§4.3).</summary>
+public sealed record GrupoCamposPublicoDto
+{
+    public string? Grupo { get; init; }
+
+    public string? GrupoSlug { get; init; }
+
+    public required IReadOnlyCollection<CampoVersaoPublicoDto> Campos { get; init; }
+}
+
+/// <summary>
+/// Linha da tabela exaustiva de campos (§4.3). Vocabulário canônico (<c>Nome</c>,
+/// <c>CaminhoXml</c>, <c>Significado</c>) vem de <c>CampoLayout</c>; comportamento (<c>Tipo</c>,
+/// <c>Tamanho</c>, <c>Mascara</c>, <c>Dominio</c>, <c>EstadoPreenchimento</c>, <c>Condicao</c>,
+/// <c>Exemplo</c>, <c>NotaPreenchimento</c>, <c>DestinoXml</c>, <c>NotaTransformacao</c>) vem de
+/// <c>CampoVersao</c>. Isto NÃO viola R3 (analise-backend.md §4.3): R3 proíbe essas propriedades
+/// de comportamento na família <c>CampoLayout*Dto</c> (vocabulário canônico puro); este é um DTO
+/// composto de exibição, não pertence a essa família.
+/// </summary>
+public sealed record CampoVersaoPublicoDto
+{
+    public required string CampoLayoutSlug { get; init; }
+
+    public required string Nome { get; init; }
+
+    public required string CaminhoXml { get; init; }
+
+    public required string Significado { get; init; }
+
+    public required string Tipo { get; init; }
+
+    public string? Tamanho { get; init; }
+
+    public string? Mascara { get; init; }
+
+    public string? Dominio { get; init; }
+
+    public required string EstadoPreenchimento { get; init; }
+
+    public string? Condicao { get; init; }
+
+    public string? Exemplo { get; init; }
+
+    public string? NotaPreenchimento { get; init; }
+
+    public string? DestinoXml { get; init; }
+
+    public string? NotaTransformacao { get; init; }
+
+    /// <summary>
+    /// Ordem de exibição — é a <c>Ordem</c> de <c>CampoLayout</c> (canônica), não a de
+    /// <c>CampoVersao</c>: a spec (§4.3) diz explicitamente "camposPorGrupo ordenado por ordem
+    /// do CampoLayout" e não menciona a ordem própria de CampoVersao para este fim.
+    /// </summary>
+    public required int Ordem { get; init; }
+}
+
+/// <summary>
+/// Projeção interna do repositório para <c>ListarCamposAsync</c> — inclui <c>Grupo</c>/
+/// <c>GrupoSlug</c>, usados só pelo service para agrupar em <see cref="GrupoCamposPublicoDto"/>.
+/// Nunca serializada diretamente (por isso não é <see cref="CampoVersaoPublicoDto"/>).
+/// </summary>
+public sealed record CampoVersaoProjecaoDto
+{
+    public required string CampoLayoutSlug { get; init; }
+
+    public required string Nome { get; init; }
+
+    public required string CaminhoXml { get; init; }
+
+    public required string Significado { get; init; }
+
+    public required string Tipo { get; init; }
+
+    public string? Tamanho { get; init; }
+
+    public string? Mascara { get; init; }
+
+    public string? Dominio { get; init; }
+
+    public required string EstadoPreenchimento { get; init; }
+
+    public string? Condicao { get; init; }
+
+    public string? Exemplo { get; init; }
+
+    public string? NotaPreenchimento { get; init; }
+
+    public string? DestinoXml { get; init; }
+
+    public string? NotaTransformacao { get; init; }
+
+    public required int Ordem { get; init; }
+
+    public string? Grupo { get; init; }
+
+    public string? GrupoSlug { get; init; }
+}
+
+public sealed record ErrosResumoPublicoDto
+{
+    public required int Total { get; init; }
+
+    public required IReadOnlyCollection<ErroResumoPublicoDto> Itens { get; init; }
+}
+
+public sealed record ErroResumoPublicoDto
+{
+    public required string Slug { get; init; }
+
+    public required string Codigo { get; init; }
+
+    public required string Titulo { get; init; }
+}

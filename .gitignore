@@ -1,0 +1,25 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+## Testes
+[Tt]est[Rr]esult*/
+*.trx
+coverage*.json
+coverage*.xml
+coverage*.info
+
+## Docker / dados locais
+.env
+database/pgdata/
+
+## IDE
+.idea/
+*.swp
+
+## OS
+.DS_Store
+Thumbs.db

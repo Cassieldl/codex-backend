@@ -1,0 +1,92 @@
+namespace Codex.API.Extensoes;
+
+/// <summary>
+/// Validação de configuração de segurança na inicialização (achado <c>BAIXO-B10</c>).
+/// <c>rules/security.md</c> manda <i>fail securely</i>: aplicação que sobe saudável e não pode
+/// autenticar ninguém é o oposto disso — é degradação silenciosa. Aqui a falha é barulhenta e
+/// diagnosticável, no start, em vez de virar "a área interna devolve 401 para todo mundo e
+/// ninguém sabe por quê".
+///
+/// <list type="bullet">
+/// <item><b>Keycloak</b> — sem <c>auth-server-url</c>/<c>realm</c> a <c>Authority</c> nunca é
+/// atribuída e, com <c>ValidateIssuer</c>/<c>ValidateIssuerSigningKey</c> ligados, TODO token é
+/// reprovado. Obrigatório fora de Development.</item>
+/// <item><b>AllowedHosts</b> — <c>"*"</c> desliga o host filtering (A05). Proibido fora de
+/// Development.</item>
+/// <item><b>Busca:TimeoutMs</b> — <c>0</c> DESLIGA o <c>statement_timeout</c> no Postgres, que é
+/// a proteção de custo do endpoint anônimo; negativo faz todo <c>SET LOCAL</c> falhar. Validado
+/// em qualquer ambiente quando o valor está declarado.</item>
+/// <item><b>Busca:OrcamentoRequisicaoMs</b> (MED-B05) — orçamento de PAREDE por requisição de
+/// busca, distinto do <c>statement_timeout</c> (que protege cada <i>statement</i>, não a cascata
+/// inteira). Mesmo risco de degradação silenciosa que <c>Busca:TimeoutMs</c>: <c>0</c> ou negativo
+/// desligaria a única proteção contra uma cascata de autocorreção de até 18 statements numa única
+/// requisição anônima.</item>
+/// </list>
+/// </summary>
+public static class ConfiguracaoSegurancaExtensoes
+{
+    internal const int TimeoutBuscaMinimoMs = 250;
+    internal const int TimeoutBuscaMaximoMs = 30_000;
+
+    internal const int OrcamentoBuscaMinimoMs = 250;
+    internal const int OrcamentoBuscaMaximoMs = 30_000;
+
+    public static void ValidarConfiguracaoDeSeguranca(IConfiguration configuracao, IHostEnvironment ambiente)
+    {
+        ArgumentNullException.ThrowIfNull(configuracao);
+        ArgumentNullException.ThrowIfNull(ambiente);
+
+        var falhas = new List<string>();
+
+        if (!ambiente.IsDevelopment())
+        {
+            if (string.IsNullOrWhiteSpace(configuracao["Keycloak:auth-server-url"])
+                || string.IsNullOrWhiteSpace(configuracao["Keycloak:realm"]))
+            {
+                falhas.Add("Keycloak:auth-server-url e Keycloak:realm são obrigatórios fora de Development — "
+                    + "sem eles nenhum token é aceito e a área interna fica inacessível.");
+            }
+
+            var hostsPermitidos = configuracao["AllowedHosts"];
+            if (string.IsNullOrWhiteSpace(hostsPermitidos) || hostsPermitidos.Split(';').Any(host => host.Trim() == "*"))
+            {
+                falhas.Add("AllowedHosts não pode ser vazio nem \"*\" fora de Development — "
+                    + "declare os hosts servidos por este ambiente.");
+            }
+        }
+
+        var timeoutBusca = configuracao["Busca:TimeoutMs"];
+        if (!string.IsNullOrWhiteSpace(timeoutBusca))
+        {
+            if (!int.TryParse(timeoutBusca, out var timeoutMs))
+            {
+                falhas.Add($"Busca:TimeoutMs precisa ser um inteiro em milissegundos; veio '{timeoutBusca}'.");
+            }
+            else if (timeoutMs < TimeoutBuscaMinimoMs || timeoutMs > TimeoutBuscaMaximoMs)
+            {
+                falhas.Add($"Busca:TimeoutMs precisa estar entre {TimeoutBuscaMinimoMs} e {TimeoutBuscaMaximoMs} ms; "
+                    + $"veio {timeoutMs} (0 desliga o statement_timeout e remove a proteção de custo do /busca).");
+            }
+        }
+
+        var orcamentoBusca = configuracao["Busca:OrcamentoRequisicaoMs"];
+        if (!string.IsNullOrWhiteSpace(orcamentoBusca))
+        {
+            if (!int.TryParse(orcamentoBusca, out var orcamentoMs))
+            {
+                falhas.Add($"Busca:OrcamentoRequisicaoMs precisa ser um inteiro em milissegundos; veio '{orcamentoBusca}'.");
+            }
+            else if (orcamentoMs < OrcamentoBuscaMinimoMs || orcamentoMs > OrcamentoBuscaMaximoMs)
+            {
+                falhas.Add($"Busca:OrcamentoRequisicaoMs precisa estar entre {OrcamentoBuscaMinimoMs} e {OrcamentoBuscaMaximoMs} ms; "
+                    + $"veio {orcamentoMs} (0 ou negativo remove o orçamento de parede da cascata de autocorreção).");
+            }
+        }
+
+        if (falhas.Count > 0)
+        {
+            throw new InvalidOperationException(
+                "Configuração de segurança inválida: " + string.Join(" | ", falhas));
+        }
+    }
+}
