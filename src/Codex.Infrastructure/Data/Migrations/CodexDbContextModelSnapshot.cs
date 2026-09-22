@@ -860,6 +860,18 @@ namespace Codex.Infrastructure.Data.Migrations
                         .HasColumnType("character varying(160)")
                         .HasColumnName("nome");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("character varying(180)")
+                        .HasColumnName("slug");
+
+                    b.Property<uint>("Versao")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.Property<int>("VersaoProvedorId")
                         .HasColumnType("integer")
                         .HasColumnName("versaoprovedorid");
@@ -879,9 +891,13 @@ namespace Codex.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_codex_exemplos_versaoprovedorid_nome");
 
+                    b.HasIndex("VersaoProvedorId", "Slug")
+                        .IsUnique()
+                        .HasDatabaseName("uq_codex_exemplos_versaoprovedorid_slug");
+
                     b.ToTable("exemplos", "codex", t =>
                         {
-                            t.ExcludeFromMigrations();
+                            t.HasCheckConstraint("ck_codex_exemplos_xml_tamanho", "octet_length(xml) <= 262144");
                         });
                 });
 
@@ -1174,7 +1190,7 @@ namespace Codex.Infrastructure.Data.Migrations
 
                     b.ToTable("redirecionamentos", "codex", t =>
                         {
-                            t.HasCheckConstraint("ck_codex_redirecionamentos_tipoitem", "tipoitem IN ('provedor', 'versaoprovedor', 'erro', 'campolayout')");
+                            t.HasCheckConstraint("ck_codex_redirecionamentos_tipoitem", "tipoitem IN ('provedor', 'versaoprovedor', 'erro', 'campolayout', 'artigo')");
                         });
                 });
 
@@ -1584,6 +1600,16 @@ namespace Codex.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_codex_errosversoes_versaoprovedorid");
+                });
+
+            modelBuilder.Entity("Codex.Domain.Entities.Exemplo", b =>
+                {
+                    b.HasOne("Codex.Domain.Entities.VersaoProvedor", null)
+                        .WithMany()
+                        .HasForeignKey("VersaoProvedorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_codex_exemplos_versaoprovedorid");
                 });
 
             modelBuilder.Entity("Codex.Domain.Entities.ItemBusca", b =>

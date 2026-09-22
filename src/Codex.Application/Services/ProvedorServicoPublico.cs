@@ -100,6 +100,7 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
         var avisos = await _versaoRepositorio.ListarAvisosPublicadosDaVersaoAsync(versao.Id, ct);
         var erros = await _versaoRepositorio.ListarErrosAplicaveisPublicadosAsync(versao.Id, ct);
         var outrasVersoes = await _versaoRepositorio.ListarOutrasVersoesPublicadasAsync(provedor.Id, versao.Id, ct);
+        var exemplos = await _versaoRepositorio.ListarExemplosAsync(versao.Id, ct);
 
         var camposPorGrupo = campos
             .GroupBy(c => (c.Grupo, c.GrupoSlug))
@@ -138,6 +139,7 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
                 .OrderByDescending(v => v.CriadoEm)
                 .Select(v => new VersaoResumoMinimaDto { Slug = v.Slug, Rotulo = v.Rotulo })
                 .ToArray(),
+            Exemplos = exemplos,
         };
     }
 

@@ -5,16 +5,9 @@ namespace Codex.Infrastructure.Data;
 
 /// <summary>
 /// DbContext único do Codex — schema <c>codex</c> (PostgreSQL). Todas as entidades do caminho
-/// crítico (modelo-dados.md §4) mais as editoriais, que a 001 deixou "modeladas, não migradas" e a
-/// **002 migrou** (`AdicionarConteudoEditorial`): comunicado, artigo e as duas juntoras.
-///
-/// <para>
-/// Segue com <c>ExcludeFromMigrations()</c> apenas <c>Exemplo</c> — modelado na 001 e previsto
-/// para a demanda 003. Ao promovê-lo, atenção: <c>ExcludeFromMigrations()</c> <b>não é reversível
-/// por <c>dotnet ef migrations add</c></b> — o differ só vê a anotação mudar e gera migration sem
-/// <c>CreateTable</c>, que aplica sem criar tabela e só falha no primeiro <c>INSERT</c>. Ver
-/// <c>rules/database.md</c>, "Gotchas de EF Core + Npgsql".
-/// </para>
+/// crítico (modelo-dados.md §4) mais as editoriais, que a 001 deixou "modeladas, não migradas": a
+/// **002 migrou** comunicado, artigo e as duas juntoras (`AdicionarConteudoEditorial`); a **003
+/// migrou** <c>Exemplo</c> (U-1/M-a). Nenhuma entidade segue em <c>ExcludeFromMigrations()</c>.
 /// </summary>
 public sealed class CodexDbContext : DbContext
 {
@@ -47,6 +40,8 @@ public sealed class CodexDbContext : DbContext
     public DbSet<Artigo> Artigos => Set<Artigo>();
     public DbSet<ArtigoCampoLayout> ArtigosCamposLayout => Set<ArtigoCampoLayout>();
     public DbSet<ArtigoErro> ArtigosErros => Set<ArtigoErro>();
+
+    // Migrada na 003 (U-1/M-a) — saiu de ExcludeFromMigrations().
     public DbSet<Exemplo> Exemplos => Set<Exemplo>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

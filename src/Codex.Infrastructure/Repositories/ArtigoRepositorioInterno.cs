@@ -30,6 +30,11 @@ public sealed class ArtigoRepositorioInterno : RepositorioBase<CodexDbContext>, 
             .Where(a => a.Slug == slug && a.DesativadoEm == null)
             .FirstOrDefaultAsync(ct);
 
+    public async Task<IReadOnlyCollection<Artigo>> ListarTodosAtivosAsync(CancellationToken ct) =>
+        await Contexto.Artigos.AsNoTracking()
+            .Where(a => a.DesativadoEm == null)
+            .ToListAsync(ct);
+
     public async Task<PaginaResultado<ArtigoAdminListaItemDto>> ListarAsync(FiltroArtigoInterno filtro, CancellationToken ct)
     {
         var query = Contexto.Artigos.AsNoTracking().Where(a => a.DesativadoEm == null);

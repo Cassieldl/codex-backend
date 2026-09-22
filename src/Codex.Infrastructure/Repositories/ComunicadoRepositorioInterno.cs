@@ -15,10 +15,11 @@ public sealed class ComunicadoRepositorioInterno : RepositorioBase<CodexDbContex
     }
 
     /// <summary>
-    /// Predicado ÚNICO de "o que está no ar" (modelo-dados.md §7.1): publicado, ativo e ainda não
-    /// vencido. É a rede de segurança da decisão U-5 — a leitura pública nunca depende de o job de
-    /// expiração ter rodado —, e o índice parcial <c>idx_codex_comunicados_vigentes</c> sustenta
-    /// exatamente estas três condições.
+    /// Delega em <see cref="Comunicado.EhVigenteEm"/>, o dono único do predicado "o que está no ar"
+    /// (modelo-dados.md §7.1): publicado, ativo e ainda não vencido. É a rede de segurança da
+    /// decisão U-5 — a leitura pública nunca depende de o job de expiração ter rodado —, e o
+    /// índice parcial <c>idx_codex_comunicados_vigentes</c> sustenta exatamente estas três
+    /// condições.
     ///
     /// <para>
     /// NÃO é o predicado de I30: lá o filtro <c>incluirEncerrados=false</c> esconde apenas o que
@@ -28,7 +29,7 @@ public sealed class ComunicadoRepositorioInterno : RepositorioBase<CodexDbContex
     /// </para>
     /// </summary>
     public static IQueryable<Comunicado> QueryVigentes(IQueryable<Comunicado> origem, DateTimeOffset referencia) =>
-        origem.Where(c => c.Publicado && c.DesativadoEm == null && c.ExpiraEm > referencia);
+        origem.Where(Comunicado.EhVigenteEm(referencia));
 
     public Task<Comunicado?> ObterPorIdAsync(int id, bool rastreada, CancellationToken ct)
     {

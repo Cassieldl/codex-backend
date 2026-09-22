@@ -2,29 +2,34 @@ using Codex.Application.Common;
 using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
 using Codex.Application.Mappings;
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Codex.Domain.Enums;
 using Codex.Domain.Exceptions;
+using SlugVo = Codex.Domain.ValueObjects.Slug;
 
 namespace Codex.Application.Services.Interno;
 
-/// <summary>Área interna de <see cref="Provedor"/> (I1-I5, I3b, analise-backend.md §4.2/§3.4).</summary>
+/// <summary>Área interna de <see cref="Provedor"/> (I1-I5, I3b, I37, analise-backend.md §4.2/§3.4).</summary>
 public sealed class ProvedorServicoInterno : IProvedorServicoInterno
 {
     private readonly IProvedorRepositorioInterno _repositorio;
     private readonly IAvisoRepositorioInterno _avisoRepositorio;
     private readonly IIndiceBuscaWriter _indiceBuscaWriter;
+    private readonly IRedirecionamentoRepositorio _redirecionamentoRepositorio;
     private readonly IUnidadeDeTrabalho _unidadeDeTrabalho;
 
     public ProvedorServicoInterno(
         IProvedorRepositorioInterno repositorio,
         IAvisoRepositorioInterno avisoRepositorio,
         IIndiceBuscaWriter indiceBuscaWriter,
+        IRedirecionamentoRepositorio redirecionamentoRepositorio,
         IUnidadeDeTrabalho unidadeDeTrabalho)
     {
         _repositorio = repositorio;
         _avisoRepositorio = avisoRepositorio;
         _indiceBuscaWriter = indiceBuscaWriter;
+        _redirecionamentoRepositorio = redirecionamentoRepositorio;
         _unidadeDeTrabalho = unidadeDeTrabalho;
     }
 
@@ -74,6 +79,52 @@ public sealed class ProvedorServicoInterno : IProvedorServicoInterno
         return await MapearAsync(provedor, ct);
     }
 
+    /// <summary>
+    /// I37 (P-10) — troca de slug com redirecionamento, tudo na mesma transação: a linha do
+    /// provedor, a desativação do redirect que partia do slug que volta a ficar vivo (B-4), o
+    /// colapso de cadeia (E2), o redirect novo e a reindexação da própria linha de busca.
+    ///
+    /// <para>
+    /// As linhas FILHAS (versões, avisos) não precisam de reindexação: a URL delas é derivada na
+    /// consulta a partir do slug corrente do provedor (decisão B), não lida da coluna
+    /// <c>itensbusca.url</c>.
+    /// </para>
+    /// </summary>
+    public async Task<ProvedorAdminDetalheDto> AtualizarSlugAsync(int id, AlterarSlugDto dto, uint versaoEsperada, CancellationToken ct)
+    {
+        // Com aliases: a reindexação abaixo não passa por SubstituirAliases, então a coleção
+        // precisa vir do banco — senão o peso B sai só com o nome e o índice perde os apelidos.
+        var provedor = await _repositorio.ObterPorIdComAliasesAsync(id, ct)
+            ?? throw new EntidadeNaoEncontradaException("Provedor", id);
+        GarantirVersaoEsperada(provedor, versaoEsperada);
+
+        // Normaliza no backend, nunca confiando no que o formulário mandou (rules/security.md) —
+        // é a MESMA derivação que Provedor.Criar aplica ao nome.
+        var slugNovo = SlugVo.DeTexto(dto.Slug).Valor;
+        if (slugNovo == provedor.Slug)
+            throw new RegraDeNegocioException(CodigosErro.SlugIgualAoAtual, "O novo slug é igual ao atual.");
+
+        var caminhoAntigo = $"/provedores/{provedor.Slug}";
+        var caminhoNovo = $"/provedores/{slugNovo}";
+
+        provedor.AlterarSlug(SlugVo.DeValorPersistido(slugNovo));
+
+        await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
+        {
+            await _repositorio.SalvarAlteracoesAsync(ctInterno);
+
+            await _redirecionamentoRepositorio.DesativarPorOrigemAsync(caminhoNovo, TipoItemIndexado.provedor, ctInterno);
+            await _redirecionamentoRepositorio.RepontarDestinosAsync(caminhoAntigo, caminhoNovo, TipoItemIndexado.provedor, ctInterno);
+            await _redirecionamentoRepositorio.CriarAsync(
+                Redirecionamento.Criar(caminhoAntigo, caminhoNovo, TipoItemIndexado.provedor), ctInterno);
+
+            var (pesoA, pesoB, pesoC, pesoD) = PesosBusca.DoProvedor(provedor);
+            await _indiceBuscaWriter.AtualizarPesosAsync(TipoItemIndexado.provedor, provedor.Id, pesoA, pesoB, pesoC, pesoD, ctInterno);
+        }, ct);
+
+        return await MapearAsync(provedor, ct);
+    }
+
     public async Task RemoverAsync(int id, uint versaoEsperada, CancellationToken ct)
     {
         var provedor = await CarregarRastreadaOuFalharAsync(id, versaoEsperada, ct);
@@ -107,10 +158,15 @@ public sealed class ProvedorServicoInterno : IProvedorServicoInterno
         var provedor = await _repositorio.ObterPorIdAsync(id, rastreada: true, ct)
             ?? throw new EntidadeNaoEncontradaException("Provedor", id);
 
-        if (provedor.Versao != versaoEsperada)
-            throw new ConflitoConcorrenciaException("O provedor foi alterado por outra requisição. Recarregue e tente novamente.");
+        GarantirVersaoEsperada(provedor, versaoEsperada);
 
         return provedor;
+    }
+
+    private static void GarantirVersaoEsperada(Provedor provedor, uint versaoEsperada)
+    {
+        if (provedor.Versao != versaoEsperada)
+            throw new ConflitoConcorrenciaException("O provedor foi alterado por outra requisição. Recarregue e tente novamente.");
     }
 
     private static FiltroProvedorInterno NormalizarPaginacao(FiltroProvedorInterno filtro)

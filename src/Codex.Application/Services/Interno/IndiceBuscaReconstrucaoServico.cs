@@ -9,7 +9,7 @@ namespace Codex.Application.Services.Interno;
 /// <summary>
 /// I22 — reconstrução total do índice de busca (modelo-dados.md §5.6: "comando de reconstrução
 /// total para detectar/corrigir drift", já que <c>tipoitem</c>/<c>itemid</c> é referência
-/// polimórfica sem FK de banco). Reprocessa toda entidade ativa das 5 tabelas de origem via
+/// polimórfica sem FK de banco). Reprocessa toda entidade ativa das 6 tabelas de origem via
 /// <see cref="IIndiceBuscaWriter.AtualizarPesosAsync"/> — mesma fórmula de peso do caminho de
 /// escrita normal (<see cref="PesosBusca"/>), nunca uma segunda implementação divergente — e
 /// depois recalcula a visibilidade a partir da fonte (<see cref="IIndiceBuscaWriter.RecalcularVisibilidadeAsync"/>),
@@ -23,6 +23,7 @@ public sealed class IndiceBuscaReconstrucaoServico : IIndiceBuscaReconstrucaoSer
     private readonly IAvisoRepositorioInterno _avisoRepositorio;
     private readonly IErroRepositorioInterno _erroRepositorio;
     private readonly ICampoLayoutRepositorioInterno _campoLayoutRepositorio;
+    private readonly IArtigoRepositorioInterno _artigoRepositorio;
     private readonly IIndiceBuscaWriter _indiceBuscaWriter;
 
     public IndiceBuscaReconstrucaoServico(
@@ -31,6 +32,7 @@ public sealed class IndiceBuscaReconstrucaoServico : IIndiceBuscaReconstrucaoSer
         IAvisoRepositorioInterno avisoRepositorio,
         IErroRepositorioInterno erroRepositorio,
         ICampoLayoutRepositorioInterno campoLayoutRepositorio,
+        IArtigoRepositorioInterno artigoRepositorio,
         IIndiceBuscaWriter indiceBuscaWriter)
     {
         _provedorRepositorio = provedorRepositorio;
@@ -38,6 +40,7 @@ public sealed class IndiceBuscaReconstrucaoServico : IIndiceBuscaReconstrucaoSer
         _avisoRepositorio = avisoRepositorio;
         _erroRepositorio = erroRepositorio;
         _campoLayoutRepositorio = campoLayoutRepositorio;
+        _artigoRepositorio = artigoRepositorio;
         _indiceBuscaWriter = indiceBuscaWriter;
     }
 
@@ -83,6 +86,17 @@ public sealed class IndiceBuscaReconstrucaoServico : IIndiceBuscaReconstrucaoSer
             var (a, b, c, d) = PesosBusca.DoCampoLayout(campoLayout);
             await _indiceBuscaWriter.AtualizarPesosAsync(TipoItemIndexado.campolayout, campoLayout.Id, a, b, c, d, ct);
             await _indiceBuscaWriter.RecalcularVisibilidadeAsync(TipoItemBusca.CampoLayout, campoLayout.Id, ct);
+            total++;
+        }
+
+        // Sexto tipo (003, dívida do PRD §2.4): artigo era o único indexável de fora da varredura,
+        // então drift em linha de artigo NUNCA convergia — e a suíte, que cobria os outros cinco,
+        // ficava verde do mesmo jeito.
+        foreach (var artigo in await _artigoRepositorio.ListarTodosAtivosAsync(ct))
+        {
+            var (a, b, c, d) = PesosBusca.DoArtigo(artigo);
+            await _indiceBuscaWriter.AtualizarPesosAsync(TipoItemIndexado.artigo, artigo.Id, a, b, c, d, ct);
+            await _indiceBuscaWriter.RecalcularVisibilidadeAsync(TipoItemBusca.Artigo, artigo.Id, ct);
             total++;
         }
 

@@ -2,6 +2,7 @@ using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
 using Codex.Domain.Enums;
 using FluentValidation;
+using SlugVo = Codex.Domain.ValueObjects.Slug;
 
 namespace Codex.Application.Validators;
 
@@ -10,7 +11,10 @@ public sealed class CriarCampoLayoutDtoValidator : AbstractValidator<CriarCampoL
     public CriarCampoLayoutDtoValidator()
     {
         RuleFor(x => x.Nome).NotEmpty().WithMessage("O nome do campo é obrigatório.");
-        RuleFor(x => x.CaminhoXml).NotEmpty().WithMessage("O caminho XML do campo é obrigatório.");
+        RuleFor(x => x.CaminhoXml).NotEmpty().WithMessage("O caminho XML do campo é obrigatório.")
+            // O slug nasce do caminho XML (CampoLayout.Criar). Caminho só de separadores ("//",
+            // "..") normaliza para vazio — Slug.DeTexto lançaria, e o 500 esconderia o 422 real.
+            .Must(SlugVo.PodeDerivarDe).WithMessage("O caminho XML do campo precisa conter ao menos uma letra ou número.");
         RuleFor(x => x.Significado).NotEmpty().WithMessage("O significado do campo é obrigatório.");
         RuleFor(x => x.Ordem).GreaterThanOrEqualTo(0).WithMessage("A ordem não pode ser negativa.");
     }

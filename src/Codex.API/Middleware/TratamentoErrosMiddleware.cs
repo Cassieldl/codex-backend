@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Codex.API.Common;
+using Codex.Domain.Constantes;
 using Codex.Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
@@ -83,8 +84,10 @@ public sealed class TratamentoErrosMiddleware
         ConteudoDespublicadoException e =>
             (StatusCodes.Status410Gone, CodigoDespublicado(e.TipoItem), e.Message),
 
+        // O código vem da exceção: colisão de unicidade que o cliente precisa distinguir (PQ-17)
+        // traz o seu; as demais continuam no genérico REGISTRO_DUPLICADO.
         RegistroDuplicadoException e =>
-            (StatusCodes.Status409Conflict, "REGISTRO_DUPLICADO", e.Message),
+            (StatusCodes.Status409Conflict, e.Codigo, e.Message),
 
         ConflitoConcorrenciaException e =>
             (StatusCodes.Status409Conflict, "CONFLITO_CONCORRENCIA", e.Message),
@@ -115,6 +118,8 @@ public sealed class TratamentoErrosMiddleware
         "provedor" => "PROVEDOR_DESPUBLICADO",
         "versaoprovedor" => "VERSAO_DESPUBLICADA",
         "erro" => "ERRO_DESPUBLICADO",
+        "versaolayout" => CodigosErro.VersaoLayoutDespublicada,
+        "campolayout" => CodigosErro.CampoLayoutDespublicado,
         _ => "CONTEUDO_DESPUBLICADO",
     };
 }

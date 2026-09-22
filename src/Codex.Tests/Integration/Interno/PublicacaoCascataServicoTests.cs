@@ -34,6 +34,7 @@ public sealed class PublicacaoCascataServicoTests : IAsyncLifetime
         servicos.AddScoped<IProvedorRepositorioInterno, Codex.Infrastructure.Repositories.ProvedorRepositorioInterno>();
         servicos.AddScoped<IAvisoRepositorioInterno, Codex.Infrastructure.Repositories.AvisoRepositorioInterno>();
         servicos.AddScoped<IIndiceBuscaWriter, Codex.Infrastructure.Busca.IndiceBuscaWriter>();
+        servicos.AddScoped<IRedirecionamentoRepositorio, Codex.Infrastructure.Repositories.RedirecionamentoRepositorio>();
         servicos.AddScoped<IUnidadeDeTrabalho, Codex.Infrastructure.Repositories.UnidadeDeTrabalhoInterna>();
         servicos.AddScoped<IProvedorServicoInterno, Codex.Application.Services.Interno.ProvedorServicoInterno>();
 

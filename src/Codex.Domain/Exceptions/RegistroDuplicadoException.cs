@@ -8,13 +8,25 @@ namespace Codex.Domain.Exceptions;
 /// </summary>
 public sealed class RegistroDuplicadoException : Exception
 {
-    public RegistroDuplicadoException(string mensagem)
+    /// <summary>Código genérico do envelope — o que toda colisão de unicidade produz por padrão.</summary>
+    public const string CodigoGenerico = "REGISTRO_DUPLICADO";
+
+    /// <summary>
+    /// Código do envelope de erro. Default retrocompatível: quem lança sem especificar continua
+    /// produzindo <see cref="CodigoGenerico"/>. Só colisão que o cliente precisa DISTINGUIR ganha
+    /// código próprio (PQ-17, analise-backend.md §2.6/§4.6).
+    /// </summary>
+    public string Codigo { get; }
+
+    public RegistroDuplicadoException(string mensagem, string codigo = CodigoGenerico)
         : base(mensagem)
     {
+        Codigo = codigo;
     }
 
-    public RegistroDuplicadoException(string mensagem, Exception innerException)
+    public RegistroDuplicadoException(string mensagem, Exception innerException, string codigo = CodigoGenerico)
         : base(mensagem, innerException)
     {
+        Codigo = codigo;
     }
 }

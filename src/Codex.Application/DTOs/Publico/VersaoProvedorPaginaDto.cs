@@ -22,6 +22,29 @@ public sealed record VersaoProvedorPaginaDto
     public required ErrosResumoPublicoDto ErrosResumo { get; init; }
 
     public required IReadOnlyCollection<VersaoResumoMinimaDto> OutrasVersoes { get; init; }
+
+    /// <summary>
+    /// Cenários de XML da versão (003/§5.5). Sempre presente — <c>[]</c> quando a versão não tem
+    /// exemplos (U9): o cliente nunca precisa distinguir ausente de vazio.
+    /// </summary>
+    public required IReadOnlyCollection<ExemploPublicoDto> Exemplos { get; init; }
+}
+
+/// <summary>
+/// Cenário de XML na página pública da versão. O <c>slug</c> é o que sustenta a âncora copiável
+/// <c>#exemplo-{slug}</c> do artboard da tela 5 — por isso ele é persistido e nunca recalculado.
+/// Sem campo de publicação: exemplo não tem publicação própria (C1), a visibilidade cascateia
+/// 100% da versão/provedor.
+/// </summary>
+public sealed record ExemploPublicoDto
+{
+    public required string Slug { get; init; }
+
+    public required string Nome { get; init; }
+
+    public string? Descricao { get; init; }
+
+    public required string Xml { get; init; }
 }
 
 public sealed record ProvedorResumoPaginaDto

@@ -88,6 +88,27 @@ public sealed class ErrosInternoController : ControllerBase
         return Ok(new ApiResponse<ErroAdminDetalheDto> { Data = atualizado, Message = "Erro atualizado com sucesso." });
     }
 
+    /// <summary>I43 (P-10) — troca o slug do erro e grava o redirecionamento do slug antigo.</summary>
+    /// <response code="200">Slug trocado; o slug antigo passa a responder 308.</response>
+    /// <response code="400"><c>If-Match</c> ausente ou malformado.</response>
+    /// <response code="404">Erro não encontrado.</response>
+    /// <response code="409">Slug já pertence a outro erro, ou conflito de concorrência.</response>
+    /// <response code="422">Slug igual ao atual, ou slug que normaliza para vazio.</response>
+    [HttpPut("{id:int}/slug")]
+    [Authorize(Roles = "erros-atualizar")]
+    [ProducesResponseType(typeof(ApiResponse<ErroAdminDetalheDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<ApiResponse<ErroAdminDetalheDto>>> AtualizarSlug(int id, AlterarSlugDto dto, CancellationToken ct)
+    {
+        var versaoEsperada = Request.ExigirIfMatch();
+        var atualizado = await _servico.AtualizarSlugAsync(id, dto, versaoEsperada, ct);
+        Response.PublicarETagConcorrencia(atualizado.VersaoConcorrencia);
+        return Ok(new ApiResponse<ErroAdminDetalheDto> { Data = atualizado, Message = "Slug do erro atualizado com sucesso." });
+    }
+
     /// <summary>I20b — remoção (soft delete).</summary>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "erros-remover")]

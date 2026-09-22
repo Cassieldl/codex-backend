@@ -59,17 +59,11 @@ public class Provedor : EntidadeAuditada
     }
 
     /// <summary>
-    /// Ação explícita de troca de slug. A entidade só troca o próprio valor — é o SERVICE quem
-    /// grava o <see cref="Redirecionamento"/> correspondente na mesma transação (§7 do modelo de
-    /// dados), nunca esta entidade.
-    ///
-    /// <para>
-    /// <b>CAMINHO INATIVO NA 001</b> (P-10, adiado para a 002 por decisão do usuário): nenhum
-    /// service chama este método e nada grava <see cref="Redirecionamento"/>, então o 308 de
-    /// P3/P6 nunca dispara hoje. Quem ativar precisa gravar o <see cref="Redirecionamento"/> na
-    /// MESMA transação — a validação do destino já está em
-    /// <see cref="Redirecionamento.Criar"/>/<see cref="Redirecionamento.AtualizarDestino"/>.
-    /// </para>
+    /// Ação explícita de troca de slug (P-10, I37). A entidade só troca o próprio valor — é o
+    /// SERVICE (<c>ProvedorServicoInterno.AtualizarSlugAsync</c>) quem grava o
+    /// <see cref="Redirecionamento"/> correspondente, desativa o redirect que partia do slug que
+    /// volta a ficar vivo e faz o colapso de cadeia, tudo na MESMA transação (§7 do modelo de
+    /// dados) — nunca esta entidade.
     /// </summary>
     public void AlterarSlug(SlugVo novoSlug)
     {

@@ -1,15 +1,21 @@
 using Codex.Application.Common;
 using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
+using Codex.Domain.Exceptions;
 using Codex.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Codex.Infrastructure.Repositories;
 
 /// <summary>Implementação de <see cref="IVersaoLayoutRepositorioInterno"/> (I15a-I15d).</summary>
 public sealed class VersaoLayoutRepositorioInterno : RepositorioBase<CodexDbContext>, IVersaoLayoutRepositorioInterno
 {
+    /// <summary>Índice único parcial que garante uma única <c>Vigente</c> viva, criado na <c>InitialCreate</c> da 001.</summary>
+    private const string ConstraintVersaoVigente = "uq_codex_versoeslayout_estado_vigente";
+
     public VersaoLayoutRepositorioInterno(CodexDbContext contexto) : base(contexto)
     {
     }
@@ -62,5 +68,30 @@ public sealed class VersaoLayoutRepositorioInterno : RepositorioBase<CodexDbCont
     public async Task AdicionarAsync(VersaoLayout versaoLayout, CancellationToken ct) =>
         await Contexto.VersoesLayout.AddAsync(versaoLayout, ct);
 
-    public Task SalvarAlteracoesAsync(CancellationToken ct) => SalvarAsync(ct);
+    /// <summary>
+    /// PQ-17 — a colisão de <c>uq_codex_versoeslayout_estado_vigente</c> (segunda versão promovida
+    /// a <c>Vigente</c>) continua sendo `409`, mas com código e mensagem de NEGÓCIO em vez do
+    /// genérico da base, que expunha o nome cru da constraint ao editor. A identificação é por
+    /// <see cref="PostgresException.ConstraintName"/> — nunca por texto de mensagem, que muda sem
+    /// aviso. As demais colisões da entidade (slug, ordem) seguem no tratamento genérico.
+    /// </summary>
+    public async Task SalvarAlteracoesAsync(CancellationToken ct)
+    {
+        try
+        {
+            await SalvarAsync(ct);
+        }
+        catch (RegistroDuplicadoException ex) when (
+            ex.InnerException is DbUpdateException
+            {
+                InnerException: PostgresException { ConstraintName: ConstraintVersaoVigente }
+            })
+        {
+            throw new RegistroDuplicadoException(
+                "Já existe uma versão de layout marcada como Vigente. Marque a versão atual como "
+                + "Anterior antes de promover outra.",
+                ex.InnerException,
+                CodigosErro.VersaoLayoutVigenteJaExiste);
+        }
+    }
 }

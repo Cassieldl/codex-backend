@@ -79,8 +79,10 @@ public sealed record ComunicadoAdminDto
 }
 
 /// <summary>
-/// Criação (I32) — <c>publicado</c> nunca é campo de request (publicação só muda por I35, M19).
-/// <see cref="ExpiraEm"/> é obrigatório (decisoes.md M-3) e tem de estar no futuro.
+/// Criação (I32). <see cref="ExpiraEm"/> é obrigatório (decisoes.md M-3) e tem de estar no
+/// futuro. <see cref="Publicar"/> permite nascer já no ar (D-1) — é a ÚNICA porta de publicação
+/// além de I35, e não é um <c>publicado</c> livre: sem a role <c>comunicados-publicar</c> o
+/// controller devolve <c>403</c>, nunca cria em rascunho em silêncio.
 /// </summary>
 public sealed record CriarComunicadoDto
 {
@@ -97,6 +99,13 @@ public sealed record CriarComunicadoDto
     public int? VersaoProvedorId { get; init; }
 
     public required DateTimeOffset ExpiraEm { get; init; }
+
+    /// <summary>
+    /// D-1 (U-5): criar e publicar em UMA transação, sem o instante de rascunho que o fluxo em
+    /// dois passos (I32 + I35) deixava visível na listagem. Default <c>false</c> — omitir o campo
+    /// mantém o comportamento anterior, criando em rascunho.
+    /// </summary>
+    public bool Publicar { get; init; }
 }
 
 /// <summary>

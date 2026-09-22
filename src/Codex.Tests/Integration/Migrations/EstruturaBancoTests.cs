@@ -100,6 +100,7 @@ public sealed class EstruturaBancoTests
             "camposversao", "avisos", "avisoscampos", "erros", "variantesmensagem",
             "errosversoes", "erroscampos", "itensbusca", "termosbusca", "redirecionamentos",
             "artigos", "comunicados", "artigoscamposlayout", "artigoserros",
+            "exemplos", // 003/M-a — a tabela nasce COM o trigger, então entra na lista esperada.
         ];
 
         await using var conexao = new NpgsqlConnection(_fixture.ConnectionString);
@@ -189,6 +190,226 @@ public sealed class EstruturaBancoTests
         indexdef!.Should().Contain("expiraem")
             .And.Contain("publicado")
             .And.Contain("desativadoem IS NULL");
+    }
+
+    /// <summary>
+    /// M-a (003) — <c>codex.exemplos</c> sai de <c>ExcludeFromMigrations()</c>. Mesma prova do
+    /// bloco editorial da 002: se a exclusão ainda estivesse ativa, a migration nunca teria
+    /// emitido o <c>CREATE TABLE</c> e esta consulta devolveria zero mesmo com a
+    /// <c>Configuration</c> já sem a chamada (o build passa nos dois casos).
+    /// </summary>
+    [Fact]
+    public async Task Exemplos_SaiDeExcludeFromMigrations_ExisteNoBanco()
+    {
+        await using var conexao = new NpgsqlConnection(_fixture.ConnectionString);
+        await conexao.OpenAsync();
+
+        await using var comando = conexao.CreateCommand();
+        comando.CommandText =
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'codex' AND table_name = 'exemplos'";
+
+        var quantidade = (long)(await comando.ExecuteScalarAsync())!;
+
+        quantidade.Should().Be(1, because: "a migration da 003 escreve o CreateTable de codex.exemplos à mão (modelo-dados.md §1.6)");
+    }
+
+    /// <summary>
+    /// Os dois <c>UNIQUE</c> de <c>exemplos</c> chegam ao banco como ÍNDICES únicos (o
+    /// <c>HasIndex().IsUnique()</c> da Configuration), não como entradas de <c>pg_constraint</c> —
+    /// mesma forma já usada por <c>uq_codex_versoesprovedor_provedorid_slug</c> e companhia. A
+    /// garantia de unicidade é idêntica; a consulta é que muda, e procurar no lugar errado dá
+    /// falso vermelho (ou, invertido, falso verde).
+    /// </summary>
+    [Theory]
+    [InlineData("uq_codex_exemplos_versaoprovedorid_nome", "versaoprovedorid, nome")]
+    [InlineData("uq_codex_exemplos_versaoprovedorid_slug", "versaoprovedorid, slug")]
+    public async Task Exemplos_TemOsDoisIndicesUnicos(string nomeIndice, string colunasEsperadas)
+    {
+        await using var conexao = new NpgsqlConnection(_fixture.ConnectionString);
+        await conexao.OpenAsync();
+
+        await using var comando = conexao.CreateCommand();
+        comando.CommandText =
+            "SELECT indexdef FROM pg_indexes WHERE schemaname = 'codex' AND tablename = 'exemplos' AND indexname = @nome";
+        comando.Parameters.AddWithValue("nome", nomeIndice);
+
+        var indexdef = (string?)await comando.ExecuteScalarAsync();
+
+        indexdef.Should().NotBeNull(because: $"{nomeIndice} está no DDL de modelo-dados.md §1.1");
+        indexdef!.Should().Contain("UNIQUE").And.Contain($"({colunasEsperadas})");
+    }
+
+    [Theory]
+    [InlineData("pk_codex_exemplos")]
+    [InlineData("fk_codex_exemplos_versaoprovedorid")]
+    [InlineData("ck_codex_exemplos_xml_tamanho")]
+    public async Task Exemplos_TemAsConstraintsDoModeloDeDados(string nomeConstraint)
+    {
+        await using var conexao = new NpgsqlConnection(_fixture.ConnectionString);
+        await conexao.OpenAsync();
+
+        await using var comando = conexao.CreateCommand();
+        comando.CommandText =
+            """
+            SELECT COUNT(*)
+            FROM pg_constraint c
+            JOIN pg_class t ON t.oid = c.conrelid
+            JOIN pg_namespace n ON n.oid = t.relnamespace
+            WHERE n.nspname = 'codex' AND t.relname = 'exemplos' AND c.conname = @nome
+            """;
+        comando.Parameters.AddWithValue("nome", nomeConstraint);
+
+        var quantidade = (long)(await comando.ExecuteScalarAsync())!;
+
+        quantidade.Should().Be(1, because: $"{nomeConstraint} está no DDL de modelo-dados.md §1.1");
+    }
+
+    /// <summary>
+    /// <c>RESTRICT</c> é a única política de FK de toda a base (18 FKs da migration inicial,
+    /// nenhuma em CASCADE) — apagar uma versão com exemplos não pode levar os cenários junto em
+    /// silêncio.
+    /// </summary>
+    [Fact]
+    public async Task FkExemplosVersaoProvedor_EhOnDeleteRestrict()
+    {
+        await using var conexao = new NpgsqlConnection(_fixture.ConnectionString);
+        await conexao.OpenAsync();
+
+        await using var comando = conexao.CreateCommand();
+        comando.CommandText = "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname = 'fk_codex_exemplos_versaoprovedorid'";
+
+        var definicao = (string?)await comando.ExecuteScalarAsync();
+
+        definicao.Should().NotBeNull();
+        definicao!.Should().Contain("REFERENCES codex.versoesprovedor").And.Contain("ON DELETE RESTRICT");
+    }
+
+    /// <summary>
+    /// O CHECK do XML é a guarda de catástrofe em BYTES (256 KiB), deliberadamente diferente do
+    /// teto de negócio em CARACTERES (64 KiB, FluentValidation) — modelo-dados.md §1.5. Se alguém
+    /// "corrigir a inconsistência" igualando os dois, este teste cai.
+    /// </summary>
+    [Fact]
+    public async Task CkExemplosXmlTamanho_Mede256KiBEmBytes_NaoOs64KiBDeNegocio()
+    {
+        await using var conexao = new NpgsqlConnection(_fixture.ConnectionString);
+        await conexao.OpenAsync();
+
+        await using var comando = conexao.CreateCommand();
+        comando.CommandText = "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname = 'ck_codex_exemplos_xml_tamanho'";
+
+        var definicao = (string?)await comando.ExecuteScalarAsync();
+
+        definicao.Should().NotBeNull();
+        definicao!.Should().Contain("octet_length").And.Contain("262144");
+    }
+
+    /// <summary>F4/M-b — o CHECK precisa dos 5 valores; sem 'artigo', o redirect de artigo da 002 morre com 23514.</summary>
+    [Fact]
+    public async Task CkRedirecionamentosTipoItem_TemExatamenteOsCincoValores()
+    {
+        var valoresNoCheck = await ValoresDoCheckAsync("ck_codex_redirecionamentos_tipoitem");
+
+        valoresNoCheck.Should().BeEquivalentTo(
+            ["provedor", "versaoprovedor", "erro", "campolayout", "artigo"],
+            because: "a 003 recria o CHECK incluindo 'artigo' (analise-backend.md §1)");
+    }
+
+    /// <summary>
+    /// PQ-03 — o trigger não é gerado pelo EF e sua ausência é SILENCIOSA: sem ele, a coluna
+    /// simplesmente para de ser atualizada. Prova por comportamento: <c>UPDATE</c> em SQL puro
+    /// (nunca pelo EF, que poderia carimbar a coluna sozinho) e comparação do valor antes/depois.
+    /// Leitura por <c>ExecuteReaderAsync</c> + <c>GetFieldValue&lt;DateTimeOffset&gt;</c>: o
+    /// caminho genérico de <c>ExecuteScalarAsync</c> materializa <c>timestamptz</c> como
+    /// <c>DateTime</c>, e o <c>as DateTimeOffset?</c> devolveria <c>null</c> sempre.
+    /// </summary>
+    [Fact]
+    public async Task Exemplo_UpdateEmSqlPuro_TemAtualizadoemCarimbadoPeloTrigger()
+    {
+        var exemploId = await SemearExemploAsync();
+
+        var antes = await LerAtualizadoemAsync(exemploId);
+
+        await using (var conexao = new NpgsqlConnection(_fixture.ConnectionString))
+        {
+            await conexao.OpenAsync();
+            await using var comando = conexao.CreateCommand();
+            comando.CommandText = "UPDATE codex.exemplos SET descricao = 'tocado pelo teste do trigger' WHERE exemploid = @id";
+            comando.Parameters.AddWithValue("id", exemploId);
+            (await comando.ExecuteNonQueryAsync()).Should().Be(1);
+        }
+
+        var depois = await LerAtualizadoemAsync(exemploId);
+
+        depois.Should().BeAfter(antes,
+            because: "trg_codex_exemplos_atualizadoem precisa carimbar atualizadoem em todo UPDATE (rules/database.md)");
+    }
+
+    /// <summary>
+    /// Concorrência otimista de <c>Exemplo</c> (decisão C2) — mesma prova por comportamento usada
+    /// em Artigo/Comunicado: sem o mapeamento de <c>Versao</c> como <c>xmin</c>, dois PUTs
+    /// concorrentes se sobrescreveriam em silêncio e o <c>If-Match</c> de I41/I42 seria decorativo.
+    /// </summary>
+    [Fact]
+    public async Task Exemplo_ConflitoRealDeEdicao_LancaDbUpdateConcurrencyException()
+    {
+        var exemploId = await SemearExemploAsync();
+
+        await using var contextoA = _fixture.CriarContexto();
+        await using var contextoB = _fixture.CriarContexto();
+
+        var exemploA = await contextoA.Exemplos.FirstAsync(e => e.Id == exemploId);
+        var exemploB = await contextoB.Exemplos.FirstAsync(e => e.Id == exemploId);
+
+        exemploA.AtualizarConteudo("Editado primeiro", "<xml>1</xml>", null);
+        await contextoA.SaveChangesAsync(); // xmin avança no banco
+
+        exemploB.AtualizarConteudo("Editado segundo — deveria falhar", "<xml>2</xml>", null);
+        var acao = async () => await contextoB.SaveChangesAsync();
+
+        await acao.Should().ThrowAsync<DbUpdateConcurrencyException>(
+            because: "contextoB ainda carrega o xmin antigo");
+    }
+
+    private async Task<int> SemearExemploAsync()
+    {
+        var sufixo = Guid.NewGuid().ToString("N")[..10];
+
+        await using var contexto = _fixture.CriarContexto();
+
+        var maiorOrdemAtual = contexto.VersoesLayout.Any() ? contexto.VersoesLayout.Max(v => v.Ordem) : 0;
+        var versaoLayout = VersaoLayout.Criar($"Layout exemplo {sufixo}", maiorOrdemAtual + 1);
+        contexto.VersoesLayout.Add(versaoLayout);
+        await contexto.SaveChangesAsync();
+
+        var provedor = Provedor.Criar($"Provedor Exemplo {sufixo}", $"EXM-{sufixo}", CategoriaProvedor.Nacional);
+        contexto.Provedores.Add(provedor);
+        await contexto.SaveChangesAsync();
+
+        var versao = VersaoProvedor.Criar(provedor.Id, versaoLayout.Id, $"Versão exemplo {sufixo}");
+        contexto.VersoesProvedor.Add(versao);
+        await contexto.SaveChangesAsync();
+
+        var exemplo = Exemplo.Criar(versao.Id, $"Cenário {sufixo}", "<xml>0</xml>", "descrição inicial");
+        contexto.Exemplos.Add(exemplo);
+        await contexto.SaveChangesAsync();
+
+        return exemplo.Id;
+    }
+
+    private async Task<DateTimeOffset> LerAtualizadoemAsync(int exemploId)
+    {
+        await using var conexao = new NpgsqlConnection(_fixture.ConnectionString);
+        await conexao.OpenAsync();
+
+        await using var comando = conexao.CreateCommand();
+        comando.CommandText = "SELECT atualizadoem FROM codex.exemplos WHERE exemploid = @id";
+        comando.Parameters.AddWithValue("id", exemploId);
+
+        await using var leitor = await comando.ExecuteReaderAsync();
+        (await leitor.ReadAsync()).Should().BeTrue();
+
+        return leitor.GetFieldValue<DateTimeOffset>(0);
     }
 
     /// <summary>Extrai os literais de string de um CHECK <c>... = ANY (ARRAY['a', 'b', ...])</c> via <c>pg_get_constraintdef</c>.</summary>

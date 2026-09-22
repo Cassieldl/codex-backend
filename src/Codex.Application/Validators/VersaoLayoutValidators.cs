@@ -1,5 +1,6 @@
 using Codex.Application.DTOs.Interno;
 using FluentValidation;
+using SlugVo = Codex.Domain.ValueObjects.Slug;
 
 namespace Codex.Application.Validators;
 
@@ -8,7 +9,9 @@ public sealed class CriarVersaoLayoutDtoValidator : AbstractValidator<CriarVersa
     public CriarVersaoLayoutDtoValidator()
     {
         RuleFor(x => x.Rotulo).NotEmpty().WithMessage("O rótulo da versão de layout é obrigatório.")
-            .MaximumLength(160);
+            .MaximumLength(160)
+            // O slug nasce do rótulo (VersaoLayout.Criar) — rótulo só de pontuação viraria 500.
+            .Must(SlugVo.PodeDerivarDe).WithMessage("O rótulo da versão de layout precisa conter ao menos uma letra ou número.");
     }
 }
 

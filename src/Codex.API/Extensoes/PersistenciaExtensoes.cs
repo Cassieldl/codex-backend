@@ -32,6 +32,16 @@ public static class PersistenciaExtensoes
         services.AddScoped<IErroServicoPublico, ErroServicoPublico>();
         services.AddScoped<IArtigoServicoPublico, ArtigoServicoPublico>();
 
+        // Layout público — P10/P11/P12 (BACK-B, analise-backend.md §4.3).
+        services.AddScoped<ILayoutRepositorioPublico, LayoutRepositorioPublico>();
+        services.AddScoped<ILayoutServicoPublico, LayoutServicoPublico>();
+
+        // Home — P9 (BACK-D, analise-backend.md §6). O TimeProvider que o serviço consome é o
+        // mesmo registrado por AddComunicados: a vigência lida aqui e a escrita por I35 nunca
+        // podem divergir por conta da fonte de tempo.
+        services.AddScoped<IHomeRepositorioPublico, HomeRepositorioPublico>();
+        services.AddScoped<IHomeServicoPublico, HomeServicoPublico>();
+
         // Escrita interna (BACK-4, analise-backend.md §4.2) — repositórios.
         services.AddScoped<IProvedorRepositorioInterno, ProvedorRepositorioInterno>();
         services.AddScoped<IVersaoProvedorRepositorioInterno, VersaoProvedorRepositorioInterno>();
@@ -41,6 +51,9 @@ public static class PersistenciaExtensoes
         services.AddScoped<ICampoLayoutRepositorioInterno, CampoLayoutRepositorioInterno>();
         services.AddScoped<IErroRepositorioInterno, ErroRepositorioInterno>();
         services.AddScoped<IArtigoRepositorioInterno, ArtigoRepositorioInterno>();
+        services.AddScoped<IExemploRepositorioInterno, ExemploRepositorioInterno>();
+        // Escrita de redirect — compartilhada pelos três services de troca de slug (P-10, I37/I43/I44).
+        services.AddScoped<IRedirecionamentoRepositorio, RedirecionamentoRepositorio>();
         services.AddScoped<IUnidadeDeTrabalho, UnidadeDeTrabalhoInterna>();
 
         // Escrita interna — services (regra de negócio + template de publicação de §3.4).
@@ -52,6 +65,7 @@ public static class PersistenciaExtensoes
         services.AddScoped<ICampoLayoutServicoInterno, CampoLayoutServicoInterno>();
         services.AddScoped<IErroServicoInterno, ErroServicoInterno>();
         services.AddScoped<IArtigoServicoInterno, ArtigoServicoInterno>();
+        services.AddScoped<IExemploServicoInterno, ExemploServicoInterno>();
         services.AddScoped<IIndiceBuscaReconstrucaoServico, IndiceBuscaReconstrucaoServico>();
 
         return services;

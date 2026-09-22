@@ -1,9 +1,11 @@
 using Codex.Application.Common;
 using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Codex.Domain.Enums;
 using Codex.Domain.Exceptions;
+using SlugVo = Codex.Domain.ValueObjects.Slug;
 
 namespace Codex.Application.Services.Interno;
 
@@ -18,13 +20,18 @@ public sealed class ErroServicoInterno : IErroServicoInterno
 {
     private readonly IErroRepositorioInterno _repositorio;
     private readonly IIndiceBuscaWriter _indiceBuscaWriter;
+    private readonly IRedirecionamentoRepositorio _redirecionamentoRepositorio;
     private readonly IUnidadeDeTrabalho _unidadeDeTrabalho;
 
     public ErroServicoInterno(
-        IErroRepositorioInterno repositorio, IIndiceBuscaWriter indiceBuscaWriter, IUnidadeDeTrabalho unidadeDeTrabalho)
+        IErroRepositorioInterno repositorio,
+        IIndiceBuscaWriter indiceBuscaWriter,
+        IRedirecionamentoRepositorio redirecionamentoRepositorio,
+        IUnidadeDeTrabalho unidadeDeTrabalho)
     {
         _repositorio = repositorio;
         _indiceBuscaWriter = indiceBuscaWriter;
+        _redirecionamentoRepositorio = redirecionamentoRepositorio;
         _unidadeDeTrabalho = unidadeDeTrabalho;
     }
 
@@ -78,6 +85,36 @@ public sealed class ErroServicoInterno : IErroServicoInterno
         }, ct);
 
         return Mapear(erro, dto.VersoesProvedorIds, dto.CamposLayoutIds);
+    }
+
+    /// <summary>I43 (P-10) — troca de slug com redirecionamento; mesmo template de <c>ProvedorServicoInterno.AtualizarSlugAsync</c>.</summary>
+    public async Task<ErroAdminDetalheDto> AtualizarSlugAsync(int id, AlterarSlugDto dto, uint versaoEsperada, CancellationToken ct)
+    {
+        var erro = await CarregarRastreadaOuFalharAsync(id, versaoEsperada, ct);
+
+        var slugNovo = SlugVo.DeTexto(dto.Slug).Valor;
+        if (slugNovo == erro.Slug)
+            throw new RegraDeNegocioException(CodigosErro.SlugIgualAoAtual, "O novo slug é igual ao atual.");
+
+        var caminhoAntigo = $"/erros/{erro.Slug}";
+        var caminhoNovo = $"/erros/{slugNovo}";
+
+        erro.AlterarSlug(SlugVo.DeValorPersistido(slugNovo));
+
+        await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
+        {
+            await _repositorio.SalvarAlteracoesAsync(ctInterno);
+
+            await _redirecionamentoRepositorio.DesativarPorOrigemAsync(caminhoNovo, TipoItemIndexado.erro, ctInterno);
+            await _redirecionamentoRepositorio.RepontarDestinosAsync(caminhoAntigo, caminhoNovo, TipoItemIndexado.erro, ctInterno);
+            await _redirecionamentoRepositorio.CriarAsync(
+                Redirecionamento.Criar(caminhoAntigo, caminhoNovo, TipoItemIndexado.erro), ctInterno);
+
+            var (pesoA, pesoB, pesoC, pesoD) = PesosBusca.DoErro(erro);
+            await _indiceBuscaWriter.AtualizarPesosAsync(TipoItemIndexado.erro, erro.Id, pesoA, pesoB, pesoC, pesoD, ctInterno);
+        }, ct);
+
+        return await MapearAsync(erro, ct);
     }
 
     public async Task RemoverAsync(int id, uint versaoEsperada, CancellationToken ct)

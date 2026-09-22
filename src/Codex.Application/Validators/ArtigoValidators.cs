@@ -1,5 +1,6 @@
 using Codex.Application.DTOs.Interno;
 using FluentValidation;
+using SlugVo = Codex.Domain.ValueObjects.Slug;
 
 namespace Codex.Application.Validators;
 
@@ -9,7 +10,9 @@ public sealed class CriarArtigoDtoValidator : AbstractValidator<CriarArtigoDto>
     public CriarArtigoDtoValidator()
     {
         RuleFor(x => x.Tipo).IsInEnum().WithMessage("Tipo de artigo inválido.");
-        RuleFor(x => x.Titulo).NotEmpty().MaximumLength(200).WithMessage("O título do artigo é obrigatório e tem no máximo 200 caracteres.");
+        RuleFor(x => x.Titulo).NotEmpty().MaximumLength(200).WithMessage("O título do artigo é obrigatório e tem no máximo 200 caracteres.")
+            // O slug nasce do título (Artigo.Criar) — título só de pontuação viraria 500.
+            .Must(SlugVo.PodeDerivarDe).WithMessage("O título do artigo precisa conter ao menos uma letra ou número.");
         RuleFor(x => x.Corpo).NotEmpty().WithMessage("O corpo do artigo é obrigatório.");
 
         RuleFor(x => x.CampoLayoutIds).Must(SemDuplicataENemIdInvalido)

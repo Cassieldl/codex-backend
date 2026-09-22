@@ -46,6 +46,25 @@ public sealed class ComunicadoServicoInterno : IComunicadoServicoInterno
     {
         var comunicado = CriarPelaAbrangencia(dto);
 
+        if (dto.Publicar)
+        {
+            // Mesma regra de I35 (B-4): publicar algo que a leitura já trataria como encerrado é
+            // ação sem efeito observável, que o job desfaria no tique seguinte.
+            //
+            // Pela porta HTTP este ramo não chega a executar — CriarComunicadoDtoValidator já
+            // exige ExpiraEm no futuro e devolve 422 VALIDATION_ERROR antes do service. A guarda
+            // fica porque o service é chamável fora do pipeline MVC (job, script de carga, outro
+            // service), e ali é o único ponto que impede um comunicado nascer publicado e vencido.
+            if (comunicado.Expirado(_relogio.GetUtcNow()))
+                throw new RegraDeNegocioException(
+                    CodigosErro.ComunicadoExpirado,
+                    "Não é possível publicar um comunicado cuja expiração já passou. "
+                    + "Ajuste a data de expiração para o futuro antes de publicar.");
+
+            comunicado.Publicar();
+        }
+
+        // UMA transação, UM INSERT: a linha nunca existe em rascunho, nem por um instante (D-1).
         await _repositorio.AdicionarAsync(comunicado, ct);
         await _repositorio.SalvarAlteracoesAsync(ct);
 

@@ -1,9 +1,9 @@
 using Codex.API.Common;
 using Codex.Application.DTOs.Publico;
 using Codex.Application.Interfaces;
+using Codex.Domain.Constantes;
 using Codex.Domain.Enums;
 using Codex.Domain.Exceptions;
-using Codex.Domain.ValueObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -68,8 +68,14 @@ public sealed class ErrosController : ControllerBase
         catch (EntidadeNaoEncontradaException)
         {
             var destino = await _servico.ObterRedirecionamentoAsync(erroSlug, ct);
-            if (CaminhoInternoSeguro.EhValido(destino))
-                return RedirectPermanentPreserveMethod(destino!);
+            // F1 (arquitetura.md §5.F): o Location aponta para a rota da API, não para a rota de
+            // app. XMLHttpRequest segue o 308 sozinho e nunca expõe status nem Location ao
+            // cliente — apontando para a rota de app, o auto-follow bateria num endereço que a
+            // API não serve e devolveria 404. DeCaminhoPublico já valida o caminho interno e
+            // devolve null quando o destino não é traduzível: aí segue o 404 honesto.
+            var rotaApiDoDestino = RotaApiPublica.DeCaminhoPublico(destino);
+            if (rotaApiDoDestino is not null)
+                return RedirectPermanentPreserveMethod(rotaApiDoDestino);
 
             return NotFound(new { error = new { code = "NAO_ENCONTRADO", message = $"Erro '{erroSlug}' não encontrado." } });
         }

@@ -107,6 +107,25 @@ public sealed class VersaoProvedorRepositorioPublico : RepositorioBase<CodexDbCo
             select new ErroResumoPublicoDto { Slug = e.Slug, Codigo = e.Codigo, Titulo = e.Titulo }
         ).ToListAsync(ct);
 
+    /// <summary>
+    /// Ordem por criação com desempate pela chave única: <c>criadoem</c> empata quando vários
+    /// exemplos nascem na mesma transação, e sem o desempate a ordem devolvida é a física do heap
+    /// (muda a cada UPDATE) — a âncora publicada exige ordem estável entre requisições.
+    /// </summary>
+    public async Task<IReadOnlyCollection<ExemploPublicoDto>> ListarExemplosAsync(int versaoProvedorId, CancellationToken ct) =>
+        await Contexto.Exemplos.AsNoTracking()
+            .Where(e => e.VersaoProvedorId == versaoProvedorId && e.DesativadoEm == null)
+            .OrderBy(e => e.CriadoEm)
+            .ThenBy(e => e.Id)
+            .Select(e => new ExemploPublicoDto
+            {
+                Slug = e.Slug,
+                Nome = e.Nome,
+                Descricao = e.Descricao,
+                Xml = e.Xml,
+            })
+            .ToListAsync(ct);
+
     public async Task<IReadOnlyCollection<VersaoProvedor>> ListarOutrasVersoesPublicadasAsync(
         int provedorId, int versaoProvedorIdAtual, CancellationToken ct) =>
         await Contexto.VersoesProvedor.AsNoTracking()

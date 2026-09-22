@@ -18,6 +18,9 @@ public interface IArtigoRepositorioInterno
 
     Task<PaginaResultado<ArtigoAdminListaItemDto>> ListarAsync(FiltroArtigoInterno filtro, CancellationToken ct);
 
+    /// <summary>Todos os artigos ativos — usado por I22 (reconstrução total do índice de busca).</summary>
+    Task<IReadOnlyCollection<Artigo>> ListarTodosAtivosAsync(CancellationToken ct);
+
     Task<IReadOnlyCollection<int>> ListarCamposLayoutRelacionadosIdsAsync(int artigoId, CancellationToken ct);
 
     Task<IReadOnlyCollection<int>> ListarErrosRelacionadosIdsAsync(int artigoId, CancellationToken ct);

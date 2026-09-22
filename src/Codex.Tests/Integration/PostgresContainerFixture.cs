@@ -28,25 +28,57 @@ public sealed class PostgresContainerFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         await _container.StartAsync();
-        await CriarInfraestruturaDeBuscaAsync();
-        await AplicarMigrationsAsync();
+        await CriarInfraestruturaDeBuscaAsync(ConnectionString);
+        await AplicarMigrationsAsync(ConnectionString);
     }
 
     public async Task DisposeAsync() => await _container.DisposeAsync();
 
-    public CodexDbContext CriarContexto()
+    public CodexDbContext CriarContexto() => CriarContexto(ConnectionString);
+
+    public static CodexDbContext CriarContexto(string connectionString)
     {
         var options = new DbContextOptionsBuilder<CodexDbContext>()
-            .UseNpgsql(ConnectionString, npgsql =>
+            .UseNpgsql(connectionString, npgsql =>
                 npgsql.MigrationsHistoryTable("__ef_migrations_history", CodexDbContext.Schema))
             .Options;
 
         return new CodexDbContext(options);
     }
 
-    private async Task CriarInfraestruturaDeBuscaAsync()
+    /// <summary>
+    /// Cria um banco ADICIONAL no MESMO container, migrado e sem uma única linha de conteúdo, e
+    /// devolve a connection string dele. É o que permite provar "acervo vazio responde 200" de
+    /// verdade: o banco principal é compartilhado pela <see cref="PostgresCollection"/> e nunca
+    /// está vazio. Barato — reaproveita o container, só paga o CREATE DATABASE + migrations.
+    /// </summary>
+    public async Task<string> CriarBancoVazioAsync(string nomeDoBanco)
     {
-        await using var conexao = new NpgsqlConnection(ConnectionString);
+        await using (var conexao = new NpgsqlConnection(ConnectionString))
+        {
+            await conexao.OpenAsync();
+
+            await using var comando = conexao.CreateCommand();
+            // Identificador não pode ser parametrizado; o nome vem sempre de constante/sufixo de
+            // teste, e as aspas duplas impedem que ele seja interpretado como mais de um token.
+            comando.CommandText = $"""CREATE DATABASE "{nomeDoBanco.Replace("\"", string.Empty, StringComparison.Ordinal)}" """;
+            await comando.ExecuteNonQueryAsync();
+        }
+
+        var connectionStringDoBancoVazio = new NpgsqlConnectionStringBuilder(ConnectionString)
+        {
+            Database = nomeDoBanco,
+        }.ConnectionString;
+
+        await CriarInfraestruturaDeBuscaAsync(connectionStringDoBancoVazio);
+        await AplicarMigrationsAsync(connectionStringDoBancoVazio);
+
+        return connectionStringDoBancoVazio;
+    }
+
+    private static async Task CriarInfraestruturaDeBuscaAsync(string connectionString)
+    {
+        await using var conexao = new NpgsqlConnection(connectionString);
         await conexao.OpenAsync();
 
         await using var comando = conexao.CreateCommand();
@@ -105,9 +137,9 @@ public sealed class PostgresContainerFixture : IAsyncLifetime
         await comando.ExecuteNonQueryAsync();
     }
 
-    private async Task AplicarMigrationsAsync()
+    private static async Task AplicarMigrationsAsync(string connectionString)
     {
-        await using var contexto = CriarContexto();
+        await using var contexto = CriarContexto(connectionString);
         await contexto.Database.MigrateAsync();
     }
 }

@@ -24,4 +24,7 @@ public interface IArtigoServicoInterno
 
     /// <summary>I36 — resolução de F-2 (endpoint dedicado, nunca varredura de página).</summary>
     Task<ArtigoExisteDto> ExisteAsync(string slug, CancellationToken ct);
+
+    /// <summary>I44 (P-10) — troca de slug: recusa o artigo reservado (422), grava o redirecionamento e reindexa a busca.</summary>
+    Task<ArtigoAdminDto> AtualizarSlugAsync(int id, AlterarSlugDto dto, uint versaoEsperada, CancellationToken ct);
 }

@@ -76,6 +76,17 @@ public class Erro : EntidadeAuditada
         SolucaoSugerida = solucaoSugerida;
     }
 
+    /// <summary>
+    /// Troca explícita de slug (P-10, I43) — mesmo contrato de <see cref="Provedor.AlterarSlug"/>:
+    /// a entidade só troca o próprio valor, e é o service quem grava o
+    /// <see cref="Redirecionamento"/> na mesma transação.
+    /// </summary>
+    public void AlterarSlug(SlugVo novoSlug)
+    {
+        ArgumentNullException.ThrowIfNull(novoSlug);
+        Slug = novoSlug.Valor;
+    }
+
     public void SubstituirVariantes(IEnumerable<string> variantes)
     {
         ArgumentNullException.ThrowIfNull(variantes);

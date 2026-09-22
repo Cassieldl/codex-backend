@@ -320,6 +320,20 @@ public sealed class ContratoPublicoHttpTests : IAsyncLifetime
         using var resposta = await _cliente.GetAsync($"/api/v1/provedores/{slugAntigo}");
 
         resposta.StatusCode.Should().Be(HttpStatusCode.PermanentRedirect);
-        resposta.Headers.Location!.ToString().Should().Be($"/provedores/{cenario.ProvedorPublicadoSlug}");
+        resposta.Headers.Location!.ToString().Should().Be(
+            $"/api/v1/provedores/{cenario.ProvedorPublicadoSlug}",
+            because: "F1 (arquitetura.md §5.F): o Location aponta para a rota da API — o auto-follow "
+                     + "do navegador refaz a requisição sozinho e precisa cair num endereço servido, "
+                     + "não na rota de app, que a API não conhece e devolveria 404");
+
+        // O destino guardado continua no formato PÚBLICO: a tradução é da borda HTTP, e a coluna
+        // é o valor certo para um redirect de nginx/CDN no dia em que existir.
+        await using var contextoConferencia = _fixture.CriarContexto();
+        var destinoPersistido = await contextoConferencia.Redirecionamentos.AsNoTracking()
+            .Where(r => r.Origem == $"/provedores/{slugAntigo}")
+            .Select(r => r.Destino)
+            .SingleAsync();
+
+        destinoPersistido.Should().Be($"/provedores/{cenario.ProvedorPublicadoSlug}");
     }
 }

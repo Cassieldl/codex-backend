@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Codex.Domain.Enums;
 
 namespace Codex.Domain.Entities;
@@ -134,6 +135,21 @@ public class Comunicado : EntidadeAuditada
     }
 
     public bool Expirado(DateTimeOffset referencia) => ExpiraEm <= referencia;
+
+    /// <summary>
+    /// Predicado ÚNICO de "está no ar agora" — publicado, ativo e ainda não vencido, as MESMAS
+    /// três condições do índice parcial <c>idx_codex_comunicados_vigentes</c>. Usado pela leitura
+    /// pública (Home, P9) e pela interna (<c>ComunicadoRepositorioInterno.QueryVigentes</c>, que
+    /// delega aqui em vez de repetir a expressão): reimplementar o predicado na leitura pública é
+    /// o caminho direto para reabrir incidente encerrado (PQ-14).
+    ///
+    /// <para>
+    /// É <see cref="Expression{TDelegate}"/>, não <c>Func</c>, porque precisa ser traduzível para
+    /// SQL — avaliar em memória traria toda a tabela para o processo.
+    /// </para>
+    /// </summary>
+    public static Expression<Func<Comunicado, bool>> EhVigenteEm(DateTimeOffset referencia) =>
+        c => c.Publicado && c.DesativadoEm == null && c.ExpiraEm > referencia;
 
     /// <summary>Sempre permitido pelo domínio — a regra "não publicar já expirado" é do Application (I35, §6.2 de analise-backend.md), porque depende de "agora" injetável (TimeProvider), não de um valor fixo na entidade.</summary>
     public void Publicar()

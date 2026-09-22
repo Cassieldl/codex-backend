@@ -20,6 +20,14 @@ public interface IProvedorRepositorioInterno
     /// <summary>Listagem interna (I1) — enxerga rascunho, filtro de <c>publicado</c> opcional.</summary>
     Task<PaginaResultado<ProvedorAdminListaItemDto>> ListarAsync(FiltroProvedorInterno filtro, CancellationToken ct);
 
+    /// <summary>
+    /// Provedor RASTREADO com <see cref="Provedor.Aliases"/> carregado — usado por I37 (troca de
+    /// slug), que reindexa a linha de busca sem antes substituir os aliases. Com a coleção não
+    /// carregada, <c>PesosBusca.DoProvedor</c> produziria o peso B só com o nome e a reindexação
+    /// APAGARIA os aliases do índice em silêncio (o provedor deixaria de ser achado pelo apelido).
+    /// </summary>
+    Task<Provedor?> ObterPorIdComAliasesAsync(int id, CancellationToken ct);
+
     /// <summary>Todos os provedores ativos, com <see cref="Provedor.Aliases"/> carregado — usado por I22 (reconstrução total do índice).</summary>
     Task<IReadOnlyCollection<Provedor>> ListarTodosAtivosComAliasesAsync(CancellationToken ct);
 

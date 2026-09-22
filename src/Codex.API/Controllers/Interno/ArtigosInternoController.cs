@@ -101,6 +101,27 @@ public sealed class ArtigosInternoController : ControllerBase
         return Ok(new ApiResponse<ArtigoAdminDto> { Data = atualizado, Message = "Artigo atualizado com sucesso." });
     }
 
+    /// <summary>I44 (P-10) — troca o slug do artigo e grava o redirecionamento do slug antigo.</summary>
+    /// <response code="200">Slug trocado; o slug antigo passa a responder 308.</response>
+    /// <response code="400"><c>If-Match</c> ausente ou malformado.</response>
+    /// <response code="404">Artigo não encontrado.</response>
+    /// <response code="409">Slug já pertence a outro artigo, ou conflito de concorrência.</response>
+    /// <response code="422">Artigo reservado (<c>SLUG_RESERVADO</c>), slug igual ao atual, ou slug que normaliza para vazio.</response>
+    [HttpPut("{id:int}/slug")]
+    [Authorize(Roles = "artigos-atualizar")]
+    [ProducesResponseType(typeof(ApiResponse<ArtigoAdminDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<ApiResponse<ArtigoAdminDto>>> AtualizarSlug(int id, AlterarSlugDto dto, CancellationToken ct)
+    {
+        var versaoEsperada = Request.ExigirIfMatch();
+        var atualizado = await _servico.AtualizarSlugAsync(id, dto, versaoEsperada, ct);
+        Response.PublicarETagConcorrencia(atualizado.VersaoConcorrencia);
+        return Ok(new ApiResponse<ArtigoAdminDto> { Data = atualizado, Message = "Slug do artigo atualizado com sucesso." });
+    }
+
     /// <summary>I27 — remoção (soft delete). Artigo reservado nunca pode ser removido (422 <c>VALIDACAO_NEGOCIO</c>).</summary>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "artigos-remover")]

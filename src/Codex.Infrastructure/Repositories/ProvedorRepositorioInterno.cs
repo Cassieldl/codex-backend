@@ -74,6 +74,14 @@ public sealed class ProvedorRepositorioInterno : RepositorioBase<CodexDbContext>
         return new PaginaResultado<ProvedorAdminListaItemDto>(itens, totalCount, filtro.Pagina, filtro.TamanhoPagina);
     }
 
+    public Task<Provedor?> ObterPorIdComAliasesAsync(int id, CancellationToken ct) =>
+        // Rastreada de propósito (mesma razão de ObterPorIdAsync(rastreada: true)) e com os
+        // aliases carregados, porque quem chama reindexa a busca sem substituí-los antes.
+        Contexto.Provedores
+            .Where(p => p.Id == id && p.DesativadoEm == null)
+            .Include(p => p.Aliases)
+            .FirstOrDefaultAsync(ct);
+
     public async Task<IReadOnlyCollection<Provedor>> ListarTodosAtivosComAliasesAsync(CancellationToken ct) =>
         await Contexto.Provedores.AsNoTracking()
             .Where(p => p.DesativadoEm == null)

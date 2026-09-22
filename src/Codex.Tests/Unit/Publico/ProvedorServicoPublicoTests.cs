@@ -25,6 +25,11 @@ public sealed class ProvedorServicoPublicoTests
     public ProvedorServicoPublicoTests()
     {
         _sut = new ProvedorServicoPublico(_provedorRepositorio.Object, _versaoRepositorio.Object);
+
+        // Aditivo de exemplos em P4 (003/§5.5): default vazio para os casos que não falam de
+        // exemplo — mock solto devolveria null e o DTO sairia com a coleção nula em vez de [].
+        _versaoRepositorio.Setup(r => r.ListarExemplosAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
     }
 
     [Fact]
@@ -209,6 +214,59 @@ public sealed class ProvedorServicoPublicoTests
             .Should().ContainInOrder("campo-financeiro-a", "campo-financeiro-b");
         resultado.CamposPorGrupo.Last().Grupo.Should().Be("Fiscal");
         resultado.TotalCampos.Should().Be(3);
+    }
+
+    /// <summary>
+    /// Aditivo de exemplos em P4 (003/§5.5) — o service repassa a coleção do repositório para o
+    /// DTO sem reordenar nem filtrar: a ordem é responsabilidade do repositório (âncora estável) e
+    /// a visibilidade já foi decidida pela cascata provedor → versão (exemplo não tem publicação
+    /// própria, C1).
+    /// </summary>
+    [Fact]
+    public async Task ObterVersaoPaginaAsync_RepassaOsExemplosDoRepositorioNaMesmaOrdem()
+    {
+        var provedor = Provedor.Criar("ACME", "INV-3", CategoriaProvedor.Proprio);
+        provedor.Publicar();
+        var versao = VersaoProvedor.Criar(provedor.Id, 1, "v1");
+        versao.Publicar();
+
+        _versaoRepositorio.Setup(r => r.ObterPorSlugsAsync("acme", "v1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ProvedorVersaoBrutaDto(provedor, versao, "Layout 2024"));
+        _versaoRepositorio.Setup(r => r.ContarCamposAsync(versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync(0);
+        _versaoRepositorio.Setup(r => r.ListarCamposAsync(versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        _versaoRepositorio.Setup(r => r.ListarAvisosPublicadosDaVersaoAsync(versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        _versaoRepositorio.Setup(r => r.ListarErrosAplicaveisPublicadosAsync(versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        _versaoRepositorio.Setup(r => r.ListarOutrasVersoesPublicadasAsync(provedor.Id, versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+
+        ExemploPublicoDto Exemplo(string slug) => new() { Slug = slug, Nome = slug, Descricao = null, Xml = "<x/>" };
+
+        _versaoRepositorio.Setup(r => r.ListarExemplosAsync(versao.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([Exemplo("zebra"), Exemplo("alfa"), Exemplo("meio")]);
+
+        var resultado = await _sut.ObterVersaoPaginaAsync("acme", "v1", CancellationToken.None);
+
+        resultado.Exemplos.Select(e => e.Slug).Should().ContainInOrder("zebra", "alfa", "meio");
+    }
+
+    [Fact]
+    public async Task ObterVersaoPaginaAsync_SemExemplos_DevolveColecaoVaziaNuncaNula()
+    {
+        var provedor = Provedor.Criar("ACME", "INV-4", CategoriaProvedor.Proprio);
+        provedor.Publicar();
+        var versao = VersaoProvedor.Criar(provedor.Id, 1, "v1");
+        versao.Publicar();
+
+        _versaoRepositorio.Setup(r => r.ObterPorSlugsAsync("acme", "v1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ProvedorVersaoBrutaDto(provedor, versao, "Layout 2024"));
+        _versaoRepositorio.Setup(r => r.ContarCamposAsync(versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync(0);
+        _versaoRepositorio.Setup(r => r.ListarCamposAsync(versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        _versaoRepositorio.Setup(r => r.ListarAvisosPublicadosDaVersaoAsync(versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        _versaoRepositorio.Setup(r => r.ListarErrosAplicaveisPublicadosAsync(versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        _versaoRepositorio.Setup(r => r.ListarOutrasVersoesPublicadasAsync(provedor.Id, versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+
+        var resultado = await _sut.ObterVersaoPaginaAsync("acme", "v1", CancellationToken.None);
+
+        resultado.Exemplos.Should().NotBeNull().And.BeEmpty(because: "U9 — [] quando não há, nunca ausente");
     }
 
     [Fact]

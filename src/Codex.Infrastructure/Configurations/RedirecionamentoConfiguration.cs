@@ -10,7 +10,7 @@ public sealed class RedirecionamentoConfiguration : IEntityTypeConfiguration<Red
     {
         builder.ToTable("redirecionamentos", t => t.HasCheckConstraint(
             "ck_codex_redirecionamentos_tipoitem",
-            "tipoitem IN ('provedor', 'versaoprovedor', 'erro', 'campolayout')"));
+            "tipoitem IN ('provedor', 'versaoprovedor', 'erro', 'campolayout', 'artigo')"));
 
         builder.HasKey(x => x.Id).HasName("pk_codex_redirecionamentos");
         builder.Property(x => x.Id).HasColumnName("redirecionamentoid").UseIdentityAlwaysColumn();

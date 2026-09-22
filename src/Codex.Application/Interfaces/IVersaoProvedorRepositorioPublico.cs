@@ -31,6 +31,12 @@ public interface IVersaoProvedorRepositorioPublico
     /// <summary>Erros publicados aplicáveis a esta versão (via <c>errosversoes</c>), para <c>errosResumo</c>.</summary>
     Task<IReadOnlyCollection<ErroResumoPublicoDto>> ListarErrosAplicaveisPublicadosAsync(int versaoProvedorId, CancellationToken ct);
 
+    /// <summary>
+    /// Cenários de XML da versão (003/§5.5). Sem filtro de publicação própria — exemplo não tem
+    /// (C1): a visibilidade cascateia da versão/provedor, já decidida pelo service.
+    /// </summary>
+    Task<IReadOnlyCollection<ExemploPublicoDto>> ListarExemplosAsync(int versaoProvedorId, CancellationToken ct);
+
     /// <summary>Demais versões publicadas do mesmo provedor, excluindo a atual — para <c>outrasVersoes</c>.</summary>
     Task<IReadOnlyCollection<VersaoProvedor>> ListarOutrasVersoesPublicadasAsync(int provedorId, int versaoProvedorIdAtual, CancellationToken ct);
 }

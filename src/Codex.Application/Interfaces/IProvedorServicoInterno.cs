@@ -22,4 +22,7 @@ public interface IProvedorServicoInterno
     Task RemoverAsync(int id, uint versaoEsperada, CancellationToken ct);
 
     Task<ProvedorAdminDetalheDto> AtualizarPublicacaoAsync(int id, bool publicado, uint versaoEsperada, CancellationToken ct);
+
+    /// <summary>I37 (P-10) — troca de slug: grava o redirecionamento e reindexa a busca na mesma transação.</summary>
+    Task<ProvedorAdminDetalheDto> AtualizarSlugAsync(int id, AlterarSlugDto dto, uint versaoEsperada, CancellationToken ct);
 }

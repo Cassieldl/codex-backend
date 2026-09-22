@@ -1,6 +1,7 @@
 using Codex.Application.Common;
 using Codex.Application.DTOs.Publico;
 using Codex.Application.Interfaces;
+using Codex.Domain.Constantes;
 using Codex.Domain.Enums;
 using Codex.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -48,8 +49,10 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
     private const int CapTokensAutocorrecao = 6;
 
     private const string TipoErro = "erro";
+    private const string TipoProvedor = "provedor";
     private const string TipoVersaoProvedor = "versaoprovedor";
     private const string TipoAviso = "aviso";
+    private const string TipoCampoLayout = "campolayout";
 
     /// <summary>
     /// Sentinela de filtro de tipo impossível: nenhum valor de <see cref="TipoItemIndexado"/> tem
@@ -97,13 +100,13 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
             [(TipoErro, 'A')] = "casou com a mensagem observada",
             [(TipoErro, 'B')] = "casou com o título",
             [(TipoErro, 'C')] = "casou com a causa ou solução documentada",
-            [("provedor", 'B')] = "casou com o nome",
+            [(TipoProvedor, 'B')] = "casou com o nome",
             [(TipoVersaoProvedor, 'B')] = "casou com o rótulo da versão",
             [(TipoVersaoProvedor, 'D')] = "casou com a introdução",
             [(TipoAviso, 'B')] = "casou com o título",
             [(TipoAviso, 'C')] = "casou com o corpo do aviso",
-            [("campolayout", 'B')] = "casou com o nome ou caminho do campo",
-            [("campolayout", 'C')] = "casou com o significado do campo",
+            [(TipoCampoLayout, 'B')] = "casou com o nome ou caminho do campo",
+            [(TipoCampoLayout, 'C')] = "casou com o significado do campo",
             [(TipoArtigo, 'A')] = "casou com o título",
             [(TipoArtigo, 'C')] = "casou com o corpo do artigo",
             [(TipoArtigo, 'D')] = "casou com o tipo Artigo",
@@ -746,7 +749,10 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
     private static BuscaItemDto MapearItem(
         LinhaBusca linha, IReadOnlyDictionary<int, RotulosDoItem> rotulos, string termoUsado, string qualidade)
     {
-        var rotulosDoItem = rotulos.GetValueOrDefault(linha.ItemBuscaId, RotulosDoItem.Nenhum);
+        // Indexador, não GetValueOrDefault: CarregarRotulosAsync monta uma entrada para CADA linha
+        // da página, e é exatamente a mesma lista que chega aqui. Um default silencioso devolveria
+        // a URL persistida (possivelmente morta) escondendo um defeito de hidratação.
+        var rotulosDoItem = rotulos[linha.ItemBuscaId];
 
         return new BuscaItemDto
         {
@@ -754,7 +760,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
             Rotulo = RotulosItem.GetValueOrDefault(linha.TipoItem, linha.TipoItem.ToUpperInvariant()),
             Chave = linha.Chave,
             Titulo = linha.Titulo,
-            Url = linha.Url,
+            Url = rotulosDoItem.Url,
             ProvedorNome = rotulosDoItem.ProvedorNome,
             VersaoRotulo = rotulosDoItem.VersaoRotulo,
             Versoes = rotulosDoItem.Versoes,
@@ -811,8 +817,11 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
             .Distinct()
             .ToArray();
 
+        // Inclui as linhas do PRÓPRIO provedor (não só versão/aviso): a URL do item de tipo
+        // `provedor` também é derivada daqui (decisão B), e o writer grava provedorid = itemid
+        // nessas linhas.
         var provedorIds = itensDaPagina
-            .Where(l => l.TipoItem is TipoVersaoProvedor or TipoAviso && l.ProvedorId is not null)
+            .Where(l => l.TipoItem is TipoProvedor or TipoVersaoProvedor or TipoAviso && l.ProvedorId is not null)
             .Select(l => l.ProvedorId!.Value)
             .Distinct()
             .ToArray();
@@ -823,36 +832,49 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
             .Distinct()
             .ToArray();
 
+        var campoLayoutIds = itensDaPagina
+            .Where(l => l.TipoItem == TipoCampoLayout)
+            .Select(l => l.ItemId)
+            .Distinct()
+            .ToArray();
+
         var versoesDiretas = await CarregarVersoesDiretasAsync(versaoIds, ct);
         var versoesPorErro = await CarregarVersoesAplicaveisAsync(erroIds, incluirRascunho, ct);
-        var nomesDeProvedor = await CarregarNomesDeProvedorAsync(provedorIds, ct);
-        var verificacaoPorArtigo = await CarregarVerificacaoArtigoAsync(artigoIds, ct);
+        var provedores = await CarregarProvedoresAsync(provedorIds, ct);
+        var artigos = await CarregarArtigosDiretosAsync(artigoIds, ct);
+        var slugsDeErro = await CarregarSlugsDeErroAsync(erroIds, ct);
+        var slugsDeCampoLayout = await CarregarSlugsDeCampoLayoutAsync(campoLayoutIds, ct);
 
         var rotulos = new Dictionary<int, RotulosDoItem>(itensDaPagina.Count);
         foreach (var linha in itensDaPagina)
-            rotulos[linha.ItemBuscaId] = MontarRotulos(linha, versoesDiretas, versoesPorErro, nomesDeProvedor, verificacaoPorArtigo);
+        {
+            rotulos[linha.ItemBuscaId] = MontarRotulos(
+                linha, versoesDiretas, versoesPorErro, provedores, artigos, slugsDeErro, slugsDeCampoLayout);
+        }
 
         return rotulos;
     }
 
     /// <summary>
-    /// Nome ATUAL do provedor dono das linhas <c>versaoprovedor</c>/<c>aviso</c>. Antes isto vinha
-    /// do <c>subtitulo</c> denormalizado da própria linha, gravado pelo writer com o nome do pai:
-    /// renomear o provedor (I4) reindexa só a linha DO PROVEDOR, então a linha filha continuava
-    /// exibindo o nome antigo — o BUG-03 um nível abaixo, e a violação do invariante declarado no
-    /// resumo desta classe. O JOIN é por <c>provedorid</c>, que é ID (nunca muda), não rótulo.
+    /// Nome e slug ATUAIS do provedor dono das linhas <c>provedor</c>/<c>versaoprovedor</c>/
+    /// <c>aviso</c>. Antes o nome vinha do <c>subtitulo</c> denormalizado da própria linha,
+    /// gravado pelo writer com o nome do pai: renomear o provedor (I4) reindexa só a linha DO
+    /// PROVEDOR, então a linha filha continuava exibindo o nome antigo — o BUG-03 um nível abaixo.
+    /// O <c>Slug</c> entrou pela MESMA razão, agora para a URL (decisão B): trocar o slug (I37)
+    /// não reindexa as filhas, e a coluna <c>itensbusca.url</c> delas apontaria para o slug morto.
+    /// O JOIN é por <c>provedorid</c>, que é ID (nunca muda), não rótulo.
     /// </summary>
-    private async Task<IReadOnlyDictionary<int, string>> CarregarNomesDeProvedorAsync(int[] provedorIds, CancellationToken ct)
+    private async Task<IReadOnlyDictionary<int, ProvedorDireto>> CarregarProvedoresAsync(int[] provedorIds, CancellationToken ct)
     {
         if (provedorIds.Length == 0)
-            return new Dictionary<int, string>();
+            return new Dictionary<int, ProvedorDireto>();
 
         var provedores = await _contexto.Provedores.AsNoTracking()
             .Where(p => provedorIds.Contains(p.Id))
-            .Select(p => new { p.Id, p.Nome })
+            .Select(p => new { p.Id, p.Nome, p.Slug })
             .ToListAsync(ct);
 
-        return provedores.ToDictionary(p => p.Id, p => p.Nome);
+        return provedores.ToDictionary(p => p.Id, p => new ProvedorDireto(p.Nome, p.Slug));
     }
 
     /// <summary>
@@ -867,31 +889,71 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
 
         var versoes = await _contexto.VersoesProvedor.AsNoTracking()
             .Where(v => versaoIds.Contains(v.Id) && v.DesativadoEm == null)
-            .Select(v => new { v.Id, v.Rotulo, v.VerificadoEm })
+            .Select(v => new { v.Id, v.Rotulo, v.Slug, v.VerificadoEm })
             .ToListAsync(ct);
 
-        return versoes.ToDictionary(v => v.Id, v => new VersaoDireta(v.Rotulo, v.VerificadoEm));
+        return versoes.ToDictionary(v => v.Id, v => new VersaoDireta(v.Rotulo, v.Slug, v.VerificadoEm));
     }
 
     /// <summary>
-    /// Data de verificação de artigo (B-5) — mesma disciplina de <see cref="CarregarVersoesDiretasAsync"/>:
-    /// JOIN sobre os ids da página, nunca coluna denormalizada. <c>Artigo.VerificadoEm</c> é
-    /// <c>DateTimeOffset?</c> no domínio (analise-backend.md §0.4); a conversão para
-    /// <c>DateOnly</c> acontece aqui, na borda entre Infrastructure e o contrato público.
+    /// Slug e data de verificação de artigo (B-5 + decisão B) — mesma disciplina de
+    /// <see cref="CarregarVersoesDiretasAsync"/>: JOIN sobre os ids da página, nunca coluna
+    /// denormalizada. <c>Artigo.VerificadoEm</c> é <c>DateTimeOffset?</c> no domínio
+    /// (analise-backend.md §0.4); a conversão para <c>DateOnly</c> acontece aqui, na borda entre
+    /// Infrastructure e o contrato público.
     /// </summary>
-    private async Task<IReadOnlyDictionary<int, DateOnly?>> CarregarVerificacaoArtigoAsync(int[] artigoIds, CancellationToken ct)
+    private async Task<IReadOnlyDictionary<int, ArtigoDireto>> CarregarArtigosDiretosAsync(int[] artigoIds, CancellationToken ct)
     {
         if (artigoIds.Length == 0)
-            return new Dictionary<int, DateOnly?>();
+            return new Dictionary<int, ArtigoDireto>();
 
         var artigos = await _contexto.Artigos.AsNoTracking()
             .Where(a => artigoIds.Contains(a.Id))
-            .Select(a => new { a.Id, a.VerificadoEm })
+            .Select(a => new { a.Id, a.Slug, a.VerificadoEm })
             .ToListAsync(ct);
 
         return artigos.ToDictionary(
             a => a.Id,
-            a => a.VerificadoEm is null ? (DateOnly?)null : DateOnly.FromDateTime(a.VerificadoEm.Value.UtcDateTime));
+            a => new ArtigoDireto(
+                a.Slug,
+                a.VerificadoEm is null ? null : DateOnly.FromDateTime(a.VerificadoEm.Value.UtcDateTime)));
+    }
+
+    /// <summary>
+    /// Slug corrente de cada erro da página (decisão B) — consulta extra, e só quando há erro na
+    /// página. Existe porque <c>codex.itensbusca</c> não tem coluna de slug e a <c>url</c>
+    /// gravada envelhece na troca de slug (I43).
+    /// </summary>
+    private async Task<IReadOnlyDictionary<int, string>> CarregarSlugsDeErroAsync(int[] erroIds, CancellationToken ct)
+    {
+        if (erroIds.Length == 0)
+            return new Dictionary<int, string>();
+
+        var erros = await _contexto.Erros.AsNoTracking()
+            .Where(e => erroIds.Contains(e.Id))
+            .Select(e => new { e.Id, e.Slug })
+            .ToListAsync(ct);
+
+        return erros.ToDictionary(e => e.Id, e => e.Slug);
+    }
+
+    /// <summary>
+    /// Slug corrente de cada campo de layout da página. O valor coincide com o que o writer grava
+    /// hoje (campo de layout não tem troca de slug em P-10), mas a ORIGEM passa a ser o JOIN:
+    /// manter um dos seis tipos lendo a coluna seria deixar exatamente um caminho para regredir
+    /// sozinho. Só roda na busca interna — <c>campolayout</c> não aparece na pública (M23).
+    /// </summary>
+    private async Task<IReadOnlyDictionary<int, string>> CarregarSlugsDeCampoLayoutAsync(int[] campoLayoutIds, CancellationToken ct)
+    {
+        if (campoLayoutIds.Length == 0)
+            return new Dictionary<int, string>();
+
+        var campos = await _contexto.CamposLayout.AsNoTracking()
+            .Where(c => campoLayoutIds.Contains(c.Id))
+            .Select(c => new { c.Id, c.Slug })
+            .ToListAsync(ct);
+
+        return campos.ToDictionary(c => c.Id, c => c.Slug);
     }
 
     /// <summary>
@@ -947,16 +1009,20 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         LinhaBusca linha,
         IReadOnlyDictionary<int, VersaoDireta> versoesDiretas,
         IReadOnlyDictionary<int, IReadOnlyList<VersaoAplicavel>> versoesPorErro,
-        IReadOnlyDictionary<int, string> nomesDeProvedor,
-        IReadOnlyDictionary<int, DateOnly?> verificacaoPorArtigo)
+        IReadOnlyDictionary<int, ProvedorDireto> provedores,
+        IReadOnlyDictionary<int, ArtigoDireto> artigos,
+        IReadOnlyDictionary<int, string> slugsDeErro,
+        IReadOnlyDictionary<int, string> slugsDeCampoLayout)
     {
+        var url = MontarUrl(linha, versoesDiretas, provedores, artigos, slugsDeErro, slugsDeCampoLayout);
+
         if (linha.TipoItem == TipoErro)
         {
             if (!versoesPorErro.TryGetValue(linha.ItemId, out var aplicaveis) || aplicaveis.Count == 0)
-                return RotulosDoItem.Nenhum;
+                return RotulosDoItem.SemContexto(url);
 
-            var provedores = aplicaveis.Select(v => v.ProvedorNome).Distinct().ToArray();
-            var provedorUnico = provedores.Length == 1 ? provedores[0] : null;
+            var nomesDeProvedorAplicaveis = aplicaveis.Select(v => v.ProvedorNome).Distinct().ToArray();
+            var provedorUnico = nomesDeProvedorAplicaveis.Length == 1 ? nomesDeProvedorAplicaveis[0] : null;
 
             // Com mais de um provedor o rótulo cru ("Versão 2") viraria ambíguo na tela, porque
             // não há nome de provedor único ao lado para qualificá-lo — então qualifica cada item.
@@ -970,7 +1036,8 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                 ProvedorNome: provedorUnico,
                 VersaoRotulo: provedorUnico is not null && versoes.Length == 1 ? versoes[0] : null,
                 Versoes: versoes,
-                Meta: null);
+                Meta: null,
+                Url: url);
         }
 
         // Artigo não tem contexto de provedor (PQ-06) — só a meta de verificação, quando existe
@@ -978,23 +1045,24 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         // selo na busca).
         if (linha.TipoItem == TipoArtigo)
         {
-            var verificadoEm = verificacaoPorArtigo.GetValueOrDefault(linha.ItemId);
+            var verificadoEm = artigos.GetValueOrDefault(linha.ItemId)?.VerificadoEm;
             return new RotulosDoItem(
                 ProvedorNome: null,
                 VersaoRotulo: null,
                 Versoes: null,
-                Meta: verificadoEm is null ? null : new BuscaMetaDto { Data = verificadoEm.Value });
+                Meta: verificadoEm is null ? null : new BuscaMetaDto { Data = verificadoEm.Value },
+                Url: url);
         }
 
         // Nome do provedor hidratado por JOIN (CarregarNomesDeProvedorAsync), nunca pelo
         // subtitulo denormalizado da linha: o subtitulo só é reescrito quando a linha FILHA é
         // reindexada, e renomear o provedor não reindexa as filhas.
         var provedorNome = (linha.TipoItem is TipoVersaoProvedor or TipoAviso) && linha.ProvedorId is not null
-            ? nomesDeProvedor.GetValueOrDefault(linha.ProvedorId.Value)
+            ? provedores.GetValueOrDefault(linha.ProvedorId.Value)?.Nome
             : null;
 
         if (linha.VersaoProvedorId is null || !versoesDiretas.TryGetValue(linha.VersaoProvedorId.Value, out var versao))
-            return new RotulosDoItem(provedorNome, VersaoRotulo: null, Versoes: null, Meta: null);
+            return new RotulosDoItem(provedorNome, VersaoRotulo: null, Versoes: null, Meta: null, Url: url);
 
         return new RotulosDoItem(
             ProvedorNome: provedorNome,
@@ -1004,7 +1072,80 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
             // como se o aviso tivesse sido verificado, e não a versão a que ele pertence.
             Meta: linha.TipoItem == TipoVersaoProvedor && versao.VerificadoEm is not null
                 ? new BuscaMetaDto { Data = versao.VerificadoEm.Value }
-                : null);
+                : null,
+            Url: url);
+    }
+
+    /// <summary>
+    /// Decisão B (arquitetura.md §5.B) — a URL do resultado é DERIVADA do slug corrente de cada
+    /// entidade, nunca lida de <c>codex.itensbusca.url</c>. A coluna continua sendo gravada pelo
+    /// writer (serve ao diagnóstico e à reconstrução), mas envelhece: trocar o slug de um provedor
+    /// (I37) reindexa só a linha DELE, e as linhas de versão e aviso continuariam apontando para
+    /// um endereço morto — o mesmo defeito que o JOIN de <see cref="CarregarProvedoresAsync"/> já
+    /// tinha resolvido para o NOME.
+    ///
+    /// <para>
+    /// O fallback para <c>linha.Url</c> é alcançável e deliberado: a versão pai pode ter sido
+    /// desativada (<see cref="CarregarVersoesDiretasAsync"/> filtra <c>desativadoem</c>) sem que a
+    /// linha de projeção tenha sido desativada junto. Nesse caso a URL persistida é a melhor
+    /// informação disponível — melhor que devolver item sem link ou derrubar a busca inteira.
+    /// </para>
+    /// </summary>
+    private static string MontarUrl(
+        LinhaBusca linha,
+        IReadOnlyDictionary<int, VersaoDireta> versoesDiretas,
+        IReadOnlyDictionary<int, ProvedorDireto> provedores,
+        IReadOnlyDictionary<int, ArtigoDireto> artigos,
+        IReadOnlyDictionary<int, string> slugsDeErro,
+        IReadOnlyDictionary<int, string> slugsDeCampoLayout)
+    {
+        switch (linha.TipoItem)
+        {
+            case TipoErro:
+                var slugDoErro = slugsDeErro.GetValueOrDefault(linha.ItemId);
+                return slugDoErro is null ? linha.Url : $"/erros/{slugDoErro}";
+
+            case TipoArtigo:
+                var artigo = artigos.GetValueOrDefault(linha.ItemId);
+                // RotaCanonica, nunca "/artigos/{slug}" interpolado: é a mesma fonte única que o
+                // writer usa, e é ela que manda o artigo reservado para /como-funciona.
+                return artigo is null ? linha.Url : SlugsReservadosArtigo.RotaCanonica(artigo.Slug);
+
+            case TipoCampoLayout:
+                var slugDoCampo = slugsDeCampoLayout.GetValueOrDefault(linha.ItemId);
+                return slugDoCampo is null ? linha.Url : $"/layout/campos/{slugDoCampo}";
+
+            case TipoProvedor:
+            case TipoVersaoProvedor:
+            case TipoAviso:
+                return MontarUrlSobProvedor(linha, versoesDiretas, provedores);
+
+            default:
+                return linha.Url;
+        }
+    }
+
+    /// <summary>
+    /// Os três tipos que pendem de um provedor. O <c>#avisos</c> do aviso é âncora na página do
+    /// pai (provedor ou versão, conforme o escopo — U8), não rota própria.
+    /// </summary>
+    private static string MontarUrlSobProvedor(
+        LinhaBusca linha,
+        IReadOnlyDictionary<int, VersaoDireta> versoesDiretas,
+        IReadOnlyDictionary<int, ProvedorDireto> provedores)
+    {
+        if (linha.ProvedorId is null || provedores.GetValueOrDefault(linha.ProvedorId.Value) is not { } provedor)
+            return linha.Url;
+
+        var ancora = linha.TipoItem == TipoAviso ? "#avisos" : string.Empty;
+
+        if (linha.TipoItem == TipoProvedor || linha.VersaoProvedorId is null)
+            return $"/provedores/{provedor.Slug}{ancora}";
+
+        if (!versoesDiretas.TryGetValue(linha.VersaoProvedorId.Value, out var versao))
+            return linha.Url;
+
+        return $"/provedores/{provedor.Slug}/{versao.Slug}{ancora}";
     }
 
     private sealed record ProvedorFiltroInfo(int Id, string Slug, string Nome);
@@ -1015,17 +1156,27 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         IReadOnlyList<LinhaBusca> ItensDaPagina,
         BuscaForaDoFiltroDto? ForaDoFiltro);
 
-    /// <summary>Contexto de exibição de um item. <see cref="Nenhum"/> é o caso "geral" de U9 — os quatro campos nulos.</summary>
+    /// <summary>
+    /// Contexto de exibição de um item, mais a <see cref="Url"/> derivada (decisão B). Não existe
+    /// mais instância estática "Nenhum": a URL é obrigatória e específica de cada linha, então o
+    /// caso "geral" de U9 (os quatro campos de contexto nulos) é <see cref="SemContexto"/>.
+    /// </summary>
     private sealed record RotulosDoItem(
         string? ProvedorNome,
         string? VersaoRotulo,
         IReadOnlyCollection<string>? Versoes,
-        BuscaMetaDto? Meta)
+        BuscaMetaDto? Meta,
+        string Url)
     {
-        public static readonly RotulosDoItem Nenhum = new(null, null, null, null);
+        /// <summary>Caso "geral" de U9 — os quatro campos de contexto nulos, a URL preservada.</summary>
+        public static RotulosDoItem SemContexto(string url) => new(null, null, null, null, url);
     }
 
-    private sealed record VersaoDireta(string Rotulo, DateOnly? VerificadoEm);
+    private sealed record ProvedorDireto(string Nome, string Slug);
+
+    private sealed record ArtigoDireto(string Slug, DateOnly? VerificadoEm);
+
+    private sealed record VersaoDireta(string Rotulo, string Slug, DateOnly? VerificadoEm);
 
     private sealed record VersaoAplicavel(string ProvedorNome, string VersaoRotulo);
 

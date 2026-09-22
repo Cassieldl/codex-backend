@@ -59,17 +59,35 @@ public sealed class ComunicadosInternoController : ControllerBase
         return Ok(new ApiResponse<ComunicadoAdminDto> { Data = detalhe });
     }
 
-    /// <summary>I32 — criação (sem <c>publicado</c>: publicação só muda por I35).</summary>
+    /// <summary>
+    /// I32 — criação, opcionalmente já publicada (<c>publicar: true</c>, D-1). A role
+    /// <c>comunicados-publicar</c> é exigida em cima disso: a condição é um OR entre duas roles e
+    /// por isso não cabe no atributo, tem de ser checada aqui.
+    /// </summary>
+    /// <response code="201">Comunicado criado (publicado ou em rascunho — ver <c>data.publicado</c>).</response>
+    /// <response code="403">Pediu <c>publicar: true</c> sem a role <c>comunicados-publicar</c>.</response>
+    /// <response code="422">Validação de campo ou regra de negócio.</response>
     [HttpPost]
     [Authorize(Roles = "comunicados-adicionar")]
     [ProducesResponseType(typeof(ApiResponse<ComunicadoAdminDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<ApiResponse<ComunicadoAdminDto>>> Criar(CriarComunicadoDto dto, CancellationToken ct)
     {
+        // 403 explícito, nunca criar em rascunho em silêncio: quem pediu para publicar precisa
+        // saber que não publicou (decisoes.md D-1).
+        if (dto.Publicar && !User.IsInRole("comunicados-publicar"))
+            return Forbid();
+
         var criado = await _servico.CriarAsync(dto, ct);
         Response.PublicarETagConcorrencia(criado.VersaoConcorrencia);
+
+        // A mensagem descreve o que ACONTECEU — lida de criado.Publicado, nunca do dto.Publicar
+        // que o cliente enviou (PQ-16).
+        var mensagem = criado.Publicado ? "Comunicado publicado." : "Comunicado criado como rascunho.";
+
         return CreatedAtAction(nameof(ObterDetalhe), new { id = criado.Id },
-            new ApiResponse<ComunicadoAdminDto> { Data = criado, Message = "Comunicado criado com sucesso." });
+            new ApiResponse<ComunicadoAdminDto> { Data = criado, Message = mensagem });
     }
 
     /// <summary>I33 — atualização. É por aqui que se estende a expiração de um comunicado encerrado antes de republicar.</summary>

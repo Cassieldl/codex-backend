@@ -5,6 +5,7 @@ using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Codex.Domain.Enums;
 using Codex.Domain.Exceptions;
+using SlugVo = Codex.Domain.ValueObjects.Slug;
 
 namespace Codex.Application.Services.Interno;
 
@@ -18,13 +19,18 @@ public sealed class ArtigoServicoInterno : IArtigoServicoInterno
 {
     private readonly IArtigoRepositorioInterno _repositorio;
     private readonly IIndiceBuscaWriter _indiceBuscaWriter;
+    private readonly IRedirecionamentoRepositorio _redirecionamentoRepositorio;
     private readonly IUnidadeDeTrabalho _unidadeDeTrabalho;
 
     public ArtigoServicoInterno(
-        IArtigoRepositorioInterno repositorio, IIndiceBuscaWriter indiceBuscaWriter, IUnidadeDeTrabalho unidadeDeTrabalho)
+        IArtigoRepositorioInterno repositorio,
+        IIndiceBuscaWriter indiceBuscaWriter,
+        IRedirecionamentoRepositorio redirecionamentoRepositorio,
+        IUnidadeDeTrabalho unidadeDeTrabalho)
     {
         _repositorio = repositorio;
         _indiceBuscaWriter = indiceBuscaWriter;
+        _redirecionamentoRepositorio = redirecionamentoRepositorio;
         _unidadeDeTrabalho = unidadeDeTrabalho;
     }
 
@@ -77,6 +83,47 @@ public sealed class ArtigoServicoInterno : IArtigoServicoInterno
         }, ct);
 
         return Mapear(artigo, dto.CampoLayoutIds, dto.ErroIds);
+    }
+
+    /// <summary>
+    /// I44 (P-10) — troca de slug com redirecionamento. Diferença das outras duas entidades: o
+    /// artigo RESERVADO não troca de slug (§0.2), porque <c>SlugsReservadosArtigo.EhReservado</c>
+    /// decide pela comparação com o valor atual do campo — trocar deixaria a rota fixa
+    /// <c>/como-funciona</c> órfã sem lançar nada.
+    /// </summary>
+    public async Task<ArtigoAdminDto> AtualizarSlugAsync(int id, AlterarSlugDto dto, uint versaoEsperada, CancellationToken ct)
+    {
+        var artigo = await CarregarRastreadaOuFalharAsync(id, versaoEsperada, ct);
+
+        if (SlugsReservadosArtigo.EhReservado(artigo.Slug))
+            throw new RegraDeNegocioException(
+                CodigosErro.SlugReservadoNaoPodeMudar, "O slug do artigo obrigatório não pode ser alterado.");
+
+        var slugNovo = SlugVo.DeTexto(dto.Slug).Valor;
+        if (slugNovo == artigo.Slug)
+            throw new RegraDeNegocioException(CodigosErro.SlugIgualAoAtual, "O novo slug é igual ao atual.");
+
+        // RotaCanonica é a fonte única da URL pública do artigo — a mesma que o writer de busca
+        // usa. Interpolar "/artigos/{slug}" aqui criaria a segunda fórmula.
+        var caminhoAntigo = SlugsReservadosArtigo.RotaCanonica(artigo.Slug);
+        var caminhoNovo = SlugsReservadosArtigo.RotaCanonica(slugNovo);
+
+        artigo.AlterarSlug(SlugVo.DeValorPersistido(slugNovo));
+
+        await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
+        {
+            await _repositorio.SalvarAlteracoesAsync(ctInterno);
+
+            await _redirecionamentoRepositorio.DesativarPorOrigemAsync(caminhoNovo, TipoItemIndexado.artigo, ctInterno);
+            await _redirecionamentoRepositorio.RepontarDestinosAsync(caminhoAntigo, caminhoNovo, TipoItemIndexado.artigo, ctInterno);
+            await _redirecionamentoRepositorio.CriarAsync(
+                Redirecionamento.Criar(caminhoAntigo, caminhoNovo, TipoItemIndexado.artigo), ctInterno);
+
+            var (pesoA, pesoB, pesoC, pesoD) = PesosBusca.DoArtigo(artigo);
+            await _indiceBuscaWriter.AtualizarPesosAsync(TipoItemIndexado.artigo, artigo.Id, pesoA, pesoB, pesoC, pesoD, ctInterno);
+        }, ct);
+
+        return await MapearAsync(artigo, ct);
     }
 
     public async Task RemoverAsync(int id, uint versaoEsperada, CancellationToken ct)

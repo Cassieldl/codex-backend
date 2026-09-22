@@ -41,6 +41,12 @@ public sealed class AllowlistRotasAnonimasTests : IClassFixture<CodexApiFactory>
         // Artigos — P7/P8 (BACK-B)
         "GET api/v1/artigos",
         "GET api/v1/artigos/{artigoSlug}",
+        // Layout InvoiCy — P10/P11/P12 (003, BACK-B)
+        "GET api/v1/layout",
+        "GET api/v1/layout/versoes/{versaoSlug}",
+        "GET api/v1/layout/campos/{campoSlug}",
+        // Home — P9 (003, BACK-D). Agregado de leitura da tela inicial: só GET, nada de escrita.
+        "GET api/v1/home",
     };
 
     private readonly CodexApiFactory _factory;

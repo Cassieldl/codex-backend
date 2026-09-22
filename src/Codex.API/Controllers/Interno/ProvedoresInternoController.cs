@@ -98,6 +98,27 @@ public sealed class ProvedoresInternoController : ControllerBase
         return Ok(new ApiResponse<ProvedorAdminDetalheDto> { Data = atualizado, Message = "Provedor atualizado com sucesso." });
     }
 
+    /// <summary>I37 (P-10) — troca o slug do provedor e grava o redirecionamento do slug antigo.</summary>
+    /// <response code="200">Slug trocado; o slug antigo passa a responder 308.</response>
+    /// <response code="400"><c>If-Match</c> ausente ou malformado.</response>
+    /// <response code="404">Provedor não encontrado.</response>
+    /// <response code="409">Slug já pertence a outro provedor, ou conflito de concorrência.</response>
+    /// <response code="422">Slug igual ao atual, ou slug que normaliza para vazio.</response>
+    [HttpPut("{id:int}/slug")]
+    [Authorize(Roles = "provedores-atualizar")]
+    [ProducesResponseType(typeof(ApiResponse<ProvedorAdminDetalheDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<ApiResponse<ProvedorAdminDetalheDto>>> AtualizarSlug(int id, AlterarSlugDto dto, CancellationToken ct)
+    {
+        var versaoEsperada = Request.ExigirIfMatch();
+        var atualizado = await _servico.AtualizarSlugAsync(id, dto, versaoEsperada, ct);
+        Response.PublicarETagConcorrencia(atualizado.VersaoConcorrencia);
+        return Ok(new ApiResponse<ProvedorAdminDetalheDto> { Data = atualizado, Message = "Slug do provedor atualizado com sucesso." });
+    }
+
     /// <summary>I5 — remoção (soft delete).</summary>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "provedores-remover")]

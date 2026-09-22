@@ -67,6 +67,18 @@ public class Artigo : EntidadeAuditada
         Tipo = tipo;
     }
 
+    /// <summary>
+    /// Troca explícita de slug (P-10, I44) — mesmo contrato de <see cref="Provedor.AlterarSlug"/>.
+    /// A recusa de trocar o slug do artigo RESERVADO é do service
+    /// (<c>ArtigoServicoInterno.AtualizarSlugAsync</c>, 422 <c>SLUG_RESERVADO</c>), e não daqui:
+    /// é a mesma divisão já usada por I27/I28, onde a entidade não conhece a decisão de produto.
+    /// </summary>
+    public void AlterarSlug(SlugVo novoSlug)
+    {
+        ArgumentNullException.ThrowIfNull(novoSlug);
+        Slug = novoSlug.Valor;
+    }
+
     public void RegistrarVerificacao(DateTimeOffset momento)
     {
         VerificadoEm = momento;

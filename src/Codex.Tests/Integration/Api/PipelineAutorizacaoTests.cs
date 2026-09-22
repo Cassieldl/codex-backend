@@ -37,6 +37,7 @@ public sealed class PipelineAutorizacaoTests : IClassFixture<CodexApiFactory>
             (HttpMethod.Post, "/api/v1/interno/provedores", "provedores-adicionar"),
             (HttpMethod.Put, "/api/v1/interno/provedores/1/publicacao", "provedores-publicar"),
             (HttpMethod.Put, "/api/v1/interno/provedores/1", "provedores-atualizar"),
+            (HttpMethod.Put, "/api/v1/interno/provedores/1/slug", "provedores-atualizar"), // I37 (003, P-10)
             (HttpMethod.Delete, "/api/v1/interno/provedores/1", "provedores-remover"),
             (HttpMethod.Get, "/api/v1/interno/provedores/1/versoes", "versoesprovedor-buscar"),
             (HttpMethod.Post, "/api/v1/interno/provedores/1/versoes", "versoesprovedor-adicionar"),
@@ -79,6 +80,7 @@ public sealed class PipelineAutorizacaoTests : IClassFixture<CodexApiFactory>
             (HttpMethod.Get, "/api/v1/interno/erros/1", "erros-buscar"),
             (HttpMethod.Post, "/api/v1/interno/erros", "erros-adicionar"),
             (HttpMethod.Put, "/api/v1/interno/erros/1", "erros-atualizar"),
+            (HttpMethod.Put, "/api/v1/interno/erros/1/slug", "erros-atualizar"), // I43 (003, P-10)
             (HttpMethod.Delete, "/api/v1/interno/erros/1", "erros-remover"),
             (HttpMethod.Put, "/api/v1/interno/erros/1/publicacao", "erros-publicar"),
 
@@ -91,6 +93,7 @@ public sealed class PipelineAutorizacaoTests : IClassFixture<CodexApiFactory>
             (HttpMethod.Delete, "/api/v1/interno/artigos/1", "artigos-remover"),
             (HttpMethod.Put, "/api/v1/interno/artigos/1/publicacao", "artigos-publicar"),
             (HttpMethod.Put, "/api/v1/interno/artigos/1/verificacao", "artigos-atualizar"),
+            (HttpMethod.Put, "/api/v1/interno/artigos/1/slug", "artigos-atualizar"), // I44 (003, P-10)
 
             // Comunicados — I30-I35 (BACK-C)
             (HttpMethod.Get, "/api/v1/interno/comunicados", "comunicados-buscar"),
@@ -99,6 +102,14 @@ public sealed class PipelineAutorizacaoTests : IClassFixture<CodexApiFactory>
             (HttpMethod.Put, "/api/v1/interno/comunicados/1", "comunicados-atualizar"),
             (HttpMethod.Delete, "/api/v1/interno/comunicados/1", "comunicados-remover"),
             (HttpMethod.Put, "/api/v1/interno/comunicados/1/publicacao", "comunicados-publicar"),
+
+            // Exemplos — I38-I42 (003, BACK-C). Sem linha de publicação: exemplo não tem
+            // publicação própria (decisão C1), logo não existe role exemplos-publicar.
+            (HttpMethod.Get, "/api/v1/interno/versoes/1/exemplos", "exemplos-buscar"),
+            (HttpMethod.Post, "/api/v1/interno/versoes/1/exemplos", "exemplos-adicionar"),
+            (HttpMethod.Get, "/api/v1/interno/exemplos/1", "exemplos-buscar"),
+            (HttpMethod.Put, "/api/v1/interno/exemplos/1", "exemplos-atualizar"),
+            (HttpMethod.Delete, "/api/v1/interno/exemplos/1", "exemplos-remover"),
 
             // Busca interna — I21, I22
             (HttpMethod.Get, "/api/v1/interno/busca?q=teste", "indicebusca-buscar"),
