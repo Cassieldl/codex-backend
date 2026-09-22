@@ -3,6 +3,7 @@ using Codex.Application.DTOs.Publico;
 using Codex.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 
 namespace Codex.API.Controllers.Publico;
 
@@ -21,6 +22,13 @@ namespace Codex.API.Controllers.Publico;
 [AllowAnonymous]
 public sealed class LayoutController : ControllerBase
 {
+    /// <summary>
+    /// Mesma política da Home irmã. Rota anônima cujo custo é lido do banco a cada chamada: sem
+    /// cache, quem controla a taxa controla a carga. O vocabulário muda por promoção de versão, um
+    /// evento de dias — 60 s de atraso na propagação é folgado para o pior caso.
+    /// </summary>
+    private const string PoliticaDeCache = "public, max-age=60, stale-while-revalidate=300";
+
     private readonly ILayoutServicoPublico _servico;
 
     public LayoutController(ILayoutServicoPublico servico)
@@ -35,6 +43,9 @@ public sealed class LayoutController : ControllerBase
     public async Task<ActionResult<ApiResponse<LayoutIndiceDto>>> ObterIndice(CancellationToken ct)
     {
         var indice = await _servico.ObterIndiceAsync(ct);
+
+        Response.Headers[HeaderNames.CacheControl] = PoliticaDeCache;
+
         return Ok(new ApiResponse<LayoutIndiceDto> { Data = indice });
     }
 
@@ -51,6 +62,9 @@ public sealed class LayoutController : ControllerBase
     public async Task<ActionResult<ApiResponse<LayoutVersaoDto>>> ObterVersao(string versaoSlug, CancellationToken ct)
     {
         var versao = await _servico.ObterVersaoAsync(versaoSlug, ct);
+
+        Response.Headers[HeaderNames.CacheControl] = PoliticaDeCache;
+
         return Ok(new ApiResponse<LayoutVersaoDto> { Data = versao });
     }
 
@@ -65,6 +79,9 @@ public sealed class LayoutController : ControllerBase
     public async Task<ActionResult<ApiResponse<CampoLayoutVerbeteDto>>> ObterCampo(string campoSlug, CancellationToken ct)
     {
         var campo = await _servico.ObterCampoAsync(campoSlug, ct);
+
+        Response.Headers[HeaderNames.CacheControl] = PoliticaDeCache;
+
         return Ok(new ApiResponse<CampoLayoutVerbeteDto> { Data = campo });
     }
 }

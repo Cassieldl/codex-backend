@@ -300,11 +300,7 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
     [InlineData("/api/v1/layout/campos/{campo}")]
     public async Task RotasDeLayout_RespondemSemAuthorization(string molde)
     {
-        var rota = molde
-            .Replace("{versao}", _cenario.V2Slug, StringComparison.Ordinal)
-            .Replace("{campo}", _cenario.CampoSempreSlug, StringComparison.Ordinal);
-
-        using var requisicao = new HttpRequestMessage(HttpMethod.Get, rota);
+        using var requisicao = new HttpRequestMessage(HttpMethod.Get, RotaDe(molde));
         using var resposta = await _cliente.SendAsync(requisicao);
 
         requisicao.Headers.Authorization.Should().BeNull();
@@ -312,7 +308,47 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
             because: "o portal público é 100% aberto — leitura de layout nunca exige token");
     }
 
+    // ----------------------------------------------------------------------------------- cache
+
+    /// <summary>
+    /// As três rotas são anônimas e leem do banco a cada chamada. A Home, agregador anônimo irmão,
+    /// publica <c>Cache-Control</c>; o Layout ficou sem — e é quem serve a tabela de campos
+    /// inteira. A asserção cobre as três de uma vez porque o esquecimento foi por action.
+    /// </summary>
+    [Theory]
+    [InlineData("/api/v1/layout")]
+    [InlineData("/api/v1/layout/versoes/{versao}")]
+    [InlineData("/api/v1/layout/campos/{campo}")]
+    public async Task RotasDeLayout_PublicamCacheControl(string molde)
+    {
+        using var resposta = await _cliente.GetAsync(RotaDe(molde));
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.OK);
+        resposta.Headers.CacheControl.Should().NotBeNull(
+            because: "rota anônima sem cache deixa a taxa de requisições virar carga direta no banco");
+        resposta.Headers.CacheControl!.Public.Should().BeTrue();
+        resposta.Headers.CacheControl.MaxAge.Should().Be(TimeSpan.FromSeconds(60));
+        resposta.Headers.CacheControl.ToString().Should().Contain("stale-while-revalidate=300");
+    }
+
+    /// <summary>
+    /// Despublicar uma versão precisa propagar: o <c>410</c> não pode ser cacheado junto com o
+    /// caminho feliz. O header é escrito depois do serviço, então a exceção sobe antes dele.
+    /// </summary>
+    [Fact]
+    public async Task VersaoDespublicada_NaoPublicaCacheControl()
+    {
+        using var resposta = await _cliente.GetAsync($"/api/v1/layout/versoes/{_cenario.VocultaSlug}");
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.Gone);
+        resposta.Headers.CacheControl.Should().BeNull();
+    }
+
     // ---------------------------------------------------------------------------------- apoio
+
+    private string RotaDe(string molde) => molde
+        .Replace("{versao}", _cenario.V2Slug, StringComparison.Ordinal)
+        .Replace("{campo}", _cenario.CampoSempreSlug, StringComparison.Ordinal);
 
     private sealed record Cenario
     {
