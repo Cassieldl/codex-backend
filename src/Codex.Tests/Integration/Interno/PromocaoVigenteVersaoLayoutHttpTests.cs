@@ -75,7 +75,7 @@ public sealed class PromocaoVigenteVersaoLayoutHttpTests : IAsyncLifetime
         erro.GetProperty("code").GetString().Should().Be("VERSAO_LAYOUT_VIGENTE_JA_EXISTE");
 
         var mensagem = erro.GetProperty("message").GetString()!;
-        mensagem.Should().NotContain("uq_codex_versoeslayout_estado_vigente",
+        mensagem.Should().NotContain("uq_codex_",
             because: "nome de constraint é detalhe interno de banco — o editor recebe orientação, não DDL");
         mensagem.Should().Contain("Vigente");
 
@@ -99,6 +99,9 @@ public sealed class PromocaoVigenteVersaoLayoutHttpTests : IAsyncLifetime
 
         resposta.Status.Should().Be(HttpStatusCode.Conflict);
         resposta.Corpo.GetProperty("error").GetProperty("code").GetString().Should().Be("REGISTRO_DUPLICADO");
+        resposta.Corpo.GetProperty("error").GetProperty("message").GetString()
+            .Should().NotContain("uq_codex_",
+                because: "o caminho genérico da classe base também não pode devolver o nome da constraint");
     }
 
     // ---------------------------------------------------------------------------------- apoio

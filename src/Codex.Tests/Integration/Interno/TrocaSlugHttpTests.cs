@@ -145,6 +145,8 @@ public sealed class TrocaSlugHttpTests : IAsyncLifetime
 
         status.Should().Be(HttpStatusCode.Conflict);
         CodigoDe(corpo).Should().Be("REGISTRO_DUPLICADO");
+        MensagemDe(corpo).Should().NotContain("uq_codex_",
+            because: "nome de constraint é detalhe interno do schema (CWE-209)");
 
         var slugPersistido = await ObterSlugDoProvedorAsync(segundo.Id);
         slugPersistido.Should().Be(segundo.Slug, because: "a transação inteira volta atrás — inclusive a linha da entidade");
@@ -346,6 +348,8 @@ public sealed class TrocaSlugHttpTests : IAsyncLifetime
     private static string NovoSufixo() => Guid.NewGuid().ToString("N")[..10];
 
     private static string? CodigoDe(JsonElement corpo) => corpo.GetProperty("error").GetProperty("code").GetString();
+
+    private static string? MensagemDe(JsonElement corpo) => corpo.GetProperty("error").GetProperty("message").GetString();
 
     private async Task<RecursoCriado> CriarProvedorPublicadoAsync(string? alias = null)
     {

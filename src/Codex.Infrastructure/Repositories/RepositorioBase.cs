@@ -36,11 +36,23 @@ public abstract class RepositorioBase<TDbContext>
     }
 
     /// <summary>
+    /// Mensagem pública de toda colisão de unicidade sem tratamento próprio. Nunca cita constraint,
+    /// tabela ou coluna: nome de objeto do schema é detalhe interno (CWE-209). O diagnóstico segue
+    /// disponível no log do servidor, que recebe a exceção inteira.
+    /// </summary>
+    private const string MensagemDuplicidade =
+        "Já existe um registro com esses dados. Revise os campos que precisam ser únicos.";
+
+    /// <summary>
     /// Persiste as mudanças pendentes, traduzindo violação de UNIQUE do Postgres (23505) em
     /// <see cref="RegistroDuplicadoException"/>. Conflito real de concorrência otimista
     /// (<see cref="DbUpdateConcurrencyException"/>, xmin divergente) NÃO é traduzido aqui — sobe
     /// como está, para o middleware de erro mapear para 409 com o código
     /// <c>CONFLITO_CONCORRENCIA</c> (analise-backend.md §8).
+    ///
+    /// A <see cref="PostgresException"/> original viaja como <c>InnerException</c>: é por ela —
+    /// nunca por texto de mensagem — que um repositório identifica a colisão que o cliente precisa
+    /// distinguir e a retraduz com código de negócio próprio (PQ-17).
     /// </summary>
     protected async Task SalvarAsync(CancellationToken ct)
     {
@@ -48,10 +60,9 @@ public abstract class RepositorioBase<TDbContext>
         {
             await Contexto.SaveChangesAsync(ct);
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" } postgresEx)
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
         {
-            throw new RegistroDuplicadoException(
-                $"Registro duplicado: {postgresEx.ConstraintName ?? "restrição única violada"}.", ex);
+            throw new RegistroDuplicadoException(MensagemDuplicidade, ex);
         }
     }
 }
