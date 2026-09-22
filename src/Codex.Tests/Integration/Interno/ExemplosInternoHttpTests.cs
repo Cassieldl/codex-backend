@@ -94,6 +94,9 @@ public sealed class ExemplosInternoHttpTests : IAsyncLifetime
 
         segundo.Should().Be(HttpStatusCode.Conflict);
         corpo.GetProperty("error").GetProperty("code").GetString().Should().Be("REGISTRO_DUPLICADO");
+        corpo.GetProperty("error").GetProperty("message").GetString()
+            .Should().NotContain("uq_codex_",
+                because: "nome de constraint é detalhe interno do schema (CWE-209) — a asserção de código sozinha não pega vazamento na mensagem");
     }
 
     /// <summary>

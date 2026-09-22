@@ -95,4 +95,47 @@ public sealed class ExemploValidatorsTests
 
         resultado.IsValid.Should().BeFalse();
     }
+
+    /// <summary>
+    /// O teto de <c>descricao</c> é contrato com o Zod do cliente (500) e não tem <c>CHECK</c> no
+    /// banco: este validator é a única guarda do servidor. Os números são literais de propósito —
+    /// importar a constante da unidade sob teste provaria só que existe um teto, não que é 500.
+    /// </summary>
+    [Theory]
+    [InlineData(500, true)]
+    [InlineData(501, false)]
+    public void CriarExemplo_TetoDaDescricao_ValidaNosDoisLadosDaFronteira(int caracteres, bool deveSerValido)
+    {
+        var resultado = _criarValidator.Validate(new CriarExemploDto
+        {
+            Nome = "Cenário",
+            Descricao = new string('d', caracteres),
+            Xml = "<x/>",
+        });
+
+        resultado.IsValid.Should().Be(deveSerValido);
+    }
+
+    [Theory]
+    [InlineData(500, true)]
+    [InlineData(501, false)]
+    public void AtualizarExemplo_TetoDaDescricao_ValidaNosDoisLadosDaFronteira(int caracteres, bool deveSerValido)
+    {
+        var resultado = _atualizarValidator.Validate(new AtualizarExemploDto
+        {
+            Nome = "Cenário",
+            Descricao = new string('d', caracteres),
+            Xml = "<x/>",
+        });
+
+        resultado.IsValid.Should().Be(deveSerValido);
+    }
+
+    [Fact]
+    public void CriarExemplo_SemDescricao_EValido()
+    {
+        var resultado = _criarValidator.Validate(new CriarExemploDto { Nome = "Cenário", Xml = "<x/>" });
+
+        resultado.IsValid.Should().BeTrue(because: "descrição é opcional — o teto não pode virar obrigatoriedade");
+    }
 }

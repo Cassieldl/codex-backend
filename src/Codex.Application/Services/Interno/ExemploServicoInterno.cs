@@ -105,15 +105,9 @@ public sealed class ExemploServicoInterno : IExemploServicoInterno
     /// </summary>
     private async Task<string> ResolverSlugAsync(int versaoProvedorId, string nome, CancellationToken ct)
     {
-        string slugBase;
-        try
-        {
-            slugBase = SlugVo.DeTexto(nome);
-        }
-        catch (ArgumentException)
-        {
-            throw new RegraDeNegocioException("O nome do exemplo precisa conter ao menos uma letra ou número.");
-        }
+        // Nome que não sobrevive à normalização é barrado em 422 pelo validator (mesmo predicado,
+        // Slug.PodeDerivarDe) antes de chegar aqui — como nos serviços de artigo, erro e provedor.
+        var slugBase = SlugVo.DeTexto(nome);
 
         var ocupados = (await _repositorio.ListarSlugsDaVersaoAsync(versaoProvedorId, ct))
             .ToHashSet(StringComparer.Ordinal);

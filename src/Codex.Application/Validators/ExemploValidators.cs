@@ -1,6 +1,6 @@
-using System.Text.RegularExpressions;
 using Codex.Application.DTOs.Interno;
 using FluentValidation;
+using SlugVo = Codex.Domain.ValueObjects.Slug;
 
 namespace Codex.Application.Validators;
 
@@ -17,9 +17,13 @@ internal static class TetosExemplo
 {
     internal const int XmlCaracteres = 64 * 1024;
 
-    /// <summary>O slug é derivado do nome — nome sem letra nem dígito normalizaria para vazio.</summary>
-    internal static bool NomeGeraSlug(string? nome) =>
-        !string.IsNullOrWhiteSpace(nome) && Regex.IsMatch(nome, "[a-zA-Z0-9]");
+    /// <summary>
+    /// Teto de <c>descricao</c>. A coluna é <c>text</c> sem <c>CHECK</c>, então este validator é a
+    /// única guarda do servidor: sem ele, o cap de 500 existiria só no Zod do cliente, que um
+    /// `curl` ignora. O texto viaja na resposta anônima da tela de versão, pelo mesmo DTO do
+    /// <c>xml</c> — que recebeu duas guardas (modelo-dados.md §1.2).
+    /// </summary>
+    internal const int DescricaoCaracteres = 500;
 }
 
 public sealed class CriarExemploDtoValidator : AbstractValidator<CriarExemploDto>
@@ -28,7 +32,11 @@ public sealed class CriarExemploDtoValidator : AbstractValidator<CriarExemploDto
     {
         RuleFor(x => x.Nome).NotEmpty().WithMessage("O nome do exemplo é obrigatório.")
             .MaximumLength(160).WithMessage("O nome do exemplo deve ter no máximo 160 caracteres.")
-            .Must(TetosExemplo.NomeGeraSlug).WithMessage("O nome do exemplo precisa conter ao menos uma letra ou número.");
+            .Must(SlugVo.PodeDerivarDe).WithMessage("O nome do exemplo precisa conter ao menos uma letra ou número.");
+
+        RuleFor(x => x.Descricao)
+            .MaximumLength(TetosExemplo.DescricaoCaracteres)
+            .WithMessage($"A descrição do exemplo deve ter no máximo {TetosExemplo.DescricaoCaracteres} caracteres.");
 
         RuleFor(x => x.Xml).NotEmpty().WithMessage("O XML do exemplo é obrigatório.")
             .Must(xml => xml is null || xml.Length <= TetosExemplo.XmlCaracteres)
@@ -42,7 +50,11 @@ public sealed class AtualizarExemploDtoValidator : AbstractValidator<AtualizarEx
     {
         RuleFor(x => x.Nome).NotEmpty().WithMessage("O nome do exemplo é obrigatório.")
             .MaximumLength(160).WithMessage("O nome do exemplo deve ter no máximo 160 caracteres.")
-            .Must(TetosExemplo.NomeGeraSlug).WithMessage("O nome do exemplo precisa conter ao menos uma letra ou número.");
+            .Must(SlugVo.PodeDerivarDe).WithMessage("O nome do exemplo precisa conter ao menos uma letra ou número.");
+
+        RuleFor(x => x.Descricao)
+            .MaximumLength(TetosExemplo.DescricaoCaracteres)
+            .WithMessage($"A descrição do exemplo deve ter no máximo {TetosExemplo.DescricaoCaracteres} caracteres.");
 
         RuleFor(x => x.Xml).NotEmpty().WithMessage("O XML do exemplo é obrigatório.")
             .Must(xml => xml is null || xml.Length <= TetosExemplo.XmlCaracteres)

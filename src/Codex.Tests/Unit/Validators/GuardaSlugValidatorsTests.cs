@@ -141,6 +141,50 @@ public sealed class GuardaSlugValidatorsTests
 
     [Theory]
     [MemberData(nameof(TextosQueNaoGeramSlug))]
+    public void CriarExemplo_ComNomeSemLetraNemDigito_Reprova(string nome)
+    {
+        var resultado = new CriarExemploDtoValidator().Validate(new CriarExemploDto
+        {
+            Nome = nome,
+            Xml = "<nfe/>",
+        });
+
+        DeveReprovar(resultado, nameof(CriarExemploDto.Nome));
+    }
+
+    /// <summary>
+    /// Sétimo sítio: o exemplo usava uma regex ASCII paralela (<c>[a-zA-Z0-9]</c>) em vez do
+    /// predicado do domínio, e por isso divergia dos irmãos — <c>{"nome":"Çã"}</c> era 422 aqui e
+    /// 201 em provedor, para o mesmo conceito.
+    /// </summary>
+    [Fact]
+    public void CriarExemplo_ComNomeSoDeLetraAcentuada_Aprova()
+    {
+        var resultado = new CriarExemploDtoValidator().Validate(new CriarExemploDto
+        {
+            Nome = "Çã",
+            Xml = "<nfe/>",
+        });
+
+        resultado.IsValid.Should().BeTrue(
+            because: "'Çã' normaliza para 'ca' e gera slug válido — o provedor irmão já aceitava");
+    }
+
+    [Theory]
+    [MemberData(nameof(TextosQueNaoGeramSlug))]
+    public void AtualizarExemplo_ComNomeSemLetraNemDigito_Reprova(string nome)
+    {
+        var resultado = new AtualizarExemploDtoValidator().Validate(new AtualizarExemploDto
+        {
+            Nome = nome,
+            Xml = "<nfe/>",
+        });
+
+        DeveReprovar(resultado, nameof(AtualizarExemploDto.Nome));
+    }
+
+    [Theory]
+    [MemberData(nameof(TextosQueNaoGeramSlug))]
     public void AlterarSlug_ComSlugSemLetraNemDigito_Reprova(string slug)
     {
         var resultado = new AlterarSlugDtoValidator().Validate(new AlterarSlugDto { Slug = slug });
