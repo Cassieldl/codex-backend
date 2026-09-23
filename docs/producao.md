@@ -122,7 +122,7 @@ Respondido contra o que o código faz hoje. O que **não** está coberto está m
 | Headers de segurança | ✅ API pelo middleware; portal pelo nginx (CSP, nosniff, Referrer-Policy, Permissions-Policy) |
 | Rate limiting | ✅ `/busca` com política própria; demais rotas anônimas na política da vitrine |
 | Logs estruturados sem dado sensível | ✅ Serilog em JSON, com `traceId`; token e segredo nunca logados |
-| Dependências sem CVE conhecido | ⚠️ **rodar `npm audit` e `dotnet list package --vulnerable` antes de publicar** |
+| Dependências sem CVE conhecido | ✅ medido em 2026-09-22: `npm audit` → 0 vulnerabilidades; `dotnet list package --vulnerable --include-transitive` → nenhum pacote vulnerável nos 5 projetos. **Repetir a cada publicação** — a resposta envelhece |
 | Segredos em cofre | ⚠️ **depende do provedor** — nenhum segredo no repositório hoje |
 | Token fora de `localStorage` | ✅ keycloak-js em memória |
 | Validação no servidor | ✅ FluentValidation com filtro global |
