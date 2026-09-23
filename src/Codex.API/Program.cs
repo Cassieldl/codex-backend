@@ -42,6 +42,7 @@ builder.Services
     .AddBusca(builder.Configuration)
     .AddValidacao()
     .AddRateLimiting()
+    .AddSaude()
     .AddComunicados(builder.Configuration)
     .AddEnvelopeErroDeStatus()
     .AddControllers()

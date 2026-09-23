@@ -102,7 +102,11 @@ public sealed class EnvelopeErroDeStatusTests
         erro.GetProperty("code").GetString().Should().Be(codigoEsperado);
         erro.GetProperty("message").GetString().Should().NotBeNullOrWhiteSpace();
 
-        resposta.Content.Headers.ContentType?.MediaType.Should().Be(MediaTypeHeaderValue.Parse("application/json").MediaType);
+        // Sem o `NotBeNull` antes, o `?.` curto-circuitaria a cadeia inteira quando o header
+        // faltasse — justamente o caso a pegar — e a asserção do tipo não chegaria a rodar.
+        resposta.Content.Headers.ContentType.Should().NotBeNull();
+        resposta.Content.Headers.ContentType!.MediaType.Should()
+            .Be(MediaTypeHeaderValue.Parse("application/json").MediaType);
     }
 
     /// <summary>
