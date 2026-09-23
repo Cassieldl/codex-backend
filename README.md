@@ -1,5 +1,7 @@
 # Codex Backend
 
+[![CI](https://github.com/Cassieldl/codex-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/Cassieldl/codex-backend/actions/workflows/ci.yml)
+
 API do Codex — Portal Técnico de Integração NFS-e (Migrate). .NET 10 LTS + Clean Architecture +
 PostgreSQL 18. Autenticação via Keycloak (realm `codex`, local em dev).
 
