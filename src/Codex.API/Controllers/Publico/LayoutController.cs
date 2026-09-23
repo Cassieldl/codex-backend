@@ -3,6 +3,7 @@ using Codex.Application.DTOs.Publico;
 using Codex.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Net.Http.Headers;
 
 namespace Codex.API.Controllers.Publico;
@@ -20,6 +21,7 @@ namespace Codex.API.Controllers.Publico;
 [ApiController]
 [Route("api/v1/layout")]
 [AllowAnonymous]
+[EnableRateLimiting("vitrine")]
 public sealed class LayoutController : ControllerBase
 {
     /// <summary>

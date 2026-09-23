@@ -27,6 +27,16 @@ public static class RateLimitingExtensoes
     private const int LimitePorIp = 30;
     private const int LimiteSemIp = 5;
 
+    /// <summary>
+    /// Agregadores anônimos da vitrine (<c>GET /home</c>, <c>GET /layout*</c>): leitura de catálogo,
+    /// barata por requisição mas sem teto de taxa — quem ignora o <c>Cache-Control</c> de 60 s
+    /// transforma a taxa em carga direta no banco. Orçamento bem maior que o da busca porque a
+    /// Home é a porta de entrada do portal e um escritório inteiro atrás de NAT chega como um IP
+    /// só; ainda assim corta o abuso barato.
+    /// </summary>
+    private const int LimiteVitrinePorIp = 120;
+    private const int LimiteVitrineSemIp = 20;
+
     public static IServiceCollection AddRateLimiting(this IServiceCollection services)
     {
         services.AddRateLimiter(options =>
@@ -58,25 +68,40 @@ public static class RateLimitingExtensoes
                     cancelamento);
             };
 
-            options.AddPolicy("busca", httpContext =>
-            {
-                var ip = httpContext.Connection.RemoteIpAddress?.ToString();
+            options.AddPolicy("busca", contexto => ParticionarPorIp(contexto, LimitePorIp, LimiteSemIp));
 
-                return RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: ip ?? ParticaoDesconhecida,
-                    factory: _ => new FixedWindowRateLimiterOptions
-                    {
-                        // A partição de IP desconhecido é compartilhada por TODOS quem cai nela —
-                        // não pode receber o mesmo orçamento de um cliente identificado, ou basta
-                        // um abusador para gastá-lo em nome de todo mundo.
-                        PermitLimit = ip is null ? LimiteSemIp : LimitePorIp,
-                        Window = TimeSpan.FromMinutes(1),
-                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                        QueueLimit = 0,
-                    });
-            });
+            options.AddPolicy(
+                "vitrine",
+                contexto => ParticionarPorIp(contexto, LimiteVitrinePorIp, LimiteVitrineSemIp));
         });
 
         return services;
+    }
+
+    /// <summary>
+    /// Janela fixa de um minuto particionada pelo IP do cliente. As políticas diferem só no
+    /// orçamento: a chave de partição e o comportamento da partição compartilhada são os mesmos, e
+    /// duplicá-los por política é como o balde global de <c>AP-BACKEND-010</c> voltaria sem ninguém
+    /// notar.
+    /// </summary>
+    private static RateLimitPartition<string> ParticionarPorIp(
+        HttpContext httpContext,
+        int limitePorIp,
+        int limiteSemIp)
+    {
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString();
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ip ?? ParticaoDesconhecida,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                // A partição de IP desconhecido é compartilhada por TODOS quem cai nela — não pode
+                // receber o mesmo orçamento de um cliente identificado, ou basta um abusador para
+                // gastá-lo em nome de todo mundo.
+                PermitLimit = ip is null ? limiteSemIp : limitePorIp,
+                Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0,
+            });
     }
 }

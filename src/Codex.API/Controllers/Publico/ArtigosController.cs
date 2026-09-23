@@ -6,6 +6,7 @@ using Codex.Domain.Enums;
 using Codex.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Codex.API.Controllers.Publico;
 
@@ -13,6 +14,7 @@ namespace Codex.API.Controllers.Publico;
 [ApiController]
 [Route("api/v1/artigos")]
 [AllowAnonymous]
+[EnableRateLimiting("vitrine")]
 public sealed class ArtigosController : ControllerBase
 {
     private readonly IArtigoServicoPublico _servico;
