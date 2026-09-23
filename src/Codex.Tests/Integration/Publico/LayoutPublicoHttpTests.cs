@@ -215,6 +215,19 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
             because: "o código genérico CONTEUDO_DESPUBLICADO não permite ao cliente distinguir o caso (§0.7)");
     }
 
+    /// <summary>
+    /// Soft delete não é despublicação: a linha existe, mas para o público a versão nunca existiu.
+    /// Devolver <c>410</c> aqui confirmaria a um anônimo que aquele slug já foi usado.
+    /// </summary>
+    [Fact]
+    public async Task P11_VersaoSoftDeletada_Responde404()
+    {
+        var (status, corpo) = await ObterAsync($"/api/v1/layout/versoes/{_cenario.VdesativadaSlug}");
+
+        status.Should().Be(HttpStatusCode.NotFound);
+        Codigo(corpo).Should().Be("NAO_ENCONTRADO");
+    }
+
     // ------------------------------------------------------------------------------------ P12
 
     [Fact]
@@ -266,6 +279,28 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
 
         status.Should().Be(HttpStatusCode.NotFound);
         Codigo(corpo).Should().Be("NAO_ENCONTRADO");
+    }
+
+    /// <summary>
+    /// O 410 tinha detector só para o campo invisível por herança da origem (A1). Campo
+    /// despublicado por si, dentro de versão publicada, é a outra metade do mesmo predicado — e
+    /// nenhum teste a exercitava.
+    /// </summary>
+    [Fact]
+    public async Task P12_CampoDespublicadoPorSi_Responde410()
+    {
+        var (status, corpo) = await ObterAsync($"/api/v1/layout/campos/{_cenario.CampoDespublicadoSlug}");
+
+        status.Should().Be(HttpStatusCode.Gone);
+        Codigo(corpo).Should().Be("CAMPO_LAYOUT_DESPUBLICADO");
+    }
+
+    [Fact]
+    public async Task P11_CampoDespublicadoPorSi_NaoApareceNoDicionarioDaVersaoPublicada()
+    {
+        var versao = await ObterDadosAsync($"/api/v1/layout/versoes/{_cenario.V1Slug}");
+
+        TodosOsSlugs(versao).Should().NotContain(_cenario.CampoDespublicadoSlug);
     }
 
     // --------------------------------------------------------------------- predicado A1 (§4.1)
@@ -353,6 +388,8 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
     private sealed record Cenario
     {
         public required string VocultaSlug { get; init; }
+        public required string VdesativadaSlug { get; init; }
+        public required string CampoDespublicadoSlug { get; init; }
         public required string V1Slug { get; init; }
         public required string V2Slug { get; init; }
         public required string V3Slug { get; init; }
@@ -364,9 +401,12 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
         public required string ProvedorSlug { get; init; }
         public required string VersaoProvedorSlug { get; init; }
 
-        /// <summary>Todos os campos semeados, inclusive o invisível — a contagem restrita ao cenário precisa notar se ele vazar.</summary>
+        /// <summary>Todos os campos semeados, inclusive os invisíveis — a contagem restrita ao cenário precisa notar se um deles vazar.</summary>
         public IReadOnlyCollection<string> SlugsDeCampo =>
-            [CampoOcultoSlug, CampoSempreSlug, CampoNovoEmV2Slug, CampoDescontinuadoEmV2Slug, CampoFuturoEmV3Slug];
+        [
+            CampoOcultoSlug, CampoDespublicadoSlug, CampoSempreSlug, CampoNovoEmV2Slug,
+            CampoDescontinuadoEmV2Slug, CampoFuturoEmV3Slug,
+        ];
     }
 
     private async Task<Cenario> SemearAsync()
@@ -380,14 +420,21 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
         var v2 = VersaoLayout.Criar($"Layout Dois {_sufixo}", maiorOrdem + 3);
         var v3 = VersaoLayout.Criar($"Layout Tres {_sufixo}", maiorOrdem + 4);
 
+        // Publicada e depois soft-deletada: o caso que distingue "nunca existiu" (404) de
+        // "existe e está despublicada" (410) — sem ele, remover o filtro de DesativadoEm da
+        // consulta por slug passaria em silêncio.
+        var vdesativada = VersaoLayout.Criar($"Layout Removido {_sufixo}", maiorOrdem + 5);
+
         v1.Publicar();
         v2.Publicar();
         v2.MarcarVigente();
         v3.Publicar();
+        vdesativada.Publicar();
+        vdesativada.Desativar();
 
         // Inserção fora de ordem de propósito: ordenação por Ordem DESC (V3, V2, V1) não pode
         // coincidir nem com a ordem de inserção nem com o inverso dela.
-        contexto.VersoesLayout.AddRange(v2, v1, v3, voculta);
+        contexto.VersoesLayout.AddRange(v2, v1, v3, voculta, vdesativada);
         await contexto.SaveChangesAsync();
 
         var campoOculto = CampoLayout.Criar(voculta.Id, $"campo oculto {_sufixo}", $"//raiz/Oculto{_sufixo}", "Campo de versão não publicada", ordem: 10);
@@ -396,10 +443,14 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
         var campoNovo = CampoLayout.Criar(v2.Id, $"campo novo {_sufixo}", $"//raiz/Novo{_sufixo}", "Campo que nasce em V2", ordem: 40);
         var campoFuturo = CampoLayout.Criar(v3.Id, $"campo futuro {_sufixo}", $"//raiz/Futuro{_sufixo}", "Campo que nasce depois da vigente", ordem: 50);
 
+        // Campo despublicado por si, dentro de versão publicada — distinto do campoOculto, que é
+        // invisível por herança da origem. Cobre o 410 do próprio campo em P12.
+        var campoDespublicado = CampoLayout.Criar(v1.Id, $"campo rascunho {_sufixo}", $"//raiz/Rascunho{_sufixo}", "Campo ainda não publicado", ordem: 60);
+
         foreach (var campo in new[] { campoOculto, campoSempre, campoDescontinuado, campoNovo, campoFuturo })
             campo.Publicar();
 
-        contexto.CamposLayout.AddRange(campoOculto, campoSempre, campoDescontinuado, campoNovo, campoFuturo);
+        contexto.CamposLayout.AddRange(campoOculto, campoSempre, campoDescontinuado, campoNovo, campoFuturo, campoDespublicado);
         await contexto.SaveChangesAsync();
 
         // Descontinuar exige a navegação de origem carregada (invariante de M12 na entidade).
@@ -426,6 +477,8 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
         return new Cenario
         {
             VocultaSlug = voculta.Slug,
+            VdesativadaSlug = vdesativada.Slug,
+            CampoDespublicadoSlug = campoDespublicado.Slug,
             V1Slug = v1.Slug,
             V2Slug = v2.Slug,
             V3Slug = v3.Slug,

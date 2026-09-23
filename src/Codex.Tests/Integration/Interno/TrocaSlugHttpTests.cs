@@ -302,6 +302,48 @@ public sealed class TrocaSlugHttpTests : IAsyncLifetime
         CodigoDe(corpo).Should().Be(CodigosErro.SlugIgualAoAtual);
     }
 
+    /// <summary>
+    /// As três rotas de troca de slug compartilham guarda de If-Match e de colisão, mas só I37
+    /// tinha detector: assimetria entre irmãos é onde a regressão passa sem ninguém ver.
+    /// </summary>
+    [Fact]
+    public async Task I43_TrocarSlugDeErro_SemIfMatch_Devolve400()
+    {
+        var erro = await CriarErroPublicadoAsync();
+
+        var (status, _, _) = await EnviarAsync(
+            HttpMethod.Put, $"/api/v1/interno/erros/{erro.Id}/slug", new { slug = $"erro-novo-{NovoSufixo()}" });
+
+        status.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task I43_TrocarSlugDeErro_ParaSlugDeOutroErro_Devolve409()
+    {
+        var primeiro = await CriarErroPublicadoAsync();
+        var segundo = await CriarErroPublicadoAsync();
+
+        var (status, corpo, _) = await EnviarAsync(
+            HttpMethod.Put, $"/api/v1/interno/erros/{segundo.Id}/slug", new { slug = primeiro.Slug }, segundo.Versao);
+
+        status.Should().Be(HttpStatusCode.Conflict);
+        CodigoDe(corpo).Should().Be("REGISTRO_DUPLICADO");
+        MensagemDe(corpo).Should().NotContain("uq_codex_",
+            because: "nome de constraint é detalhe interno do schema (CWE-209)");
+    }
+
+    [Fact]
+    public async Task I43_TrocarSlugDeErro_AcimaDoTetoDaColuna_Devolve422()
+    {
+        var erro = await CriarErroPublicadoAsync();
+
+        var (status, _, _) = await EnviarAsync(
+            HttpMethod.Put, $"/api/v1/interno/erros/{erro.Id}/slug", new { slug = new string('a', 161) }, erro.Versao);
+
+        status.Should().Be(HttpStatusCode.UnprocessableEntity,
+            because: "o DTO é compartilhado e vale o teto da coluna mais estreita — 161 caracteres não cabe em nenhuma");
+    }
+
     // ------------------------------------------------------------------ I44 — artigo
 
     [Fact]
@@ -322,6 +364,32 @@ public sealed class TrocaSlugHttpTests : IAsyncLifetime
         using var resposta = await _cliente.GetAsync($"/api/v1/artigos/{artigo.Slug}");
         resposta.StatusCode.Should().Be(HttpStatusCode.PermanentRedirect);
         resposta.Headers.Location!.ToString().Should().Be($"/api/v1/artigos/{slugNovo}");
+    }
+
+    [Fact]
+    public async Task I44_TrocarSlugDeArtigo_SemIfMatch_Devolve400()
+    {
+        var artigo = await CriarArtigoPublicadoAsync();
+
+        var (status, _, _) = await EnviarAsync(
+            HttpMethod.Put, $"/api/v1/interno/artigos/{artigo.Id}/slug", new { slug = $"artigo-novo-{NovoSufixo()}" });
+
+        status.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task I44_TrocarSlugDeArtigo_ParaSlugDeOutroArtigo_Devolve409()
+    {
+        var primeiro = await CriarArtigoPublicadoAsync();
+        var segundo = await CriarArtigoPublicadoAsync();
+
+        var (status, corpo, _) = await EnviarAsync(
+            HttpMethod.Put, $"/api/v1/interno/artigos/{segundo.Id}/slug", new { slug = primeiro.Slug }, segundo.Versao);
+
+        status.Should().Be(HttpStatusCode.Conflict);
+        CodigoDe(corpo).Should().Be("REGISTRO_DUPLICADO");
+        MensagemDe(corpo).Should().NotContain("uq_codex_",
+            because: "nome de constraint é detalhe interno do schema (CWE-209)");
     }
 
     [Fact]

@@ -300,6 +300,80 @@ public sealed class ExemplosInternoHttpTests : IAsyncLifetime
         corpo.GetProperty("error").GetProperty("code").GetString().Should().Be("CONFLITO_CONCORRENCIA");
     }
 
+    /// <summary>
+    /// As guardas de entrada valem nos dois verbos, mas só a criação tinha detector por HTTP: um
+    /// validator não registrado para o DTO de atualização passaria despercebido. O unitário prova
+    /// a régua; este prova que ela está no pipeline.
+    /// </summary>
+    [Fact]
+    public async Task I41_Atualizar_ComXmlAcimaDoTeto_Devolve422()
+    {
+        var versaoId = await SemearVersaoAsync();
+        var criado = await CriarAsync(versaoId, "Antes do teto");
+        var id = criado.GetProperty("id").GetInt32();
+        var versao = criado.GetProperty("versaoConcorrencia").GetUInt32();
+
+        var (status, _, _) = await EnviarAsync(
+            HttpMethod.Put, $"/api/v1/interno/exemplos/{id}",
+            Corpo("Acima do teto", new string('x', 64 * 1024 + 1)), versao);
+
+        status.Should().Be(HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
+    public async Task I41_Atualizar_ComNomeAcimaDe160Caracteres_Devolve422()
+    {
+        var versaoId = await SemearVersaoAsync();
+        var criado = await CriarAsync(versaoId, "Nome curto");
+        var id = criado.GetProperty("id").GetInt32();
+        var versao = criado.GetProperty("versaoConcorrencia").GetUInt32();
+
+        var (status, _, _) = await EnviarAsync(
+            HttpMethod.Put, $"/api/v1/interno/exemplos/{id}",
+            Corpo(new string('a', 161), "<nfe/>"), versao);
+
+        status.Should().Be(HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
+    public async Task I41_Atualizar_ComDescricaoAcimaDoTeto_Devolve422()
+    {
+        var versaoId = await SemearVersaoAsync();
+        var criado = await CriarAsync(versaoId, "Descrição curta");
+        var id = criado.GetProperty("id").GetInt32();
+        var versao = criado.GetProperty("versaoConcorrencia").GetUInt32();
+
+        var (status, _, _) = await EnviarAsync(
+            HttpMethod.Put, $"/api/v1/interno/exemplos/{id}",
+            Corpo("Descrição longa", "<nfe/>", new string('d', 501)), versao);
+
+        status.Should().Be(HttpStatusCode.UnprocessableEntity,
+            because: "a coluna é text sem CHECK — sem esta guarda o cap existe só no cliente");
+    }
+
+    [Fact]
+    public async Task I39_Criar_ComXmlVazio_Devolve422()
+    {
+        var versaoId = await SemearVersaoAsync();
+
+        var (status, _, _) = await EnviarAsync(
+            HttpMethod.Post, $"/api/v1/interno/versoes/{versaoId}/exemplos", Corpo("Sem XML", "   "));
+
+        status.Should().Be(HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
+    public async Task I39_Criar_ComDescricaoAcimaDoTeto_Devolve422()
+    {
+        var versaoId = await SemearVersaoAsync();
+
+        var (status, _, _) = await EnviarAsync(
+            HttpMethod.Post, $"/api/v1/interno/versoes/{versaoId}/exemplos",
+            Corpo("Descrição longa", "<nfe/>", new string('d', 501)));
+
+        status.Should().Be(HttpStatusCode.UnprocessableEntity);
+    }
+
     [Fact]
     public async Task I42_Remover_SomeDaListagemEDoDetalhe()
     {
@@ -326,6 +400,8 @@ public sealed class ExemplosInternoHttpTests : IAsyncLifetime
         descricao = (string?)null,
         xml = "<nfe>conteudo</nfe>",
     };
+
+    private static object Corpo(string nome, string xml, string? descricao = null) => new { nome, descricao, xml };
 
     private async Task<JsonElement> CriarAsync(int versaoId, string nome)
     {
