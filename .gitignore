@@ -13,7 +13,12 @@ coverage*.xml
 coverage*.info
 
 ## Docker / dados locais
+# `.env` sozinho não pega `.env.production` — que é justamente o arquivo com senha de banco e
+# segredo de cliente. Ignora tudo e reabre só os exemplos, que são fictícios por definição.
 .env
+.env.*
+!.env.example
+!.env.production.example
 database/pgdata/
 
 ## IDE

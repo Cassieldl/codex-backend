@@ -1,0 +1,27 @@
+# Fora do contexto de build: o que não entra na imagem e o que nunca deve sair da máquina.
+.env
+.env.*
+!.env.example
+
+bin/
+obj/
+**/bin/
+**/obj/
+
+.git/
+.gitignore
+.vs/
+.vscode/
+.idea/
+
+# Testes não são publicados: o estágio de build compila só o Codex.API e suas referências.
+src/Codex.Tests/
+
+# Infra local — Postgres e Keycloak de desenvolvimento não têm papel na imagem da API.
+docker-compose.yml
+docker/
+database/
+
+README.md
+Dockerfile
+.dockerignore
