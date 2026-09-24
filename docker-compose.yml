@@ -9,7 +9,12 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      # `/var/lib/postgresql`, NÃO `/var/lib/postgresql/data`: a imagem 18 guarda os dados numa
+      # subpasta por versão maior e trata um volume montado direto em `data` como "unused
+      # mount/volume" — o container sai com erro na primeira subida e nunca cria o banco. Era o
+      # que impedia o ambiente local de existir, e o diagnóstico registrado ("volume de versão
+      # anterior") apontava para o lugar errado: o volume estava vazio, o caminho é que mudou.
+      - pgdata:/var/lib/postgresql
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   keycloak:

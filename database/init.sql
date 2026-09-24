@@ -15,11 +15,17 @@ CREATE EXTENSION IF NOT EXISTS fuzzystrmatch WITH SCHEMA public;
 --    Senha lida de variavel de ambiente do container (nunca hardcoded no arquivo).
 \getenv codex_app_password CODEX_APP_DB_PASSWORD
 
+-- A senha entra num parametro de sessao ANTES do bloco: o psql nao interpola `:'variavel'`
+-- dentro de dollar-quoting ($do$...$do$) — o texto chega cru ao servidor e morre em
+-- `syntax error at or near ":"`. O bloco le o valor com `current_setting`, e a senha continua
+-- fora do arquivo, vinda da variavel de ambiente do container.
+SELECT set_config('codex.app_password', :'codex_app_password', false);
+
 DO $do$
 BEGIN
     IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'codex_user') THEN
         EXECUTE 'CREATE ROLE codex_user LOGIN PASSWORD '
-            || quote_literal(:'codex_app_password')
+            || quote_literal(current_setting('codex.app_password'))
             || ' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT';
     END IF;
 END

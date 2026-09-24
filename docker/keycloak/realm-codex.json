@@ -3,6 +3,156 @@
   "enabled": true,
   "sslRequired": "none",
   "registrationAllowed": false,
+  "roles": {
+    "client": {
+      "codex-backend": [
+        {
+          "name": "artigos-adicionar"
+        },
+        {
+          "name": "artigos-atualizar"
+        },
+        {
+          "name": "artigos-buscar"
+        },
+        {
+          "name": "artigos-publicar"
+        },
+        {
+          "name": "artigos-remover"
+        },
+        {
+          "name": "avisos-adicionar"
+        },
+        {
+          "name": "avisos-atualizar"
+        },
+        {
+          "name": "avisos-publicar"
+        },
+        {
+          "name": "avisos-remover"
+        },
+        {
+          "name": "campolayout-adicionar"
+        },
+        {
+          "name": "campolayout-atualizar"
+        },
+        {
+          "name": "campolayout-buscar"
+        },
+        {
+          "name": "campolayout-publicar"
+        },
+        {
+          "name": "campolayout-remover"
+        },
+        {
+          "name": "camposversao-adicionar"
+        },
+        {
+          "name": "camposversao-atualizar"
+        },
+        {
+          "name": "camposversao-buscar"
+        },
+        {
+          "name": "camposversao-remover"
+        },
+        {
+          "name": "comunicados-adicionar"
+        },
+        {
+          "name": "comunicados-atualizar"
+        },
+        {
+          "name": "comunicados-buscar"
+        },
+        {
+          "name": "comunicados-publicar"
+        },
+        {
+          "name": "comunicados-remover"
+        },
+        {
+          "name": "erros-adicionar"
+        },
+        {
+          "name": "erros-atualizar"
+        },
+        {
+          "name": "erros-buscar"
+        },
+        {
+          "name": "erros-publicar"
+        },
+        {
+          "name": "erros-remover"
+        },
+        {
+          "name": "exemplos-adicionar"
+        },
+        {
+          "name": "exemplos-atualizar"
+        },
+        {
+          "name": "exemplos-buscar"
+        },
+        {
+          "name": "exemplos-remover"
+        },
+        {
+          "name": "indicebusca-atualizar"
+        },
+        {
+          "name": "indicebusca-buscar"
+        },
+        {
+          "name": "provedores-adicionar"
+        },
+        {
+          "name": "provedores-atualizar"
+        },
+        {
+          "name": "provedores-buscar"
+        },
+        {
+          "name": "provedores-publicar"
+        },
+        {
+          "name": "provedores-remover"
+        },
+        {
+          "name": "versoeslayout-adicionar"
+        },
+        {
+          "name": "versoeslayout-atualizar"
+        },
+        {
+          "name": "versoeslayout-buscar"
+        },
+        {
+          "name": "versoeslayout-publicar"
+        },
+        {
+          "name": "versoesprovedor-adicionar"
+        },
+        {
+          "name": "versoesprovedor-atualizar"
+        },
+        {
+          "name": "versoesprovedor-buscar"
+        },
+        {
+          "name": "versoesprovedor-publicar"
+        },
+        {
+          "name": "versoesprovedor-remover"
+        }
+      ]
+    }
+  },
   "clients": [
     {
       "clientId": "codex-front",
@@ -11,8 +161,12 @@
       "protocol": "openid-connect",
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
-      "redirectUris": ["http://localhost:5173/*"],
-      "webOrigins": ["http://localhost:5173"],
+      "redirectUris": [
+        "http://localhost:5173/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5173"
+      ],
       "attributes": {
         "pkce.code.challenge.method": "S256"
       }
@@ -28,44 +182,8 @@
       "serviceAccountsEnabled": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "dev-secret-troque-me",
-      "defaultClientScopes": ["roles"],
-      "roles": [
-        { "name": "provedores-buscar" },
-        { "name": "provedores-adicionar" },
-        { "name": "provedores-atualizar" },
-        { "name": "provedores-remover" },
-        { "name": "provedores-publicar" },
-        { "name": "versoesprovedor-buscar" },
-        { "name": "versoesprovedor-adicionar" },
-        { "name": "versoesprovedor-atualizar" },
-        { "name": "versoesprovedor-remover" },
-        { "name": "versoesprovedor-publicar" },
-        { "name": "camposversao-buscar" },
-        { "name": "camposversao-adicionar" },
-        { "name": "camposversao-atualizar" },
-        { "name": "camposversao-remover" },
-        { "name": "avisos-buscar" },
-        { "name": "avisos-adicionar" },
-        { "name": "avisos-atualizar" },
-        { "name": "avisos-remover" },
-        { "name": "avisos-publicar" },
-        { "name": "versoeslayout-buscar" },
-        { "name": "versoeslayout-adicionar" },
-        { "name": "versoeslayout-atualizar" },
-        { "name": "versoeslayout-remover" },
-        { "name": "versoeslayout-publicar" },
-        { "name": "campolayout-buscar" },
-        { "name": "campolayout-adicionar" },
-        { "name": "campolayout-atualizar" },
-        { "name": "campolayout-remover" },
-        { "name": "campolayout-publicar" },
-        { "name": "erros-buscar" },
-        { "name": "erros-adicionar" },
-        { "name": "erros-atualizar" },
-        { "name": "erros-remover" },
-        { "name": "erros-publicar" },
-        { "name": "indicebusca-buscar" },
-        { "name": "indicebusca-atualizar" }
+      "defaultClientScopes": [
+        "roles"
       ]
     }
   ],
@@ -77,18 +195,62 @@
       "firstName": "Codex",
       "lastName": "Dev",
       "credentials": [
-        { "type": "password", "value": "codex.dev", "temporary": false }
+        {
+          "type": "password",
+          "value": "codex.dev",
+          "temporary": false
+        }
       ],
       "clientRoles": {
         "codex-backend": [
-          "provedores-buscar", "provedores-adicionar", "provedores-atualizar", "provedores-remover", "provedores-publicar",
-          "versoesprovedor-buscar", "versoesprovedor-adicionar", "versoesprovedor-atualizar", "versoesprovedor-remover", "versoesprovedor-publicar",
-          "camposversao-buscar", "camposversao-adicionar", "camposversao-atualizar", "camposversao-remover",
-          "avisos-buscar", "avisos-adicionar", "avisos-atualizar", "avisos-remover", "avisos-publicar",
-          "versoeslayout-buscar", "versoeslayout-adicionar", "versoeslayout-atualizar", "versoeslayout-remover", "versoeslayout-publicar",
-          "campolayout-buscar", "campolayout-adicionar", "campolayout-atualizar", "campolayout-remover", "campolayout-publicar",
-          "erros-buscar", "erros-adicionar", "erros-atualizar", "erros-remover", "erros-publicar",
-          "indicebusca-buscar", "indicebusca-atualizar"
+          "artigos-adicionar",
+          "artigos-atualizar",
+          "artigos-buscar",
+          "artigos-publicar",
+          "artigos-remover",
+          "avisos-adicionar",
+          "avisos-atualizar",
+          "avisos-publicar",
+          "avisos-remover",
+          "campolayout-adicionar",
+          "campolayout-atualizar",
+          "campolayout-buscar",
+          "campolayout-publicar",
+          "campolayout-remover",
+          "camposversao-adicionar",
+          "camposversao-atualizar",
+          "camposversao-buscar",
+          "camposversao-remover",
+          "comunicados-adicionar",
+          "comunicados-atualizar",
+          "comunicados-buscar",
+          "comunicados-publicar",
+          "comunicados-remover",
+          "erros-adicionar",
+          "erros-atualizar",
+          "erros-buscar",
+          "erros-publicar",
+          "erros-remover",
+          "exemplos-adicionar",
+          "exemplos-atualizar",
+          "exemplos-buscar",
+          "exemplos-remover",
+          "indicebusca-atualizar",
+          "indicebusca-buscar",
+          "provedores-adicionar",
+          "provedores-atualizar",
+          "provedores-buscar",
+          "provedores-publicar",
+          "provedores-remover",
+          "versoeslayout-adicionar",
+          "versoeslayout-atualizar",
+          "versoeslayout-buscar",
+          "versoeslayout-publicar",
+          "versoesprovedor-adicionar",
+          "versoesprovedor-atualizar",
+          "versoesprovedor-buscar",
+          "versoesprovedor-publicar",
+          "versoesprovedor-remover"
         ]
       }
     }
