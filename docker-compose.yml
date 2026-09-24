@@ -9,12 +9,17 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      # `/var/lib/postgresql`, NÃO `/var/lib/postgresql/data`: a imagem 18 guarda os dados numa
-      # subpasta por versão maior e trata um volume montado direto em `data` como "unused
-      # mount/volume" — o container sai com erro na primeira subida e nunca cria o banco. Era o
-      # que impedia o ambiente local de existir, e o diagnóstico registrado ("volume de versão
-      # anterior") apontava para o lugar errado: o volume estava vazio, o caminho é que mudou.
-      - pgdata:/var/lib/postgresql
+      # Duas coisas mudaram aqui, e as duas impediam o ambiente local de existir:
+      #
+      # 1. O caminho. A imagem 18 guarda os dados numa subpasta por versão maior e trata um volume
+      #    montado direto em `/var/lib/postgresql/data` como "unused mount/volume": o container sai
+      #    com erro na primeira subida e nunca cria o banco.
+      #
+      # 2. O nome do volume. O `pgdata` antigo contém um cluster PostgreSQL **17** que não sobe sob
+      #    a imagem 18 nem no caminho novo, e que não pertence a este projeto (não tem sequer o
+      #    role `postgres` que o `.env` configura). Ele foi PRESERVADO, e não apagado — se não
+      #    tiver utilidade, `docker volume rm codex-backend_pgdata` o remove.
+      - pgdata18:/var/lib/postgresql
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   keycloak:
@@ -29,4 +34,4 @@ services:
       - ./docker/keycloak/realm-codex.json:/opt/keycloak/data/import/realm-codex.json
 
 volumes:
-  pgdata:
+  pgdata18:
