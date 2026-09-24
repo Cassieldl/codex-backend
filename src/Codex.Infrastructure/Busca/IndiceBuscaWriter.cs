@@ -325,9 +325,31 @@ public sealed class IndiceBuscaWriter : IIndiceBuscaWriter
     }
 
     /// <summary>
+    /// Limite de <c>codex.termosbusca.termo</c> (<c>varchar(120)</c>, modelo-dados.md §5.7).
+    /// Precisa ser TETO do filtro, não só piso: <c>codex.normalizar_busca</c> emite, além do texto
+    /// separado por espaço, uma variante com TODO caractere não alfanumérico removido — inclusive
+    /// os espaços. Essa terceira variante é um único token que cresce junto com o texto indexado,
+    /// e existe de propósito, para casar busca com separador colado (<c>NF-e</c> ↔ <c>nfe</c>).
+    ///
+    /// <para>
+    /// Sem teto, publicar conteúdo minimamente longo — um artigo, um erro com variantes, um campo
+    /// de layout com significado escrito por extenso — faz o <c>INSERT</c> estourar em
+    /// <c>22001 value too long</c> e derruba a REQUISIÇÃO INTEIRA com 500. Medido ao semear o
+    /// acervo de demonstração: um campo de layout com nome, caminho e significado normais gerou um
+    /// token de 106 caracteres, a um fôlego do limite.
+    /// </para>
+    ///
+    /// <para>
+    /// Descartar é o certo, não truncar: um pedaço arbitrário de palavras coladas não casa com
+    /// busca nenhuma e só poluiria o léxico de sugestão.
+    /// </para>
+    /// </summary>
+    private const int TamanhoMaximoDoTermo = 120;
+
+    /// <summary>
     /// Mantém codex.termosbusca (modelo-dados.md §5.7) a partir do texto recém-indexado — tokens
-    /// ≥ 3 caracteres extraídos via a MESMA codex.normalizar_busca usada na indexação, nunca uma
-    /// tokenização equivalente em C#.
+    /// entre 3 e <see cref="TamanhoMaximoDoTermo"/> caracteres, extraídos via a MESMA
+    /// codex.normalizar_busca usada na indexação, nunca uma tokenização equivalente em C#.
     /// </summary>
     private async Task AtualizarLexicoAsync(string texto, CancellationToken ct)
     {
@@ -338,7 +360,7 @@ public sealed class IndiceBuscaWriter : IIndiceBuscaWriter
             WITH tokens AS (
                 SELECT DISTINCT t AS termo
                 FROM regexp_split_to_table(codex.normalizar_busca({texto}), '\s+') AS t
-                WHERE length(t) >= 3
+                WHERE length(t) >= 3 AND length(t) <= {TamanhoMaximoDoTermo}
             )
             INSERT INTO codex.termosbusca (termo, ocorrencias)
             SELECT termo, 1 FROM tokens
