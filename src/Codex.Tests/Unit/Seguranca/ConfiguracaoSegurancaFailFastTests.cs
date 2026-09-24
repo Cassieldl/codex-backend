@@ -161,6 +161,75 @@ public sealed class ConfiguracaoSegurancaFailFastTests
         configuracao["AllowedHosts"]!.Split(';').Should().NotContain("*");
     }
 
+    /// <summary>
+    /// Medido no smoke ponta a ponta: com a Authority em HTTP e ambiente Production, a aplicação
+    /// SOBE e morre em toda requisição — o JwtBearer só resolve a Authority no primeiro request e
+    /// lança "Authority must use HTTPS" dentro do middleware de autenticação, que roda antes de
+    /// qualquer rota. Até `GET /saude/vivo` responde 500, então o orquestrador mata e recria a
+    /// instância em laço sem nunca dizer o motivo. Falhar na subida troca esse laço mudo por uma
+    /// mensagem.
+    /// </summary>
+    [Theory]
+    [InlineData("http://auth.exemplo.com")]
+    [InlineData("HTTP://auth.exemplo.com")]
+    public void AuthoritySemHttpsForaDeDevelopment_RecusaSubir(string authority)
+    {
+        var configuracao = Configuracao([
+            .. ProducaoValida().Where(par => par.Chave != "Keycloak:auth-server-url"),
+            ("Keycloak:auth-server-url", authority),
+        ]);
+
+        var acao = () => ConfiguracaoSegurancaExtensoes.ValidarConfiguracaoDeSeguranca(configuracao, Ambiente("Production"));
+
+        acao.Should().Throw<InvalidOperationException>().WithMessage("*HTTPS*");
+    }
+
+    /// <summary>
+    /// O caso legítimo: Keycloak numa rede interna, com o TLS terminando antes dele. Continua
+    /// possível — mas só declarando, nunca por omissão.
+    /// </summary>
+    [Fact]
+    public void AuthoritySemHttps_ComDispensaExplicita_Sobe()
+    {
+        var configuracao = Configuracao([
+            .. ProducaoValida().Where(par => par.Chave != "Keycloak:auth-server-url"),
+            ("Keycloak:auth-server-url", "http://keycloak:8080"),
+            ("Keycloak:RequireHttpsMetadata", "false"),
+        ]);
+
+        var acao = () => ConfiguracaoSegurancaExtensoes.ValidarConfiguracaoDeSeguranca(configuracao, Ambiente("Production"));
+
+        acao.Should().NotThrow();
+    }
+
+    /// <summary>Valor que apenas "parece" falso não dispensa nada — só o `false` literal.</summary>
+    [Theory]
+    [InlineData("0")]
+    [InlineData("nao")]
+    [InlineData("")]
+    public void AuthoritySemHttps_ComDispensaMalEscrita_ContinuaRecusando(string valor)
+    {
+        var configuracao = Configuracao([
+            .. ProducaoValida().Where(par => par.Chave != "Keycloak:auth-server-url"),
+            ("Keycloak:auth-server-url", "http://keycloak:8080"),
+            ("Keycloak:RequireHttpsMetadata", valor),
+        ]);
+
+        var acao = () => ConfiguracaoSegurancaExtensoes.ValidarConfiguracaoDeSeguranca(configuracao, Ambiente("Production"));
+
+        acao.Should().Throw<InvalidOperationException>().WithMessage("*HTTPS*");
+    }
+
+    [Fact]
+    public void AuthorityEmHttpNoDevelopment_ContinuaValida()
+    {
+        var configuracao = Configuracao(("Keycloak:auth-server-url", "http://localhost:8080"), ("Keycloak:realm", "codex"));
+
+        var acao = () => ConfiguracaoSegurancaExtensoes.ValidarConfiguracaoDeSeguranca(configuracao, Ambiente("Development"));
+
+        acao.Should().NotThrow(because: "o Keycloak local roda em HTTP e é o fluxo normal de desenvolvimento");
+    }
+
     private static string DiretorioDoProjetoApi()
     {
         var diretorio = new DirectoryInfo(AppContext.BaseDirectory);

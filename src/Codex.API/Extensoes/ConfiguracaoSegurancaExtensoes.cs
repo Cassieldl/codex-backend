@@ -40,11 +40,25 @@ public static class ConfiguracaoSegurancaExtensoes
 
         if (!ambiente.IsDevelopment())
         {
-            if (string.IsNullOrWhiteSpace(configuracao["Keycloak:auth-server-url"])
+            var authority = configuracao["Keycloak:auth-server-url"];
+
+            if (string.IsNullOrWhiteSpace(authority)
                 || string.IsNullOrWhiteSpace(configuracao["Keycloak:realm"]))
             {
                 falhas.Add("Keycloak:auth-server-url e Keycloak:realm são obrigatórios fora de Development — "
                     + "sem eles nenhum token é aceito e a área interna fica inacessível.");
+            }
+            else if (!authority.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                && !ExigenciaDeHttpsFoiDispensada(configuracao))
+            {
+                // Sem esta checagem a aplicação SOBE e morre em toda requisição: o JwtBearer só
+                // resolve a Authority no primeiro request e lança `InvalidOperationException`
+                // ("Authority must use HTTPS"), que o middleware de autenticação propaga. Como ele
+                // roda antes de qualquer rota, até `GET /saude/vivo` responde 500 — o orquestrador
+                // mata e recria a instância em laço sem nunca dizer o motivo. Medido no smoke.
+                falhas.Add($"Keycloak:auth-server-url precisa ser HTTPS fora de Development; veio '{authority}'. "
+                    + "Se o Keycloak fica numa rede interna com TLS terminado antes dele, declare "
+                    + "Keycloak:RequireHttpsMetadata=false para assumir o risco explicitamente.");
             }
 
             var hostsPermitidos = configuracao["AllowedHosts"];
@@ -89,4 +103,12 @@ public static class ConfiguracaoSegurancaExtensoes
                 "Configuração de segurança inválida: " + string.Join(" | ", falhas));
         }
     }
+
+    /// <summary>
+    /// Opt-in explícito para Authority sem HTTPS — o caso legítimo é Keycloak numa rede interna,
+    /// com o TLS terminando antes dele. Precisa ser declarado: o default nunca dispensa HTTPS, e
+    /// o valor tem de ser exatamente <c>false</c>, não qualquer coisa que "pareça" falso.
+    /// </summary>
+    internal static bool ExigenciaDeHttpsFoiDispensada(IConfiguration configuracao) =>
+        bool.TryParse(configuracao["Keycloak:RequireHttpsMetadata"], out var exigir) && !exigir;
 }

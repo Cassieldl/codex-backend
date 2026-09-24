@@ -41,9 +41,24 @@ public static class SegurancaExtensoes
                 if (!string.IsNullOrWhiteSpace(authority) && !string.IsNullOrWhiteSpace(realm))
                     options.Authority = $"{authority}/realms/{realm}";
 
+                // Endereço INTERNO do documento de descoberta, quando a API alcança o Keycloak por
+                // um nome que o navegador não conhece (service do cluster, rede privada). O issuer
+                // continua sendo o do metadata — ou seja, o público, o mesmo que vem no token.
+                //
+                // Sem isto, a única saída seria apontar a `Authority` para o endereço interno, e aí
+                // o token (emitido com o issuer público) é recusado: **401 em toda rota interna**,
+                // com o usuário autenticado na tela e nenhum log dizendo o motivo. Medido no smoke.
+                var enderecoMetadata = configuration["Keycloak:MetadataAddress"];
+                if (!string.IsNullOrWhiteSpace(enderecoMetadata))
+                    options.MetadataAddress = enderecoMetadata;
+
                 // Por ambiente — nunca constante (rules/security.md): só Development pode validar
-                // metadata OIDC sem HTTPS (Keycloak local roda em http://localhost:8080).
-                options.RequireHttpsMetadata = !ambiente.IsDevelopment();
+                // metadata OIDC sem HTTPS (Keycloak local roda em http://localhost:8080). Fora
+                // dele, dispensar exige declarar `Keycloak:RequireHttpsMetadata=false`, e a
+                // validação de partida recusa subir sem essa declaração: sem ela, a Authority em
+                // HTTP derruba TODA requisição com 500, inclusive as sondas de saúde.
+                options.RequireHttpsMetadata = !ambiente.IsDevelopment()
+                    && !ConfiguracaoSegurancaExtensoes.ExigenciaDeHttpsFoiDispensada(configuration);
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
