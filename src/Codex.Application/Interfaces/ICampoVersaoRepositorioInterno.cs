@@ -10,6 +10,13 @@ public interface ICampoVersaoRepositorioInterno
 
     Task<IReadOnlyCollection<CampoVersaoAdminDto>> ListarPorVersaoAsync(int versaoProvedorId, CancellationToken ct);
 
+    /// <summary>
+    /// O DTO de UM campo, pela mesma projeção da listagem. Existe para o service não remontar o
+    /// DTO à mão depois de escrever: a cópia manual não enxergava o nome do campo canônico (que
+    /// mora em outra tabela) e devolvia respostas de criar/atualizar diferentes das de listar.
+    /// </summary>
+    Task<CampoVersaoAdminDto?> ObterDtoPorIdAsync(int id, CancellationToken ct);
+
     /// <summary>Campos canônicos ATIVOS da versão de layout de <paramref name="versaoProvedorId"/> que ainda não têm <see cref="CampoVersao"/> nesta versão de provedor (I11 <c>camposLayoutAusentes</c>).</summary>
     Task<IReadOnlyCollection<CampoLayoutResponseDto>> ListarCamposLayoutAusentesAsync(int versaoProvedorId, CancellationToken ct);
 

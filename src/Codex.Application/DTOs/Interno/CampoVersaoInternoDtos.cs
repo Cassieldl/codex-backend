@@ -11,6 +11,13 @@ public sealed record CampoVersaoAdminDto
 
     public required int CampoLayoutId { get; init; }
 
+    /// <summary>
+    /// Nome do campo canônico, para a tela não precisar cruzar o id em outra requisição. Sem ele a
+    /// coluna "Campo" da tabela ficava vazia e os 16 botões de ação anunciavam "campo undefined"
+    /// ao leitor de tela — o cliente já lia este nome, o DTO é que não o tinha.
+    /// </summary>
+    public required string CampoLayoutNome { get; init; }
+
     public required string Tipo { get; init; }
 
     public string? Tamanho { get; init; }

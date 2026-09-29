@@ -29,6 +29,15 @@ public sealed class CampoVersaoRepositorioInterno : RepositorioBase<CodexDbConte
             .Where(c => c.VersaoProvedorId == versaoProvedorId && c.DesativadoEm == null)
             .OrderBy(c => c.Ordem), ct);
 
+    public async Task<CampoVersaoAdminDto?> ObterDtoPorIdAsync(int id, CancellationToken ct)
+    {
+        var encontrados = await MaterializarAsync(
+            Contexto.CamposVersao.AsNoTracking().Where(c => c.Id == id && c.DesativadoEm == null),
+            ct);
+
+        return encontrados.SingleOrDefault();
+    }
+
     public async Task<IReadOnlyCollection<CampoLayoutResponseDto>> ListarCamposLayoutAusentesAsync(int versaoProvedorId, CancellationToken ct)
     {
         var versaoLayoutId = await Contexto.VersoesProvedor.AsNoTracking()
@@ -90,12 +99,21 @@ public sealed class CampoVersaoRepositorioInterno : RepositorioBase<CodexDbConte
 
     public Task SalvarAlteracoesAsync(CancellationToken ct) => SalvarAsync(ct);
 
-    private static async Task<IReadOnlyCollection<CampoVersaoAdminDto>> MaterializarAsync(IQueryable<CampoVersao> query, CancellationToken ct) =>
+    /// <summary>
+    /// O nome do campo canônico vem por subconsulta correlacionada, e não por navegação: a
+    /// entidade <see cref="CampoVersao"/> guarda só o id. É o nome que a tela exibe na coluna
+    /// "Campo" e usa no rótulo acessível de cada ação — sem ele, a linha não se identifica.
+    /// </summary>
+    private async Task<IReadOnlyCollection<CampoVersaoAdminDto>> MaterializarAsync(IQueryable<CampoVersao> query, CancellationToken ct) =>
         await query.Select(c => new CampoVersaoAdminDto
         {
             Id = c.Id,
             VersaoProvedorId = c.VersaoProvedorId,
             CampoLayoutId = c.CampoLayoutId,
+            CampoLayoutNome = Contexto.CamposLayout
+                .Where(cl => cl.Id == c.CampoLayoutId)
+                .Select(cl => cl.Nome)
+                .FirstOrDefault() ?? string.Empty,
             Tipo = c.Tipo,
             Tamanho = c.Tamanho,
             Mascara = c.Mascara,

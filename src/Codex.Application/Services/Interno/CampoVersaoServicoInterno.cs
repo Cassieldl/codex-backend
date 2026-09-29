@@ -52,7 +52,7 @@ public sealed class CampoVersaoServicoInterno : ICampoVersaoServicoInterno
         await _repositorio.AdicionarAsync(campoVersao, ct);
         await _repositorio.SalvarAlteracoesAsync(ct);
 
-        return Mapear(campoVersao);
+        return await LerDtoOuFalharAsync(campoVersao.Id, ct);
     }
 
     public async Task<CampoVersaoAdminDto> AtualizarAsync(int id, AtualizarCampoVersaoDto dto, uint versaoEsperada, CancellationToken ct)
@@ -66,7 +66,7 @@ public sealed class CampoVersaoServicoInterno : ICampoVersaoServicoInterno
 
         await _repositorio.SalvarAlteracoesAsync(ct);
 
-        return Mapear(campoVersao);
+        return await LerDtoOuFalharAsync(campoVersao.Id, ct);
     }
 
     public async Task RemoverAsync(int id, uint versaoEsperada, CancellationToken ct)
@@ -87,22 +87,12 @@ public sealed class CampoVersaoServicoInterno : ICampoVersaoServicoInterno
         return campoVersao;
     }
 
-    private static CampoVersaoAdminDto Mapear(CampoVersao campoVersao) => new()
-    {
-        Id = campoVersao.Id,
-        VersaoProvedorId = campoVersao.VersaoProvedorId,
-        CampoLayoutId = campoVersao.CampoLayoutId,
-        Tipo = campoVersao.Tipo,
-        Tamanho = campoVersao.Tamanho,
-        Mascara = campoVersao.Mascara,
-        Dominio = campoVersao.Dominio,
-        EstadoPreenchimento = campoVersao.EstadoPreenchimento.ToString(),
-        Condicao = campoVersao.Condicao,
-        Exemplo = campoVersao.Exemplo,
-        NotaPreenchimento = campoVersao.NotaPreenchimento,
-        DestinoXml = campoVersao.DestinoXml,
-        NotaTransformacao = campoVersao.NotaTransformacao,
-        Ordem = campoVersao.Ordem,
-        VersaoConcorrencia = campoVersao.Versao,
-    };
+    /// <summary>
+    /// Relê pela projeção do repositório em vez de remontar o DTO à mão: o nome do campo canônico
+    /// mora em outra tabela, e a cópia manual devolvia criar/atualizar sem ele — diferente do que
+    /// a mesma tela recebe ao listar.
+    /// </summary>
+    private async Task<CampoVersaoAdminDto> LerDtoOuFalharAsync(int id, CancellationToken ct) =>
+        await _repositorio.ObterDtoPorIdAsync(id, ct)
+            ?? throw new EntidadeNaoEncontradaException("CampoVersao", id);
 }
