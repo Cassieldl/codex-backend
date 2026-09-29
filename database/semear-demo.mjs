@@ -84,6 +84,7 @@ const provedores = [
 ]
 
 const estados = ['Obrigatorio', 'Opcional', 'Condicional']
+const versoesCriadas = []
 
 for (const [indice, dados] of provedores.entries()) {
   const provedor = await chamar('POST', '/interno/provedores', dados)
@@ -109,6 +110,7 @@ for (const [indice, dados] of provedores.entries()) {
   }
 
   const versaoPublicada = await publicar('/interno/versoes', versao.dados.id, versao.etag)
+  versoesCriadas.push(versao.dados.id)
 
   await chamar('POST', `/interno/versoes/${versao.dados.id}/exemplos`, {
     nome: indice === 0 ? 'NFS-e com ISS retido' : 'Emissão simples, sem retenção',
@@ -124,7 +126,7 @@ for (const [indice, dados] of provedores.entries()) {
       severidade: 1,
       titulo: 'Alíquota de ISS ignorada quando o serviço é do grupo 14',
       corpo: 'Para os itens 14.xx o provedor recalcula a alíquota a partir do cadastro municipal e ignora o valor enviado no XML. Não é erro de integração.',
-      vigenciaInicio: new Date().toISOString(),
+      vigenciaInicio: new Date().toISOString().slice(0, 10),
       campoVersaoIds: [],
     })
     await publicar('/interno/avisos', aviso.dados.id, aviso.etag)
@@ -138,7 +140,8 @@ for (const [indice, dados] of provedores.entries()) {
 const erros = [
   {
     codigo: 'E-1023',
-    origem: 'Provedor',
+    origem: 'Prefeitura',
+    versoesProvedorIds: versoesCriadas,
     titulo: 'Inscrição municipal do prestador não encontrada',
     variantes: ['Inscrição municipal inválida ou não cadastrada', 'Prestador não localizado no cadastro mobiliário'],
     causaProvavel: 'A inscrição enviada não existe no cadastro do município, ou a empresa está com a inscrição suspensa.',
@@ -147,6 +150,7 @@ const erros = [
   {
     codigo: 'E-2145',
     origem: 'InvoiCy',
+    versoesProvedorIds: versoesCriadas.slice(0, 1),
     titulo: 'ISS retido informado sem o CNPJ do tomador',
     variantes: ['Tomador obrigatório quando IssRetido = 1', 'Retenção exige identificação do tomador'],
     causaProvavel: 'O XML declara retenção na fonte mas não identifica quem retém.',
