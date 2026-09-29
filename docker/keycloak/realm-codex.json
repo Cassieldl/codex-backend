@@ -3,6 +3,10 @@
   "enabled": true,
   "sslRequired": "none",
   "registrationAllowed": false,
+  "displayName": "Codex",
+  "internationalizationEnabled": true,
+  "supportedLocales": ["pt-BR", "en"],
+  "defaultLocale": "pt-BR",
   "roles": {
     "client": {
       "codex-backend": [
