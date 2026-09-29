@@ -113,11 +113,14 @@ public sealed class ProvedoresController : ControllerBase
         {
             var pagina = await _servico.ObterVersaoPaginaAsync(provedorSlug, versaoSlug, ct);
 
-            // ETag fraca baseada no xmin da VersaoProvedor — cache barato via concorrência
-            // otimista já existente. Limitação conhecida (registrada no handoff): mudanças em
+            // ETag fraca do xmin da VersaoProvedor + identidade da build (ver ETagDeConteudo): o
+            // xmin sozinho versiona o dado e não o formato, então um deploy que muda o DTO
+            // devolvia 304 e o cliente seguia com o corpo antigo.
+            //
+            // Limitação conhecida que permanece (registrada no handoff): mudanças em
             // avisos/campos/erros associados não tocam o xmin da própria VersaoProvedor, então
             // uma edição só nesses filhos não invalida o cache até a versão em si mudar.
-            var etag = $"W/\"{pagina.Versao.VersaoConcorrencia}\"";
+            var etag = ETagDeConteudo.Montar(pagina.Versao.VersaoConcorrencia);
             var ifNoneMatch = Request.Headers.IfNoneMatch.ToString();
             if (!string.IsNullOrEmpty(ifNoneMatch) && ifNoneMatch == etag)
                 return StatusCode(StatusCodes.Status304NotModified);
