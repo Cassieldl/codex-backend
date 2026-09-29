@@ -44,6 +44,7 @@ public sealed class ProvedorRepositorioPublico : RepositorioBase<CodexDbContext>
 
         var projetada = query.Select(p => new
         {
+            p.Id,
             p.Slug,
             p.Nome,
             p.Categoria,
@@ -67,7 +68,7 @@ public sealed class ProvedorRepositorioPublico : RepositorioBase<CodexDbContext>
         // Desempate por chave única em qualquer dos ramos: OFFSET sobre ordem parcial não tem
         // ordem total no Postgres — a linha reescrita por um UPDATE muda de página.
         var itens = await ordenada
-            .ThenBy(p => p.Slug) // a projeção pública não traz Id; slug é a chave única desta superfície
+            .ThenBy(p => p.Slug) // slug é a chave única desta superfície pública
             .Skip((filtro.Pagina - 1) * filtro.TamanhoPagina)
             .Take(filtro.TamanhoPagina)
             .Select(p => new ProvedorListaItemDto
@@ -77,6 +78,14 @@ public sealed class ProvedorRepositorioPublico : RepositorioBase<CodexDbContext>
                 Categoria = p.Categoria.ToString(),
                 IdentificadorInvoicy = p.IdentificadorInvoicy,
                 VerificadoEm = p.VerificadoEm,
+                // Uma subconsulta por linha da página, não por linha da tabela: o `Take` acima já
+                // limitou o conjunto. Mesma ordem do detalhe, para os dois lugares que oferecem o
+                // salto direto ("ir para a versão") concordarem sobre qual é a mais recente.
+                Versoes = Contexto.VersoesProvedor
+                    .Where(v => v.ProvedorId == p.Id && v.Publicado && v.DesativadoEm == null)
+                    .OrderByDescending(v => v.CriadoEm)
+                    .Select(v => new VersaoResumoMinimaDto { Slug = v.Slug, Rotulo = v.Rotulo })
+                    .ToList(),
             })
             .ToListAsync(ct);
 

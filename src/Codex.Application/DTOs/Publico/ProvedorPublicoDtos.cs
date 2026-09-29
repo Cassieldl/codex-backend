@@ -18,6 +18,13 @@ public sealed record ProvedorListaItemDto
     /// <c>null</c> quando o provedor não tem nenhuma versão publicada com verificação registrada.
     /// </summary>
     public DateOnly? VerificadoEm { get; init; }
+
+    /// <summary>
+    /// Versões publicadas do provedor, na mesma ordem do detalhe (<c>CriadoEm DESC</c>, mais
+    /// recente primeiro). A listagem carrega estas versões porque a home e a lista oferecem o
+    /// salto direto para uma versão — sem elas esses caminhos ficam vazios.
+    /// </summary>
+    public required IReadOnlyCollection<VersaoResumoMinimaDto> Versoes { get; init; }
 }
 
 /// <summary>
