@@ -192,4 +192,16 @@ public sealed record ErroResumoPublicoDto
     public required string Codigo { get; init; }
 
     public required string Titulo { get; init; }
+
+    /// <summary>
+    /// Mensagens observadas do erro, como o provedor as devolve.
+    ///
+    /// <para>
+    /// É por elas que o integrador reconhece o próprio caso: quem abre esta página tem em mãos o
+    /// texto que a prefeitura retornou, não o código interno nem o título que damos a ele. Sem
+    /// isto a lista só respondia a quem já sabia o código — e o texto ficava a um clique de
+    /// distância, na página do erro.
+    /// </para>
+    /// </summary>
+    public required IReadOnlyCollection<string> Variantes { get; init; }
 }

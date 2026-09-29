@@ -103,8 +103,20 @@ public sealed class VersaoProvedorRepositorioPublico : RepositorioBase<CodexDbCo
             from ev in Contexto.ErrosVersoes.AsNoTracking()
             join e in Contexto.Erros.AsNoTracking() on ev.ErroId equals e.Id
             where ev.VersaoProvedorId == versaoProvedorId && e.Publicado && e.DesativadoEm == null
-            orderby e.CriadoEm descending
-            select new ErroResumoPublicoDto { Slug = e.Slug, Codigo = e.Codigo, Titulo = e.Titulo }
+            // Desempate pela chave única, como nos exemplos abaixo: erros criados na mesma
+            // transação empatam em `criadoem`, e sem ele a ordem devolvida é a física do heap.
+            orderby e.CriadoEm descending, e.Id descending
+            select new ErroResumoPublicoDto
+            {
+                Slug = e.Slug,
+                Codigo = e.Codigo,
+                Titulo = e.Titulo,
+                Variantes = Contexto.VariantesMensagem
+                    .Where(v => v.ErroId == e.Id && v.DesativadoEm == null)
+                    .OrderBy(v => v.Id)
+                    .Select(v => v.Texto)
+                    .ToList(),
+            }
         ).ToListAsync(ct);
 
     /// <summary>
