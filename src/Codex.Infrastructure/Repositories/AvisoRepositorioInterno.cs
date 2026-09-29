@@ -28,6 +28,12 @@ public sealed class AvisoRepositorioInterno : RepositorioBase<CodexDbContext>, I
             .OrderByDescending(a => a.VigenciaInicio)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyCollection<Aviso>> ListarPorVersaoAsync(int versaoProvedorId, CancellationToken ct) =>
+        await Contexto.Avisos.AsNoTracking()
+            .Where(a => a.VersaoProvedorId == versaoProvedorId && a.DesativadoEm == null)
+            .OrderByDescending(a => a.VigenciaInicio)
+            .ToListAsync(ct);
+
     public async Task<IReadOnlyCollection<Aviso>> ListarTodosAtivosAsync(CancellationToken ct) =>
         await Contexto.Avisos.AsNoTracking().Where(a => a.DesativadoEm == null).ToListAsync(ct);
 

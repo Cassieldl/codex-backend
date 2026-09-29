@@ -39,6 +39,13 @@ public sealed record VersaoAdminDetalheDto
 
     public DateOnly? VerificadoEm { get; init; }
 
+    /// <summary>
+    /// Avisos DESTA versão, como <c>ProvedorAdminDetalheDto.Avisos</c> faz para o provedor. A tela
+    /// de versão edita os avisos no lugar e invalida o detalhe depois de cada mutação, então eles
+    /// são parte do agregado — o cliente já os lia, e sem eles a tela inteira deixava de abrir.
+    /// </summary>
+    public required IReadOnlyCollection<AvisoAdminDto> Avisos { get; init; }
+
     public required uint VersaoConcorrencia { get; init; }
 }
 

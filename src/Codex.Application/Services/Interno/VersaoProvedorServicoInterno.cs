@@ -1,6 +1,7 @@
 using Codex.Application.Common;
 using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
+using Codex.Application.Mappings;
 using Codex.Domain.Entities;
 using Codex.Domain.Enums;
 using Codex.Domain.Exceptions;
@@ -12,17 +13,20 @@ public sealed class VersaoProvedorServicoInterno : IVersaoProvedorServicoInterno
 {
     private readonly IVersaoProvedorRepositorioInterno _repositorio;
     private readonly IProvedorRepositorioInterno _provedorRepositorio;
+    private readonly IAvisoRepositorioInterno _avisoRepositorio;
     private readonly IIndiceBuscaWriter _indiceBuscaWriter;
     private readonly IUnidadeDeTrabalho _unidadeDeTrabalho;
 
     public VersaoProvedorServicoInterno(
         IVersaoProvedorRepositorioInterno repositorio,
         IProvedorRepositorioInterno provedorRepositorio,
+        IAvisoRepositorioInterno avisoRepositorio,
         IIndiceBuscaWriter indiceBuscaWriter,
         IUnidadeDeTrabalho unidadeDeTrabalho)
     {
         _repositorio = repositorio;
         _provedorRepositorio = provedorRepositorio;
+        _avisoRepositorio = avisoRepositorio;
         _indiceBuscaWriter = indiceBuscaWriter;
         _unidadeDeTrabalho = unidadeDeTrabalho;
     }
@@ -35,7 +39,7 @@ public sealed class VersaoProvedorServicoInterno : IVersaoProvedorServicoInterno
         var versao = await _repositorio.ObterPorIdAsync(id, rastreada: false, ct)
             ?? throw new EntidadeNaoEncontradaException("VersaoProvedor", id);
 
-        return Mapear(versao);
+        return await MapearAsync(versao, ct);
     }
 
     public async Task<VersaoAdminDetalheDto> CriarAsync(int provedorId, CriarVersaoDto dto, CancellationToken ct)
@@ -54,7 +58,7 @@ public sealed class VersaoProvedorServicoInterno : IVersaoProvedorServicoInterno
             await _indiceBuscaWriter.AtualizarPesosAsync(TipoItemIndexado.versaoprovedor, versao.Id, pesoA, pesoB, pesoC, pesoD, ctInterno);
         }, ct);
 
-        return Mapear(versao);
+        return await MapearAsync(versao, ct);
     }
 
     public async Task<VersaoAdminDetalheDto> AtualizarAsync(int id, AtualizarVersaoDto dto, uint versaoEsperada, CancellationToken ct)
@@ -71,7 +75,7 @@ public sealed class VersaoProvedorServicoInterno : IVersaoProvedorServicoInterno
             await _indiceBuscaWriter.AtualizarPesosAsync(TipoItemIndexado.versaoprovedor, versao.Id, pesoA2, pesoB2, pesoC2, pesoD2, ctInterno);
         }, ct);
 
-        return Mapear(versao);
+        return await MapearAsync(versao, ct);
     }
 
     public async Task RemoverAsync(int id, uint versaoEsperada, CancellationToken ct)
@@ -98,7 +102,7 @@ public sealed class VersaoProvedorServicoInterno : IVersaoProvedorServicoInterno
             await _indiceBuscaWriter.RecalcularVisibilidadeAsync(TipoItemBusca.VersaoProvedor, versao.Id, ctInterno);
         }, ct);
 
-        return Mapear(versao);
+        return await MapearAsync(versao, ct);
     }
 
     public async Task<VersaoAdminDetalheDto> RegistrarVerificacaoAsync(int id, AtualizarVerificacaoDto dto, uint versaoEsperada, CancellationToken ct)
@@ -107,7 +111,7 @@ public sealed class VersaoProvedorServicoInterno : IVersaoProvedorServicoInterno
         versao.RegistrarVerificacao(dto.VerificadoEm);
         await _repositorio.SalvarAlteracoesAsync(ct);
 
-        return Mapear(versao);
+        return await MapearAsync(versao, ct);
     }
 
     private async Task<VersaoProvedor> CarregarRastreadaOuFalharAsync(int id, uint versaoEsperada, CancellationToken ct)
@@ -121,16 +125,27 @@ public sealed class VersaoProvedorServicoInterno : IVersaoProvedorServicoInterno
         return versao;
     }
 
-    private static VersaoAdminDetalheDto Mapear(VersaoProvedor versao) => new()
+    /// <summary>
+    /// Os avisos entram em toda resposta de detalhe, não só na leitura: a tela de versão invalida
+    /// o detalhe depois de publicar, verificar e atualizar, e receber o agregado sem eles voltaria
+    /// a quebrar a tela no primeiro refetch.
+    /// </summary>
+    private async Task<VersaoAdminDetalheDto> MapearAsync(VersaoProvedor versao, CancellationToken ct)
     {
-        Id = versao.Id,
-        ProvedorId = versao.ProvedorId,
-        Slug = versao.Slug,
-        Rotulo = versao.Rotulo,
-        Introducao = versao.Introducao,
-        VersaoLayoutId = versao.VersaoLayoutId,
-        Publicado = versao.Publicado,
-        VerificadoEm = versao.VerificadoEm,
-        VersaoConcorrencia = versao.Versao,
-    };
+        var avisos = await _avisoRepositorio.ListarPorVersaoAsync(versao.Id, ct);
+
+        return new VersaoAdminDetalheDto
+        {
+            Id = versao.Id,
+            ProvedorId = versao.ProvedorId,
+            Slug = versao.Slug,
+            Rotulo = versao.Rotulo,
+            Introducao = versao.Introducao,
+            VersaoLayoutId = versao.VersaoLayoutId,
+            Publicado = versao.Publicado,
+            VerificadoEm = versao.VerificadoEm,
+            Avisos = avisos.Select(AvisoAdminMapper.Mapear).ToArray(),
+            VersaoConcorrencia = versao.Versao,
+        };
+    }
 }
