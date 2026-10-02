@@ -346,6 +346,20 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         return linhas.Where(l => l.TipoItem != TipoErro || vinculoPublicoPorErro[l.ItemId]).ToList();
     }
 
+    /// <summary>
+    /// FORTE: exige todos os lexemas do termo via AND (<c>websearch_to_tsquery</c>).
+    ///
+    /// <para>
+    /// Normaliza por <c>codex.normalizar_consulta</c>, nunca por <c>codex.normalizar_busca</c>.
+    /// As duas diferem na terceira forma — a compactada —, e é o que separa consulta de
+    /// indexação: no documento as formas são ALTERNATIVAS (o tsvector fica com todas), enquanto
+    /// aqui viram EXIGÊNCIAS, porque o AND pede cada lexema. A compactada de um documento longo é
+    /// o texto inteiro colado num lexema só, que nunca é igual à compactada de um termo curto —
+    /// então exigi-la tornava este passo inalcançável para qualquer termo com mais de um token,
+    /// incluindo o código do erro (pelo hífen) e o trecho de mensagem, que são os dois caminhos
+    /// de entrada que o escopo funcional declara críticos.
+    /// </para>
+    /// </summary>
     private Task<List<LinhaBusca>> ExecutarForteAsync(string termo, bool incluirRascunho, string[] tiposArray, CancellationToken ct)
     {
         var query = incluirRascunho
@@ -354,19 +368,19 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                        ib.titulo AS "Titulo", ib.url AS "Url", ib.publicado AS "Publicado",
                        ib.provedorid AS "ProvedorId", ib.versaoprovedorid AS "VersaoProvedorId",
                        ib.provedorids AS "ProvedorIds",
-                       ts_rank_cd(ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo})), 32) AS "Pontuacao",
-                       ts_rank(ARRAY[0,0,0,1]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo}))) > 0 AS "CasouA",
-                       ts_rank(ARRAY[0,0,1,0]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo}))) > 0 AS "CasouB",
-                       ts_rank(ARRAY[0,1,0,0]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo}))) > 0 AS "CasouC",
-                       ts_rank(ARRAY[1,0,0,0]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo}))) > 0 AS "CasouD",
+                       ts_rank_cd(ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo})), 32) AS "Pontuacao",
+                       ts_rank(ARRAY[0,0,0,1]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))) > 0 AS "CasouA",
+                       ts_rank(ARRAY[0,0,1,0]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))) > 0 AS "CasouB",
+                       ts_rank(ARRAY[0,1,0,0]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))) > 0 AS "CasouC",
+                       ts_rank(ARRAY[1,0,0,0]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))) > 0 AS "CasouD",
                        ts_headline('codex.codex_pt'::regconfig,
                            replace(replace(concat_ws(' ', ib.pesoa, ib.pesob, ib.pesoc), '⟦', ''), '⟧', ''),
-                           websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo})),
+                           websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo})),
                            'StartSel=⟦, StopSel=⟧, MaxFragments=1, MaxWords=35, MinWords=15') AS "FragmentoBruto"
                 FROM codex.itensbusca ib
                 WHERE ib.desativadoem IS NULL
                   AND (cardinality({tiposArray}::text[]) = 0 OR ib.tipoitem = ANY({tiposArray}::text[]))
-                  AND ib.documento @@ websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo}))
+                  AND ib.documento @@ websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))
                 ORDER BY "Pontuacao" DESC
                 LIMIT {CapLinhas}
                 """)
@@ -375,19 +389,19 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                        ib.titulo AS "Titulo", ib.url AS "Url", ib.publicado AS "Publicado",
                        ib.provedorid AS "ProvedorId", ib.versaoprovedorid AS "VersaoProvedorId",
                        ib.provedorids AS "ProvedorIds",
-                       ts_rank_cd(ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo})), 32) AS "Pontuacao",
-                       ts_rank(ARRAY[0,0,0,1]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo}))) > 0 AS "CasouA",
-                       ts_rank(ARRAY[0,0,1,0]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo}))) > 0 AS "CasouB",
-                       ts_rank(ARRAY[0,1,0,0]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo}))) > 0 AS "CasouC",
-                       ts_rank(ARRAY[1,0,0,0]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo}))) > 0 AS "CasouD",
+                       ts_rank_cd(ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo})), 32) AS "Pontuacao",
+                       ts_rank(ARRAY[0,0,0,1]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))) > 0 AS "CasouA",
+                       ts_rank(ARRAY[0,0,1,0]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))) > 0 AS "CasouB",
+                       ts_rank(ARRAY[0,1,0,0]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))) > 0 AS "CasouC",
+                       ts_rank(ARRAY[1,0,0,0]::float4[], ib.documento, websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))) > 0 AS "CasouD",
                        ts_headline('codex.codex_pt'::regconfig,
                            replace(replace(concat_ws(' ', ib.pesoa, ib.pesob, ib.pesoc), '⟦', ''), '⟧', ''),
-                           websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo})),
+                           websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo})),
                            'StartSel=⟦, StopSel=⟧, MaxFragments=1, MaxWords=35, MinWords=15') AS "FragmentoBruto"
                 FROM codex.itensbusca ib
                 WHERE ib.visivelpublico
                   AND (cardinality({tiposArray}::text[]) = 0 OR ib.tipoitem = ANY({tiposArray}::text[]))
-                  AND ib.documento @@ websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_busca({termo}))
+                  AND ib.documento @@ websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))
                 ORDER BY "Pontuacao" DESC
                 LIMIT {CapLinhas}
                 """);
@@ -399,6 +413,13 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
     /// PARCIAL: recombina os mesmos lexemas do termo com OR (arquitetura.md §6.4) — cobertura
     /// parcial em vez de exigir todos os lexemas via AND (o que <c>websearch_to_tsquery</c> faz
     /// no passo FORTE).
+    ///
+    /// <para>
+    /// Usa <c>codex.normalizar_consulta</c> pelo mesmo motivo do passo forte: no OR a forma
+    /// compactada não chega a excluir resultado, mas entra como um lexema que nunca casa e polui
+    /// a pontuação. Os dois passos precisam partir do mesmo conjunto de lexemas, senão o parcial
+    /// deixa de ser o relaxamento do forte.
+    /// </para>
     /// </summary>
     private Task<List<LinhaBusca>> ExecutarParcialAsync(string termo, bool incluirRascunho, string[] tiposArray, CancellationToken ct)
     {
@@ -407,7 +428,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                 WITH lexemas AS (
                     SELECT string_agg(DISTINCT lexema, ' | ') AS combinados
                     FROM unnest(tsvector_to_array(
-                        to_tsvector('codex.codex_pt'::regconfig, codex.normalizar_busca({termo}))
+                        to_tsvector('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))
                     )) AS lexema
                 )
                 SELECT ib.itembuscaid AS "ItemBuscaId", ib.itemid AS "ItemId", ib.tipoitem AS "TipoItem", ib.chave AS "Chave",
@@ -435,7 +456,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                 WITH lexemas AS (
                     SELECT string_agg(DISTINCT lexema, ' | ') AS combinados
                     FROM unnest(tsvector_to_array(
-                        to_tsvector('codex.codex_pt'::regconfig, codex.normalizar_busca({termo}))
+                        to_tsvector('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))
                     )) AS lexema
                 )
                 SELECT ib.itembuscaid AS "ItemBuscaId", ib.itemid AS "ItemId", ib.tipoitem AS "TipoItem", ib.chave AS "Chave",
