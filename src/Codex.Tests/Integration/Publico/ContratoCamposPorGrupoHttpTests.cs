@@ -38,7 +38,7 @@ public sealed class ContratoCamposPorGrupoHttpTests : IAsyncLifetime
     [
         "campoLayoutSlug", "nome", "caminhoXml", "significado", "tipo", "tamanho", "mascara",
         "dominio", "estadoPreenchimento", "condicao", "exemplo", "notaPreenchimento",
-        "destinoXml", "notaTransformacao", "ordem",
+        "destinoXml", "notaTransformacao", "ordem", "errosConhecidos",
     ];
 
     /// <summary>União <c>EstadoPreenchimentoCampo</c> do cliente — string, nunca número.</summary>

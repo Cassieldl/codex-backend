@@ -179,6 +179,7 @@ public sealed class ProvedorServicoPublicoTests
 
         CampoVersaoProjecaoDto Campo(string slug, int ordem, string? grupo, string? grupoSlug) => new()
         {
+            ErrosConhecidos = [],
             CampoLayoutSlug = slug,
             Nome = slug,
             CaminhoXml = $"/{slug}",

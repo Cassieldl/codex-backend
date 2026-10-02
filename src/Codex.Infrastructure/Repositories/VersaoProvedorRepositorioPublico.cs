@@ -71,8 +71,40 @@ public sealed class VersaoProvedorRepositorioPublico : RepositorioBase<CodexDbCo
             }
         ).ToListAsync(ct);
 
+        // Uma consulta para TODOS os campos, agrupada em memória — nunca uma subconsulta
+        // correlacionada por linha, que numa tabela exaustiva vira uma ida ao banco por campo.
+        //
+        // O critério repete o de `ListarErrosAplicaveisPublicadosAsync` de propósito: o
+        // indicador da linha leva a um erro que a MESMA página lista mais abaixo. Trazer aqui
+        // erro geral (sem vínculo de versão) apontaria para fora do que está à vista.
+        var errosPorCampo = await (
+            from ec in Contexto.ErrosCampos.AsNoTracking()
+            join e in Contexto.Erros.AsNoTracking() on ec.ErroId equals e.Id
+            join cl in Contexto.CamposLayout.AsNoTracking() on ec.CampoLayoutId equals cl.Id
+            where e.Publicado
+                && e.DesativadoEm == null
+                && ec.DesativadoEm == null
+                && Contexto.ErrosVersoes.Any(ev =>
+                    ev.ErroId == e.Id
+                    && ev.VersaoProvedorId == versaoProvedorId
+                    && ev.DesativadoEm == null)
+            // Desempate pela chave única: o código empata quando dois erros nascem na mesma
+            // transação, e sem ele a ordem dos indicadores muda a cada UPDATE no heap.
+            orderby e.Codigo, e.Id
+            select new { CampoSlug = cl.Slug, e.Slug, e.Codigo }
+        ).ToListAsync(ct);
+
+        var indicePorCampo = errosPorCampo
+            .GroupBy(x => x.CampoSlug)
+            .ToDictionary(
+                grupo => grupo.Key,
+                grupo => (IReadOnlyCollection<ErroDoCampoPublicoDto>)grupo
+                    .Select(x => new ErroDoCampoPublicoDto { Slug = x.Slug, Codigo = x.Codigo })
+                    .ToArray());
+
         return brutos.Select(c => new CampoVersaoProjecaoDto
         {
+            ErrosConhecidos = indicePorCampo.GetValueOrDefault(c.Slug, []),
             CampoLayoutSlug = c.Slug,
             Nome = c.Nome,
             CaminhoXml = c.CaminhoXml,

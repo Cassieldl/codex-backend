@@ -134,6 +134,36 @@ public sealed record CampoVersaoPublicoDto
     /// do CampoLayout" e não menciona a ordem própria de CampoVersao para este fim.
     /// </summary>
     public required int Ordem { get; init; }
+
+    /// <summary>
+    /// Rejeições já registradas sobre ESTE campo NESTA versão (escopo funcional v3.1 §6.1).
+    ///
+    /// <para>
+    /// O elo erro → campo já existia na página do erro; este é o sentido inverso, e é o que
+    /// responde a pergunta que traz o leitor ao portal: "o que eu preenchi errado?". Sem ele, a
+    /// pessoa lê a linha do campo de que suspeita sem saber que existe rejeição conhecida
+    /// exatamente sobre ele — com o erro listado mais abaixo, na mesma página, sem vínculo
+    /// visível.
+    /// </para>
+    ///
+    /// <para>
+    /// O critério é o MESMO de <c>ErrosResumo</c>: erro publicado e aplicável a esta versão. Não
+    /// inclui erro geral sem versão vinculada, senão o indicador da linha apontaria para um erro
+    /// que a página não lista.
+    /// </para>
+    /// </summary>
+    public required IReadOnlyCollection<ErroDoCampoPublicoDto> ErrosConhecidos { get; init; }
+}
+
+/// <summary>
+/// Referência mínima para o indicador de erro na linha do campo: o suficiente para rotular e
+/// linkar, sem repetir o resumo que já desce em <c>ErrosResumo</c>.
+/// </summary>
+public sealed record ErroDoCampoPublicoDto
+{
+    public required string Slug { get; init; }
+
+    public required string Codigo { get; init; }
 }
 
 /// <summary>
@@ -176,6 +206,9 @@ public sealed record CampoVersaoProjecaoDto
     public string? Grupo { get; init; }
 
     public string? GrupoSlug { get; init; }
+
+    /// <inheritdoc cref="CampoVersaoPublicoDto.ErrosConhecidos"/>
+    public required IReadOnlyCollection<ErroDoCampoPublicoDto> ErrosConhecidos { get; init; }
 }
 
 public sealed record ErrosResumoPublicoDto

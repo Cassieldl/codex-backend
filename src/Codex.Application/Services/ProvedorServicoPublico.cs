@@ -193,5 +193,6 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
         DestinoXml = campo.DestinoXml,
         NotaTransformacao = campo.NotaTransformacao,
         Ordem = campo.Ordem,
+        ErrosConhecidos = campo.ErrosConhecidos,
     };
 }
