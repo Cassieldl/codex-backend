@@ -142,6 +142,9 @@ const erros = [
     codigo: 'E-1023',
     origem: 'Prefeitura',
     versoesProvedorIds: versoesCriadas,
+    // O vínculo com o campo é o que acende o indicador na linha da tabela da versão. Sem ele o
+    // erro existe, é listado no bloco de baixo, e nada liga a rejeição ao campo que a causou.
+    camposLayoutIds: [camposCriados[1].dados.id],
     titulo: 'Inscrição municipal do prestador não encontrada',
     variantes: ['Inscrição municipal inválida ou não cadastrada', 'Prestador não localizado no cadastro mobiliário'],
     causaProvavel: 'A inscrição enviada não existe no cadastro do município, ou a empresa está com a inscrição suspensa.',
@@ -151,6 +154,9 @@ const erros = [
     codigo: 'E-2145',
     origem: 'InvoiCy',
     versoesProvedorIds: versoesCriadas.slice(0, 1),
+    // Dois campos: a rejeição nasce da combinação entre eles, e o leitor pode chegar por
+    // qualquer um dos dois.
+    camposLayoutIds: [camposCriados[2].dados.id, camposCriados[6].dados.id],
     titulo: 'ISS retido informado sem o CNPJ do tomador',
     variantes: ['Tomador obrigatório quando IssRetido = 1', 'Retenção exige identificação do tomador'],
     causaProvavel: 'O XML declara retenção na fonte mas não identifica quem retém.',
