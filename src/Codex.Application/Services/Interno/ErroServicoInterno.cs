@@ -72,10 +72,15 @@ public sealed class ErroServicoInterno : IErroServicoInterno
         var erro = await CarregarRastreadaOuFalharAsync(id, versaoEsperada, ct);
 
         erro.AtualizarConteudo(dto.Titulo, dto.CausaProvavel, dto.SolucaoSugerida);
-        erro.SubstituirVariantes(dto.Variantes);
 
         await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
         {
+            // QA-01 (demanda 008): remove as VarianteMensagem antigas ANTES de
+            // SubstituirVariantes mutar a coleção de navegação — senão o EF tenta "severar" filhos
+            // de FK obrigatória com OnDelete(Restrict) e o SaveChanges lança.
+            await _repositorio.RemoverVariantesAsync(erro.Id, ctInterno);
+            erro.SubstituirVariantes(dto.Variantes);
+
             await _repositorio.SubstituirVersoesAplicaveisAsync(erro.Id, dto.VersoesProvedorIds, ctInterno);
             await _repositorio.SubstituirCamposRelacionadosAsync(erro.Id, dto.CamposLayoutIds, ctInterno);
             await _repositorio.SalvarAlteracoesAsync(ctInterno);

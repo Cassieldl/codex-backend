@@ -14,13 +14,19 @@ public sealed class ErroRepositorioInterno : RepositorioBase<CodexDbContext>, IE
     {
     }
 
+    /// <summary>
+    /// Traz <see cref="Erro.Variantes"/> SEMPRE, rastreada ou não: o detalhe interno (I18b) e a
+    /// edição (I19) leem pelo mesmo método, e `rastreada: false` nunca pode significar "sem
+    /// variantes" — foi o que esvaziava o formulário interno e fazia o PUT seguinte apagar as
+    /// variantes existentes via `SubstituirVariantes`.
+    /// </summary>
     public Task<Erro?> ObterPorIdAsync(int id, bool rastreada, CancellationToken ct)
     {
-        IQueryable<Erro> query = Contexto.Erros.Where(e => e.Id == id && e.DesativadoEm == null);
+        IQueryable<Erro> query = Contexto.Erros
+            .Where(e => e.Id == id && e.DesativadoEm == null)
+            .Include(e => e.Variantes);
 
-        if (rastreada)
-            query = query.Include(e => e.Variantes);
-        else
+        if (!rastreada)
             query = query.AsNoTracking();
 
         return query.FirstOrDefaultAsync(ct);
@@ -105,6 +111,20 @@ public sealed class ErroRepositorioInterno : RepositorioBase<CodexDbContext>, IE
         var existentes = await Contexto.ErrosCampos.Where(ec => ec.ErroId == erroId).ToListAsync(ct);
         Contexto.ErrosCampos.RemoveRange(existentes);
         await Contexto.ErrosCampos.AddRangeAsync(campoLayoutIds.Distinct().Select(id => ErroCampo.Criar(erroId, id)), ct);
+    }
+
+    /// <summary>
+    /// Remoção explícita (QA-01, demanda 008): sem isso, chamar <c>Erro.SubstituirVariantes</c>
+    /// num <see cref="Erro"/> rastreado (que já traz <see cref="Erro.Variantes"/> por
+    /// <see cref="ObterPorIdAsync"/>) deixa o EF com filhos órfãos de FK obrigatória e
+    /// <c>OnDelete(Restrict)</c> — <c>SaveChanges</c> lança em vez de apagar. As linhas usam o
+    /// MESMO identity map da consulta que trouxe <paramref name="erroId"/>, então isto marca as
+    /// instâncias já rastreadas como <c>Deleted</c>, nunca cria um rastreamento paralelo.
+    /// </summary>
+    public async Task RemoverVariantesAsync(int erroId, CancellationToken ct)
+    {
+        var existentes = await Contexto.VariantesMensagem.Where(v => v.ErroId == erroId).ToListAsync(ct);
+        Contexto.VariantesMensagem.RemoveRange(existentes);
     }
 
     public async Task AdicionarAsync(Erro erro, CancellationToken ct) =>

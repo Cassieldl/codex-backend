@@ -31,6 +31,20 @@ public interface IErroRepositorioInterno
 
     Task SubstituirCamposRelacionadosAsync(int erroId, IReadOnlyCollection<int> campoLayoutIds, CancellationToken ct);
 
+    /// <summary>
+    /// Remove explicitamente as <see cref="VarianteMensagem"/> existentes do <see cref="Erro"/> —
+    /// chamar ANTES de <see cref="Erro.SubstituirVariantes"/> num <see cref="Erro"/> rastreado.
+    /// <see cref="VarianteMensagem.ErroId"/> é obrigatória e a relação usa
+    /// <c>OnDelete(DeleteBehavior.Restrict)</c>: limpar a coleção de navegação sozinha "rompe" o
+    /// relacionamento das linhas antigas sem dizer ao EF o que fazer com elas, e o
+    /// <c>SaveChanges</c> lança <c>InvalidOperationException</c> em vez de apagar o órfão. Remover
+    /// pelo <c>DbSet</c> primeiro marca as linhas antigas como <c>Deleted</c> explicitamente — o
+    /// mesmo padrão já usado nas tabelas de junção (<c>ArtigoRepositorioInterno.SubstituirCamposLayoutRelacionadosAsync</c>),
+    /// só que aqui a FK não é opcional nem apagável via <c>RemoveRange</c> numa tabela de junção
+    /// pura: é uma entidade-filho de verdade.
+    /// </summary>
+    Task RemoverVariantesAsync(int erroId, CancellationToken ct);
+
     Task AdicionarAsync(Erro erro, CancellationToken ct);
 
     Task SalvarAlteracoesAsync(CancellationToken ct);
