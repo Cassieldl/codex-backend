@@ -1,0 +1,5569 @@
+{
+ "fonte": "Layout_Recepcao_NFSe_Reforma_Tributaria - versão 8.xlsx, aba Envio_Recepção de RPS",
+ "extraidoEm": "2026-10-03",
+ "observacao": "Caminho montado pela coluna Pai. A planilha repete as sequências C574 e C575, então três campos de RepositorioNacional saem com o pai errado aqui; o XSD é a referência de caminho.",
+ "tags": [
+  {
+   "seq": "C01",
+   "caminho": "Envio",
+   "descricao": "Envio",
+   "tipo": "-",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C02",
+   "caminho": "Envio/ModeloDocumento",
+   "descricao": "Modelo de documento a ser enviado",
+   "tipo": "C(10)",
+   "ocorrencia": "1-1",
+   "observacao": "Informar: NFSE",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C03",
+   "caminho": "Envio/Versao",
+   "descricao": "Versão do Layout do documento",
+   "tipo": "N(2.2)",
+   "ocorrencia": "1-1",
+   "observacao": "Informar a versão do layout do arquivo XML. Ex: 1.00",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C04",
+   "caminho": "Envio/ChaveParceiro",
+   "descricao": "Chave de Parceiro",
+   "tipo": "C(30)",
+   "ocorrencia": "0-1",
+   "observacao": "Campo exclusivo para integração através do InvoiCy Conector. Não é necessário preenchimento na integração direta via WebServices. A chave de parceiro é fornecida pela Migrate ao parceiro no ato da efetivação do contrato comercial. A chave de parceiro é única para cada parceiro.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C05",
+   "caminho": "Envio/ChaveAcesso",
+   "descricao": "Chave de Acesso",
+   "tipo": "C(50)",
+   "ocorrencia": "0-1",
+   "observacao": "Campo exclusivo para integração através do InvoiCy Conector. Não é necessário preenchimento na integração direta via WebServices.A chave de acesso é gerada no cadastro de uma nova empresa no InvoiCy. Ao concluir o cadastro de uma empresa, a chave de acesso será exibida. Esta chave é única para cada empresa cadastrada, e identifica a empresa emissora do documento no InvoiCy.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C06",
+   "caminho": "Envio/Imprimir",
+   "descricao": "Efetuar a impressão automática dos documentos efetivados",
+   "tipo": "C(1)",
+   "ocorrencia": "0-1",
+   "observacao": "Preencher com S - Sim; ou N - Não",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C07",
+   "caminho": "Envio/ApelidoImpressora",
+   "descricao": "Apelido da impressora que foi cadastrada no InvoiCy Conector",
+   "tipo": "C(300)",
+   "ocorrencia": "0-1",
+   "observacao": "Se não informar essa tag, o documento será enviado para a impressora padrão configurada no InvoiCy Conector.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C08",
+   "caminho": "Envio/RPS",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C09",
+   "caminho": "Envio/RPS/RPSNumero",
+   "descricao": "Número do RPS",
+   "tipo": "N(15.0)",
+   "ocorrencia": "1-1",
+   "observacao": "Atenção: alguns padrões exigem seguir a sequência de numeração do RPS. Mesmo que mude a série, somente reinicie a numeração se tiver certeza.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C10",
+   "caminho": "Envio/RPS/RPSSerie",
+   "descricao": "Série do RPS",
+   "tipo": "C(5)",
+   "ocorrencia": "1-1",
+   "observacao": "Atenção: alguns padrões exigem utilizar determinada série. Verificar nos artigos de particularidades e no cadastro da empresa na prefeitura.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C11",
+   "caminho": "Envio/RPS/RPSTipo",
+   "descricao": "Tipo do RPS",
+   "tipo": "N(1.0)",
+   "ocorrencia": "1-1",
+   "observacao": "Informar 1 – Recibo Provisório de Serviços",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C12",
+   "caminho": "Envio/RPS/IDUnico",
+   "descricao": "Controle de Numeração de RPS",
+   "tipo": "C(200)",
+   "ocorrencia": "0-1",
+   "observacao": "O mesmo ID não poderá ser utilizado para outra nota; Essa tag irá substituir o número do RPS e a série do documento enviado; Quando o campo IDUnico for preenchido, o campo série passa a ser opcional; Para mais informações https://desenvolvedores.migrate.info/2021/12/10/controle-de-numeracao-de-rps/",
+   "versaoInvoicy": "2.45.0.0"
+  },
+  {
+   "seq": "C13",
+   "caminho": "Envio/RPS/nNFSeJudicial",
+   "descricao": "Número da NFSe para emissão via Decisão Judicial",
+   "tipo": "N(15.0)",
+   "ocorrencia": "1-1",
+   "observacao": "Smente deve ser preenchida em casos de emissão dia Decisão Judicial",
+   "versaoInvoicy": null
+  },
+  {
+   "seq": "C14",
+   "caminho": "Envio/RPS/dEmis",
+   "descricao": "Data de emissão",
+   "tipo": "DateTime",
+   "ocorrencia": "1-1",
+   "observacao": "Formato: AAAA-MM-DDTHH:MM:SS",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C15",
+   "caminho": "Envio/RPS/dCompetencia",
+   "descricao": "Data da competência",
+   "tipo": "DateTime",
+   "ocorrencia": "0-1",
+   "observacao": "Formato: AAAA-MM-DDTHH:MM:SS",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C16",
+   "caminho": "Envio/RPS/LocalPrestServ",
+   "descricao": "Indicador do Local de Prestação do Serviço",
+   "tipo": "N(1.0)",
+   "ocorrencia": "0-1",
+   "observacao": "1-No Município Sem Retenção \n2-No Município Com Retenção \n3-Fora do Município Sem Retenção \n4-Fora do Município Com Retenção \n5-Fora do Município com pagamento no local\n6-Outro Município (Exterior)\"\n7-No Municipio sem retenção Simples Nacional\n8-No Municipio Tributacao Fixa Anual\n9-No Municipio sem recolhimento\n10 - No Município (e-Governe ISS RTC)\n11 - Domicílio principal do adquirente (e-Governe ISS RTC)\n12 - Local da entrega ou disponibilização (e-Governe ISS RTC)\n13 - Local da prestação (e-Governe ISS RTC)\n14 - Local do evento (e-Governe ISS RTC)\n15 - Local do imóvel (e-Governe ISS RTC)\n16 - Local incidência IBS (e-Governe ISS RTC)\n17 - Via explorada (e-Governe ISS RTC)\n*Obs: Tópicos 7, 8 e 9 exclusivos padrão Governa",
+   "versaoInvoicy": "1.14.0.0"
+  },
+  {
+   "seq": "C17",
+   "caminho": "Envio/RPS/natOp",
+   "descricao": "Código da Natureza de Operação / Exigibilidade de ISS",
+   "tipo": "N(3.0)",
+   "ocorrencia": "1-1",
+   "observacao": "Utilizar valores da tabela unificada de naturezas de operação que consta na aba Natureza de Operação. Também é possível visualizar quais naturezas são aceitas no município da empresa, bem como para quais valores será convertido através do painel de controle de NFS-e no InvoiCy.",
+   "versaoInvoicy": "1.14.0.0"
+  },
+  {
+   "seq": "C18",
+   "caminho": "Envio/RPS/Operacao",
+   "descricao": "Operação de tributação",
+   "tipo": "C(2)",
+   "ocorrencia": "1-1",
+   "observacao": "Exclusivo do padrão DSFNET.\nA–Sem dedução\nB–Com dedução/materiais\nC-Imune/Isenta de ISSQN\nD-Devolução\nJ-Intermediação",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C19",
+   "caminho": "Envio/RPS/NumProcesso",
+   "descricao": "Número do processo",
+   "tipo": "V(30)",
+   "ocorrencia": "0-1",
+   "observacao": "Número do processo judicial ou administrativo de suspensão da exigibilidade. É obrigatório e informado somente quando declarada a suspensão da exigibilidade do tributo",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C20",
+   "caminho": "Envio/RPS/benefIdNac",
+   "descricao": "Tipo do benefício Municipal",
+   "tipo": "N (1)",
+   "ocorrencia": "0-1",
+   "observacao": "Valores aceitos:\n1 - Alíquota Diferenciada;\n2 - Redução da BC;\n3 - Isenção\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C21",
+   "caminho": "Envio/RPS/benefNumero",
+   "descricao": "Identificação da Lei parametrizada pelo município que define o benefício no sistema nacional.",
+   "tipo": "V (14)",
+   "ocorrencia": "0-1",
+   "observacao": "Tem a seguinte regra de formação: 7 dígitos com o código IBGE do município + 4 dígitos com número sequencial. Deve ser obtido da parametrização do município de incidência do ISSQN.\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C22",
+   "caminho": "Envio/RPS/RegEspTrib",
+   "descricao": "Código de identificação do regime especial de tributação",
+   "tipo": "N(2.0)",
+   "ocorrencia": "0-1",
+   "observacao": "1 – Microempresa municipal\n2 – Estimativa\n3 – Sociedade de profissionais\n4 – Cooperativa\n5 – Microempresário Individual (MEI)\n6 – Microempresário e Empresa de Pequeno Porte (ME EPP)\n7 – Optante pelo Simples Nacional (Exclusivo Elotech e GLC Consultoria 2.0)\n8 - Tributação Normal  (Exclusivo E&L)\n9 - Autônomo (Exclusivo E&L)\n10 - Variável (Exclusivo GLC Consultoria 2.0)\n11 - Lucro Real (Exclusivo Digifred)\n12 - Lucro Presumido (Exclusivo Digifred)\n13 - Sociedade de Profissionais Pessoa Jurídica (Exclusivo SEMFAZ)\n14 - Não  (Exclusivo NF-Eletrônica)\n15 - Notas Totalizadoras  (Exclusivo NF-Eletrônica)\n16 - Inscrito no PRODEVAL  (Exclusivo NF-Eletrônica)",
+   "versaoInvoicy": "1.15.0.0"
+  },
+  {
+   "seq": "C23",
+   "caminho": "Envio/RPS/OptSN",
+   "descricao": "Optante Simples Nacional",
+   "tipo": "N(1.0)",
+   "ocorrencia": "1-1",
+   "observacao": "1-Sim\n2-Não\n3-SIMEI (Exclusivo do padrão INFISC)\n4 - Optante Pendente: CNPJ optante ainda em processo de regularização\n7 - Simples Federal (Alíquota 1,0%)\n8 - Simples Federal (Alíquota 0,5%)\n9- Simples Municipal NFPAULISTANA\nAs opções 7, 8 e 9 são exclusivos para o uso no padrão NF Paulista – município de São Paulo/SP e Padrão Nota Blu - Blumenau/SC)",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C24",
+   "caminho": "Envio/RPS/regApTribSN",
+   "descricao": "Regime de tributação para empresas Opt. SN ME/EPP que ultrapassam sublimite",
+   "tipo": "N (1)",
+   "ocorrencia": "0-1",
+   "observacao": "Opção para que o contribuinte optante pelo Simples Nacional ME/EPP (opSimpNac = 3) possa indicar, ao emitir o documento fiscal, em qual regime de apuração os tributos federais e municipal estão inseridos, caso tenha ultrapassado algum sub limite ou limite definido para o Simples Nacional.\n\nValores aceitos:\n1 – Regime de apuração dos tributos federais e municipais pelo SN;\n2 – Regime de apuração dos tributos federais pelo SN e ISSQN por fora do SN conforme respectiva legislação municipal do tributo;\n3 – Regime de apuração dos tributos federais e municipal por fora do SN conforme respectivas legislações federal e municipal de cada tributo;\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C25",
+   "caminho": "Envio/RPS/regApIBSCBSSN",
+   "descricao": "Regime de Apuração Tributária pelo Simples Nacional para IBS e CBS.",
+   "tipo": "N (1)",
+   "ocorrencia": "0-1",
+   "observacao": "1 = IBS e CBS apurados pelo SN\n2 = CBS apurada pelo SN e IBS apurado pelo regime regular\n3 = IBS e CBS apurados pelo regime regular\nInformar quando opSimpNac (OptSN) = 2, 3 ou 4.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C26",
+   "caminho": "Envio/RPS/IncCult",
+   "descricao": "Incentivador Cultural",
+   "tipo": "N(1.0)",
+   "ocorrencia": "1-1",
+   "observacao": "1-Sim\n2-Não\n3 – Optante pelo Simples Nacional em início de atividade (primeiras três competências) \n4 – Serviço prestado no Programa Minha Casa Minha Vida (até 3 salários mínimos)\nOpções 3 e 4 são exclusivas do padrão SigCorp Londrina",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C27",
+   "caminho": "Envio/RPS/tpImunidade",
+   "descricao": "Identificação da Imunidade do ISSQN – somente para o caso de Imunidade",
+   "tipo": "N(1.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Valores aceitos:\n0 - Imunidade (tipo não informado na nota de origem);\n1 - Patrimônio, renda ou serviços, uns dos outros (CF88, Art 150, VI, a);\n2 - Templos de qualquer culto (CF88, Art 150, VI, b);\n3 - Patrimônio, renda ou serviços dos partidos políticos, inclusive suas fundações, das entidades sindicais dos trabalhadores, das instituições de educação e de assistência social, sem fins lucrativos, atendidos os requisitos da lei (CF88, Art 150, VI, c);\n4 - Livros, jornais, periódicos e o papel destinado a sua impressão (CF88, Art 150, VI, d);\n5 - Fonogramas e videofonogramas musicais produzidos no Brasil contendo obras musicais ou literomusicais de autores brasileiros e/ou obras em geral interpretadas por artistas brasileiros bem como os suportes materiais ou arquivos digitais que os contenham, salvo na etapa de replicação industrial de mídias ópticas de leitura a laser. (CF88, Art 150, VI, e);",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C28",
+   "caminho": "Envio/RPS/tpSusp",
+   "descricao": "Opção para Exigibilidade suspensa",
+   "tipo": "N(1.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Valores aceitos:\n1 - Exigibilidade Suspensa por Decisão Judicial;\n2 - Exigibilidade Suspensa por Processo Administrativo;\n\nDesambiguação padrão nacional:\nQuem preenche atualmente Natop com os valores 5 ou 6 não necessita alteração. O sistema irá preencher tribISSQN com 2 (não incidência) e tpSusp conforme a opção escolhida.\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C29",
+   "caminho": "Envio/RPS/tpNFSeDebito",
+   "descricao": "Tipo de NFS-e de Ajuste de Débito (finNFSe=2).",
+   "tipo": "N(1.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Valores aceitos:\n\n01=Transferência de créditos para Cooperativas\n02=Anulação de Crédito por Saídas Imunes/Isentas\n03=Débitos de notas fiscais não processadas na apuração\n04=Multa e juros\n05=Transferência de crédito na sucessão\n06=Pagamento Antecipado",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C30",
+   "caminho": "Envio/RPS/tpNFSeCredito",
+   "descricao": "Tipo de NFS-e de Ajuste de Crédito (finNFSe=1).",
+   "tipo": "N(1.0)",
+   "ocorrencia": "0-1",
+   "observacao": "01=Multa e juros\n05=Transferência de crédito na sucessão",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C31",
+   "caminho": "Envio/RPS/Status",
+   "descricao": "Status do RPS",
+   "tipo": "N(1.0)",
+   "ocorrencia": "1-1",
+   "observacao": "1-Normal\n2-Cancelada\n3-Extraviado\n4-Contingência\n5-Inutilização\nA opção 3 é exclusiva do padrão NF Paulista – município de São Paulo/SP.\nOpções 4 e 5 são exclusivos do padrão INFISC.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C32",
+   "caminho": "Envio/RPS/cVerificaRPS",
+   "descricao": "Código de Verificação de RPS",
+   "tipo": "C(30)",
+   "ocorrencia": "0-1",
+   "observacao": "Alguns padrões precisam liberar uma faixa de RPS no site da prefeitura antes de emitir. Além do número do RPS, é necessário informar o código de verificação que é fornecido nesta lista.",
+   "versaoInvoicy": "1.14.0.0"
+  },
+  {
+   "seq": "C33",
+   "caminho": "Envio/RPS/EmpreitadaGlobal",
+   "descricao": "Empreitada Global",
+   "tipo": "N(1.0)",
+   "ocorrencia": "0-1",
+   "observacao": "1-Sim (específico para construção civil)\n2-Não\nCampo Exclusivo e obrigatório no padrão INFISC.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C34",
+   "caminho": "Envio/RPS/tpAmb",
+   "descricao": "Tipo de Ambiente",
+   "tipo": "N(1)",
+   "ocorrencia": "1-1",
+   "observacao": "Ambiente em que a empresa está cadastrada no InvoiCy.\n1-Produção; 2-Homologação.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C35",
+   "caminho": "Envio/RPS/finNFSe",
+   "descricao": "Indicador da finalidade da emissão de NFS-e",
+   "tipo": "N(1)",
+   "ocorrencia": "1-1",
+   "observacao": "0 = NFS-e regular\n1 = NFS-e de crédito\n2 = NFS-e de débito",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C36",
+   "caminho": "Envio/RPS/indDoacao",
+   "descricao": "Indica uma Operação de Doação",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C37",
+   "caminho": "Envio/RPS/indFinal",
+   "descricao": "Indica operação de uso ou consumo pessoal.\n0=Não 1=Sim",
+   "tipo": "V(1)",
+   "ocorrencia": "1-1",
+   "observacao": "0 = Operação de venda para terceiros\n1 = Operação de uso ou consumo pessoal do adquirente ou destinatário.\n\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C38",
+   "caminho": "Envio/RPS/cIndOp",
+   "descricao": "Código indicador da operação de fornecimento, conforme tabela “código indicador de operação”",
+   "tipo": "V(6)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C39",
+   "caminho": "Envio/RPS/tpEnteGov",
+   "descricao": "Tipo de ente governamental\nPara administração pública direta e suas autarquias e fundações:\n1 = União\n2 = Estado\n3 = Distrito Federal\n4 = Município",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C40",
+   "caminho": "Envio/RPS/xTpEnteGov",
+   "descricao": "Se tpEnteGov informado for igual a 9 = outro, este campo deve informar qual a descrição do ente. Exemplo: \"Comitê Gestor do IBS\".",
+   "tipo": "C(100)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária IPM",
+   "versaoInvoicy": "2.90.9.0"
+  },
+  {
+   "seq": "C41",
+   "caminho": "Envio/RPS/indDest",
+   "descricao": "A respeito do Destinatário dos serviços:\n0 – O tomador identificado na NFS-e é o adquirente e o destinatário do fornecimento (tomador = adquirente = destinatário);\n1 – O tomador e o adquirente são a mesma pessoa, mas o destinatário é uma pessoa física ou jurídica ou equiparada diversa do indicado como tomador/adquirente ou se trata de um estabelecimento do adquirente diferente do indicado no campo “tomador” (tomador = adquirente ≠ destinatário).",
+   "tipo": "N(1)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C42",
+   "caminho": "Envio/RPS/tpOper",
+   "descricao": "Tipo de Operação com Entes Governanementais ou outros\nserviços sobre bens imóveis:\n1 – Fornecimento com pagamento posterior;\n2 - Recebimento do pagamento com fornecimento já realizado;\n3 – Fornecimento com pagamento já realizado;\n4 – Recebimento do pagamento com fornecimento posterior;\n5 – Fornecimento e recebimento do pagamento concomitantes",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C43",
+   "caminho": "Envio/RPS/indZFMALC",
+   "descricao": "Indicador da operação de fornecimento favorecido com alíquota\r\nzero de CBS",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "0 - Não;\r\n1 - Sim.\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.98.0.4"
+  },
+  {
+   "seq": "C44",
+   "caminho": "Envio/RPS/NFSOutrasinformacoes",
+   "descricao": "Outras informações",
+   "tipo": "C(1000)",
+   "ocorrencia": "0-1",
+   "observacao": "Sempre será Impresso no Espelho do RPS do InvoiCy. Porém, só envia para as prefeituras do Betha, IPM, E&L, SimplISS, Prescon e INFISC. Se você utilizar o espelho do RPS gerado pelo InvoiCy, sempre terá essa informação impressa! Obs: Caso seja enviado menos de 58 caracteres, o layout Betha concatena o link do espelho da NFS-e neste campo.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C45",
+   "caminho": "Envio/RPS/RPSCanhoto",
+   "descricao": "Canhoto do RPS (INFISC)",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "Campo exclusivo do padrão INFISC. Gerar espelho?\n0 - Não\n1 - Cabeçalho\n2 - Rodapé",
+   "versaoInvoicy": "1.20.0.0"
+  },
+  {
+   "seq": "C46",
+   "caminho": "Envio/RPS/Arquivo",
+   "descricao": "Arquivo de retorno",
+   "tipo": "V(2M)",
+   "ocorrencia": "0-1",
+   "observacao": "Enviar o arquivo  em base64. Para mais informações de envio consultar o tópico de Orientações aos municípios que integram com o InvoiCy NFS-e através de arquivo",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C47",
+   "caminho": "Envio/RPS/ExtensaoArquivo",
+   "descricao": "Extensão do arquivo de envio",
+   "tipo": "C(5)",
+   "ocorrencia": "0-1",
+   "observacao": "TXT, XML ou CSV. Informar somente se preencher a tag Arquivo.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C48",
+   "caminho": "Envio/RPS/RPSSubs",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C49",
+   "caminho": "Envio/RPS/tpOper/SubsNumero",
+   "descricao": "Número do RPS a ser substituído",
+   "tipo": "N(15.0)",
+   "ocorrencia": "1-1",
+   "observacao": "Número do RPS que será substituído. O RPS informado neste campo, deverá ter sido convertido para NFS-e na prefeitura.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C50",
+   "caminho": "Envio/RPS/tpOper/SubsSerie",
+   "descricao": "Série do RPS a ser substituído",
+   "tipo": "C(5)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C51",
+   "caminho": "Envio/RPS/tpOper/SubsTipo",
+   "descricao": "Tipo do RPS a ser substituído",
+   "tipo": "N(1.0)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C52",
+   "caminho": "Envio/RPS/tpOper/SubsNFSeNumero",
+   "descricao": "Número da NFS-e substituída",
+   "tipo": "N(15.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão DSFNet",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C53",
+   "caminho": "Envio/RPS/tpOper/SubsDEmisNFSe",
+   "descricao": "Data de Emissão da NFS-e Substituída",
+   "tipo": "DateTime",
+   "ocorrencia": "0-1",
+   "observacao": "Formato: AAAA-MM-DDTHH:MM:SS\nExclusivo do padrão DSFNet",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C54",
+   "caminho": "Envio/RPS/tpOper/SubsChave",
+   "descricao": "Chave de Acesso NFSe Substituída",
+   "tipo": "V(50)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C55",
+   "caminho": "Envio/RPS/tpOper/SubsCodMotivo",
+   "descricao": "Código do Motivo da substituição",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Os valores aceitos são:\n01 - Desenquadramento de NFS-e do Simples Nacional;\n02 - Enquadramento de NFS-e no Simples Nacional;\n03 - Inclusão Retroativa de Imunidade/Isenção para NFS-e;\n04 - Exclusão Retroativa de Imunidade/Isenção para NFS-e;\n05 - Rejeição de NFS-e pelo tomador ou pelo intermediário se responsável pelo recolhimento do tributo;\n99 – Outros;\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C56",
+   "caminho": "Envio/RPS/tpOper/SubsDescMotivo",
+   "descricao": "Descrição do Motivo da substituição",
+   "tipo": "V(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Ao ser informado, deve conter no mínimo 15 caracteres.\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C57",
+   "caminho": "Envio/RPS/Prestador",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C58",
+   "caminho": "Envio/RPS/Prestador/CNPJ_prest",
+   "descricao": "CNPJ do prestador",
+   "tipo": "C (14)",
+   "ocorrencia": "1-1",
+   "observacao": "O CNPJ ou CPF deverão ser informados com os zeros não significativos.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C59",
+   "caminho": "Envio/RPS/Prestador/xNome",
+   "descricao": "Razão Social ou Nome do prestador",
+   "tipo": "C (60)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C60",
+   "caminho": "Envio/RPS/Prestador/xFant",
+   "descricao": "Nome fantasia",
+   "tipo": "C (60)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C61",
+   "caminho": "Envio/RPS/Prestador/IM",
+   "descricao": "Inscrição Municipal",
+   "tipo": "V (20)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C62",
+   "caminho": "Envio/RPS/Prestador/IE",
+   "descricao": "Inscrição Estadual",
+   "tipo": "V (20)",
+   "ocorrencia": "0-1",
+   "observacao": "Sem caracteres de formatação (ponto, barra, hífen, etc.)",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C63",
+   "caminho": "Envio/RPS/Prestador/CMC",
+   "descricao": "Cadastro Mobiliário do Contribuinte",
+   "tipo": "V (20)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C64",
+   "caminho": "Envio/RPS/Prestador/CAEPF",
+   "descricao": "Número do Cadastro de Atividade Econômica da Pessoa Física do prestador do Serviço",
+   "tipo": "V (14)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C65",
+   "caminho": "Envio/RPS/Prestador/enderPrest",
+   "descricao": "TAG de grupo do endereço do prestador",
+   "tipo": "-",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C66",
+   "caminho": "Envio/RPS/Prestador/enderPrest/TpEnd",
+   "descricao": "Tipo de endereço",
+   "tipo": "C (30)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C67",
+   "caminho": "Envio/RPS/Prestador/enderPrest/xLgr",
+   "descricao": "Logradouro",
+   "tipo": "C (60)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C68",
+   "caminho": "Envio/RPS/Prestador/enderPrest/nro",
+   "descricao": "Número",
+   "tipo": "C (60)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C69",
+   "caminho": "Envio/RPS/Prestador/enderPrest/xCpl",
+   "descricao": "Complemento",
+   "tipo": "C (60)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C70",
+   "caminho": "Envio/RPS/Prestador/enderPrest/xBairro",
+   "descricao": "Bairro",
+   "tipo": "C (60)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C71",
+   "caminho": "Envio/RPS/Prestador/enderPrest/cMun",
+   "descricao": "Código do município",
+   "tipo": "N (7)",
+   "ocorrencia": "1-1",
+   "observacao": "Consulte nosso artigo para mais informações.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C72",
+   "caminho": "Envio/RPS/Prestador/enderPrest/UF",
+   "descricao": "Sigla da UF",
+   "tipo": "C (2)",
+   "ocorrencia": "1-1",
+   "observacao": "Ex: RS, SP, MG.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C73",
+   "caminho": "Envio/RPS/Prestador/enderPrest/CEP",
+   "descricao": "Código do CEP",
+   "tipo": "N (8)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C74",
+   "caminho": "Envio/RPS/Prestador/enderPrest/fone",
+   "descricao": "Telefone",
+   "tipo": "C (14)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C75",
+   "caminho": "Envio/RPS/Prestador/enderPrest/Email",
+   "descricao": "E-mail",
+   "tipo": "C (1000)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C76",
+   "caminho": "Envio/RPS/ListaItens",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "A orientação é preencher sempre essa tag, bem como a tag valores (mesmas informações, mas agrupadas em 1 item). Nas prefeituras que aceitam N itens, serão enviados os N itens, caso contrário, será enviado somente 1 item agrupado.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C77",
+   "caminho": "Envio/RPS/ListaItens/Item",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "1-N",
+   "observacao": "Não informar este grupo quando a integração for API Rest.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C78",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemSeq",
+   "descricao": "Número sequencial do item",
+   "tipo": "N(4.0)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C79",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemCod",
+   "descricao": "Código do item",
+   "tipo": "C(255)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C80",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemDesc",
+   "descricao": "Descrição do item",
+   "tipo": "C(4000)",
+   "ocorrencia": "1-1",
+   "observacao": "Para quebra de linha, utilizar o comando !CHR13!.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C81",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemQtde",
+   "descricao": "Quantidade do item",
+   "tipo": "N(15.2)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C82",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemvUnit",
+   "descricao": "Valor unitário",
+   "tipo": "N(15.2)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C83",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemuMed",
+   "descricao": "Código da unidade de medida do item",
+   "tipo": "C(10)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C84",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemvlDed",
+   "descricao": "Valor de dedução do item",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C85",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemTributavel",
+   "descricao": "Item tributável",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Obrigatório nos padrões DSFNET e Elotech.\nS – Item Tributável\nN – Não tributável\nPara o preenchimento do campo orienta-se a consultar o tópico DSFNET e Atividades de itens de serviços com marcação Não tributável – DSFNET",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C86",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemcCnae",
+   "descricao": "Código CNAE do item",
+   "tipo": "C(10)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C87",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemTributMunicipio",
+   "descricao": "Código de tributação do município",
+   "tipo": "C(20)",
+   "ocorrencia": "0-1",
+   "observacao": "Preencher conforme está no cadastro da empresa no município.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C88",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemnAlvara",
+   "descricao": "Numero do Alvará do item",
+   "tipo": "C(15)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C89",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemvIss",
+   "descricao": "Valor do ISS do item",
+   "tipo": "N(16.2)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C90",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemvDesconto",
+   "descricao": "Valor do desconto do item",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C91",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemAliquota",
+   "descricao": "Valor da alíquota de ISS do item",
+   "tipo": "N(8.4)",
+   "ocorrencia": "1-1",
+   "observacao": "Preferencialmente no formato decimal. Ex: 0.05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C92",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemVlrTotal",
+   "descricao": "Valor total do item",
+   "tipo": "N(15.4)",
+   "ocorrencia": "0-1",
+   "observacao": "É o resultado da multiplicação do valor unitário pela quantidade (ItemQtde * ItemvUnit)",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C93",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemBaseCalculo",
+   "descricao": "Base de cálculo do item",
+   "tipo": "N(16.2)",
+   "ocorrencia": "1-1",
+   "observacao": "Valor total do item subtraído das deduções (ItemVlrTotal - ItemvlDed) e em alguns casos também descontos.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C94",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemvlrISSRetido",
+   "descricao": "Valor do ISS Retido do item",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C95",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemIssRetido",
+   "descricao": "Existe retenção de ISS no item?",
+   "tipo": "N(1.0)",
+   "ocorrencia": "1-1",
+   "observacao": "1 - Sim\n2 - Não",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C96",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemRespRetencao",
+   "descricao": "Responsável pela retenção do item",
+   "tipo": "N(1.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Em padrões ABRASF, o campo só deve ser informado se ISSRetido = 1. No padrão IPM, o campo pode ser obrigatório (Valores 1 e 3).\n1 – Tomador / Não Tributar para Prestador;\n2 – Intermediário;\n3 – Prestador / Tributar para Prestador.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C97",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemIteListServico",
+   "descricao": "Código do item da lista de serviço",
+   "tipo": "C(15)",
+   "ocorrencia": "1-1",
+   "observacao": "Enviar sempre no formato com ponto. Ex: 08.01, 14.04.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C98",
+   "caminho": "Envio/RPS/ListaItens/Item/itemCodTributNacional",
+   "descricao": "Código de tributação Nacional do item",
+   "tipo": "V(6)",
+   "ocorrencia": "0-1",
+   "observacao": "Atualmente o padrão Nacional não recebe estrutura de itens. Campo previsto para uso futuro.\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C99",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemExigibilidadeISS",
+   "descricao": "Código da Natureza de Operação / Exigibilidade de ISS do item",
+   "tipo": "N(3.0)",
+   "ocorrencia": "1-1",
+   "observacao": "Mesmos valores da natureza da operação do RPS.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C100",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemcMunIncidencia",
+   "descricao": "Município de incidência do item",
+   "tipo": "N(7.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Código do município onde é a incidência do imposto. Consulte nosso artigo para mais informações.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C101",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemNumProcesso",
+   "descricao": "Número do processo do item",
+   "tipo": "V(30)",
+   "ocorrencia": "0-1",
+   "observacao": "Número do processo judicial ou administrativo de suspensão da exigibilidade. É obrigatório e informado somente quando declarada a suspensão da exigibilidade do tributo",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C102",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemDedTipo",
+   "descricao": "Tipo da Dedução",
+   "tipo": "V(1)",
+   "ocorrencia": "0-1",
+   "observacao": "M - Material;\nS - Sub empreitada.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C103",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemDedCPFRef",
+   "descricao": "CPF da nota de referência da Dedução",
+   "tipo": "V(11)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão Elotech",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C104",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemDedCNPJRef",
+   "descricao": "CNPJ da nota de referência da Dedução",
+   "tipo": "V(14)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão Elotech",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C105",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemDedNFRef",
+   "descricao": "Número da nota de referência da Dedução",
+   "tipo": "N(15.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão Elotech",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C106",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemDedvlTotRef",
+   "descricao": "Valor da nota de referência da Dedução",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão Elotech",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C107",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemDedPer",
+   "descricao": "Percentual de dedução",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C108",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemVlrLiquido",
+   "descricao": "Valor Líquido do item",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C109",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValAliqINSS",
+   "descricao": "Aliquota do INSS",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C110",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValINSS",
+   "descricao": "Valor do INSS",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C111",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValBCINSS",
+   "descricao": "Base de cálculo do INSS",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C112",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValAliqIR",
+   "descricao": "Aliquota do IR",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C113",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValIR",
+   "descricao": "Valor do IR",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C114",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValBCIRRF",
+   "descricao": "Base de cálculo do Imposto de Renda Retido na Fonte",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C115",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValAliqCOFINS",
+   "descricao": "Aliquota do COFINS",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C116",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValCOFINS",
+   "descricao": "Valor do COFINS",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C117",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValBCCOFINS",
+   "descricao": "Base de cálculo do COFINS",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C118",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValAliqCSLL",
+   "descricao": "Aliquota do CSLL",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C119",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValCSLL",
+   "descricao": "Valor do CSLL",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C120",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValBCCSLL",
+   "descricao": "Base de cálculo da CSLL",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C121",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValAliqPIS",
+   "descricao": "Aliquota do PIS",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C122",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValPIS",
+   "descricao": "Valor do PIS",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C123",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValBCPIS",
+   "descricao": "Base de cálculo do PIS",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C124",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemRedBC",
+   "descricao": "Valor da redução da base de cálculo do ISS do item",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar quando o ISS do item não é retido",
+   "versaoInvoicy": "3.29.0.0"
+  },
+  {
+   "seq": "C125",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemRedBCRetido",
+   "descricao": "Valor da redução da base de cálculo do ISS retido do item",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar quando o ISS do item é retido",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C126",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemBCRetido",
+   "descricao": "Valor da base de cálculo do ISS retido do item",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C127",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValAliqISSRetido",
+   "descricao": "Alíquota do ISS retido do item",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C128",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemPaisImpDevido",
+   "descricao": "País onde o imposto é devido do Item",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "\"BR\" para Brasil e \"EX\" para exterior. Lista de siglas https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C129",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemJustDed",
+   "descricao": "Descrição justificativa da dedução do Item",
+   "tipo": "V(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Justificativa de dedução (padrão Equiplano) e Justificativa de Outras Retenções (padrão Governa).",
+   "versaoInvoicy": "1.14.0.0"
+  },
+  {
+   "seq": "C130",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemvOutrasRetencoes",
+   "descricao": "Valor das outras retenções do Item",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Específico Padrão System",
+   "versaoInvoicy": "1.19.0.0"
+  },
+  {
+   "seq": "C131",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemDescIncondicionado",
+   "descricao": "Desconto incondicionado do Item",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.19.0.0"
+  },
+  {
+   "seq": "C132",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemDescCondicionado",
+   "descricao": "Desconto Condicionado do Item",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.19.0.0"
+  },
+  {
+   "seq": "C133",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemTotalAproxTribServ",
+   "descricao": "Valor total aproximado do item de serviço",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo para os padrões Infisc, exceto Sapucaia e Garibaldi",
+   "versaoInvoicy": "3.29.0.0"
+  },
+  {
+   "seq": "C134",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemDescHospedagem",
+   "descricao": "Descritivo/Número unidade",
+   "tipo": "V (12)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo para o padrão IIBrasil",
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C135",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemQtdeHospedes",
+   "descricao": "Quantidade de hóspedes para a unidade",
+   "tipo": "N (2.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo para o padrão IIBrasil",
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C136",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemQtdeDiariasHospedagem",
+   "descricao": "Quantidade de diárias da hospedagem",
+   "tipo": "N (2.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo para o padrão IIBrasil",
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C137",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemCodQuartoHospedagem",
+   "descricao": "Código interno do quarto da hospedagem",
+   "tipo": "V (40)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo para o padrão IIBrasil",
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C138",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemDtaEntrHospedagem",
+   "descricao": "Data de entrada do(s) hóspede(s)",
+   "tipo": "DateTime",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo para o padrão IIBrasil. Formato: AAAA-MM-DDTHH:MM:SS",
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C139",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemDtaSaiHospedagem",
+   "descricao": "Data de saída do(s) hóspede(s)",
+   "tipo": "DateTime",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo para o padrão IIBrasil. Formato: AAAA-MM-DDTHH:MM:SS",
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C140",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemValorDiariaHospedagem",
+   "descricao": "Valor da diária da hospedagem",
+   "tipo": "N (15.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo para o padrão IIBrasil",
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C141",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemCSTPisCofins",
+   "descricao": "Código de Situação Tributária do PIS/COFINS",
+   "tipo": "V(2)",
+   "ocorrencia": "0-1",
+   "observacao": "00 - Nenhum; \r\n 01 - Operação Tributável com Alíquota Básica;\r\n 02 - Operação Tributável com Alíquota Diferenciada;\r\n 03 - Operação Tributável com Alíquota por Unidade de Medida de Produto;\r\n 04 - Operação Tributável monofásica - Revenda a Alíquota Zero;\r\n 05 - Operação Tributável por Substituição Tributária;\r\n 06 - Operação Tributável a Alíquota Zero;\r\n 07 - Operação Tributável da Contribuição;\r\n 08 - Operação sem Incidência da Contribuição;\r\n 09 - Operação com Suspensão da Contribuição;\n\nUso específico para Reforma Tributária INFISC",
+   "versaoInvoicy": "2.91.0.0"
+  },
+  {
+   "seq": "C142",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemTpRetPisCofins",
+   "descricao": "Tipo de retenção de PIS/COFINS",
+   "tipo": "N (1.0)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - PIS/COFINS Retido;\n2 - PIS/COFINS Não Retido;\n3 - PIS Retido/COFINS Não Retido;\n4 - PIS Não Retido/COFINS Retido;\n\nUso específico para Reforma Tributária INFISC",
+   "versaoInvoicy": "2.91.0.0"
+  },
+  {
+   "seq": "C143",
+   "caminho": "Envio/RPS/ListaItens/Item/ItemNBS",
+   "descricao": "Código NBS correspondente ao item do serviço prestado",
+   "tipo": "V(20)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária INFISC",
+   "versaoInvoicy": "2.91.0.0"
+  },
+  {
+   "seq": "C144",
+   "caminho": "Envio/RPS/ListaParcelas",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C145",
+   "caminho": "Envio/RPS/ListaParcelas/Parcela",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "0-N",
+   "observacao": "Não informar este grupo quando a integração for API Rest.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C146",
+   "caminho": "Envio/RPS/ListaParcelas/Parcela/PrcSequencial",
+   "descricao": "Código Sequencial da parcela",
+   "tipo": "N(8.0)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C147",
+   "caminho": "Envio/RPS/ListaParcelas/Parcela/PrcValor",
+   "descricao": "Valor da parcela",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C148",
+   "caminho": "Envio/RPS/ListaParcelas/Parcela/PrcDtaVencimento",
+   "descricao": "Data de vencimento",
+   "tipo": "Date",
+   "ocorrencia": "0-1",
+   "observacao": "Formato: AAAA-MM-DD",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C149",
+   "caminho": "Envio/RPS/ListaParcelas/Parcela/PrcNroFatura",
+   "descricao": "Número da fatura",
+   "tipo": "N(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão INFISC",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C150",
+   "caminho": "Envio/RPS/ListaParcelas/Parcela/PrcTipVenc",
+   "descricao": "Tipo de vencimento",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - Data Certa\n2 - Apresentação\n3 - À vista\n4 - Outros\n5 - A Prazo\n6 - Cartão de Crédito (exclusivo IPM)\n7 - Cartão de Débito (exclusivo IPM)",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C151",
+   "caminho": "Envio/RPS/ListaParcelas/Parcela/PrcDscTipVenc",
+   "descricao": "Descrição para o tipo de vencimento: Outros",
+   "tipo": "C(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão INFISC",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C152",
+   "caminho": "Envio/RPS/ListaParcelas/Parcela/PrcValLiquido",
+   "descricao": "Valor Líquido da Fatura",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo Padrão INFISC - Santiago.  (Valor - Descontos)",
+   "versaoInvoicy": "1.18.0.0"
+  },
+  {
+   "seq": "C153",
+   "caminho": "Envio/RPS/ListaParcelas/Parcela/PrcValDesconto",
+   "descricao": "Valor de Desconto da Parcela",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo Padrão INFISC - Santiago",
+   "versaoInvoicy": "1.18.0.0"
+  },
+  {
+   "seq": "C154",
+   "caminho": "Envio/RPS/Servico",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C155",
+   "caminho": "Envio/RPS/Servico/IteListServico",
+   "descricao": "Código do item da lista de serviço",
+   "tipo": "C(15)",
+   "ocorrencia": "45658.0",
+   "observacao": "Enviar sempre no formato com ponto. Ex: 08.01, 14.04.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C156",
+   "caminho": "Envio/RPS/Servico/Cnae",
+   "descricao": "Codigo CNAE",
+   "tipo": "N(10)",
+   "ocorrencia": "0-1",
+   "observacao": "Codigo CNAE",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C157",
+   "caminho": "Envio/RPS/Servico/fPagamento",
+   "descricao": "Forma de pagamento",
+   "tipo": "V(40)",
+   "ocorrencia": "0-1",
+   "observacao": "Padrões Betha e Awatar:\n1 - À vista\n2 - Na apresentação\n3 - À prazo\n4 - Cartão débito\n5 - Cartão crédito\nGLC Consulturia 2.0:\ntexto livre até 40 caracteres.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C158",
+   "caminho": "Envio/RPS/Servico/tpag",
+   "descricao": "Tipo de pagamento",
+   "tipo": "N(2)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - Dinheiro; 2 - Cheque; 3 - Cartão de Crédito; 4 - Cartão de Débito; 5 - Crédito Loja; 10 - Vale Alimentação; 11 - Vale Refeição; 12 - Vale Presente; 13 - Vale Combustível; 15 - Boleto bancário; 90 - Sem pagamento; 99 - Outros.",
+   "versaoInvoicy": "2.26.0.0"
+  },
+  {
+   "seq": "C159",
+   "caminho": "Envio/RPS/Servico/codTributNacional",
+   "descricao": "Código de tributação Nacional",
+   "tipo": "V(6)",
+   "ocorrencia": "0-1",
+   "observacao": "O código de tributação nacional corresponde ao item e subitem da LC 116/03 + desdobro nacional.\nO campo é utilizado apenas no padrão NFSE Nacional.\nCaso não enviado esse campo, o InvoiCy irá utilizar o valor informado em iteListServ + ‘01’, que corresponde ao primeiro (na maioria das vezes único) desdobro da lista de serviços.\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C160",
+   "caminho": "Envio/RPS/Servico/CodAtividadeSN",
+   "descricao": "Código da atividade do Simples Nacional (LC 123/2006).",
+   "tipo": "N(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar quando OptSN = 2, 3 ou 4.\n7=Serviços ISS – Anexo III | 8=Contábeis ISS fixo – Anexo III | 9=Fator R – Anexo III/V | 10=Transp. municipal – Anexo III | 11=Locação bens móveis/sem ISS – Anexo III | 12=Const. civil (7.02/7.05) – Anexo III | 13=Const. civil (7.02/7.05) – Anexo IV | 14=Serviços – Anexo IV | 90=Operações não tributada",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C161",
+   "caminho": "Envio/RPS/Servico/TributMunicipio",
+   "descricao": "Código de tributação do município",
+   "tipo": "C(20)",
+   "ocorrencia": "1-1",
+   "observacao": "Obrigatório com ressalvas. Depende da legislação do município. Preencher conforme está no cadastro da empresa no município.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C162",
+   "caminho": "Envio/RPS/Servico/TributMunicDesc",
+   "descricao": "Descrição do código de tributação do município",
+   "tipo": "C(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Informado unicamente para aparecer no espelho do RPS.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C163",
+   "caminho": "Envio/RPS/Servico/Discriminacao",
+   "descricao": "Discriminação dos serviços realizados",
+   "tipo": "C(7000)",
+   "ocorrencia": "1-1",
+   "observacao": "Para quebra de linha, utilizar o comando !CHR13!. A quantidade  de caracteres no momento da emissão para cada prefeitura, será automaticamente reduzida conforme determinação de tamanho máximo permitido pela mesma.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C164",
+   "caminho": "Envio/RPS/Servico/cMun",
+   "descricao": "Código do município",
+   "tipo": "N(7.0)",
+   "ocorrencia": "1-1",
+   "observacao": "Código de identificação do município de prestação do serviço. Consulte nosso artigo para mais informações.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C165",
+   "caminho": "Envio/RPS/Servico/SerQuantidade",
+   "descricao": "Quantidade do serviço",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Quantidade do serviço",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C166",
+   "caminho": "Envio/RPS/Servico/SerUnidade",
+   "descricao": "Unidade do serviço",
+   "tipo": "C(10)",
+   "ocorrencia": "0-1",
+   "observacao": "Normalmente utilizar UN, porém alguns padrões oferecem as opções:\nHS - horas.\nKM - quilometros.\nHA - hectare.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C167",
+   "caminho": "Envio/RPS/Servico/SerNumAlvara",
+   "descricao": "Número do Alvará do serviço",
+   "tipo": "C(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Número do Alvará do serviço",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C168",
+   "caminho": "Envio/RPS/Servico/PaiPreServico",
+   "descricao": "País de prestação do serviço",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Sigla do país onde o serviço foi prestado. Lista de siglas https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C169",
+   "caminho": "Envio/RPS/Servico/cMunIncidencia",
+   "descricao": "Município de incidência",
+   "tipo": "N(7)",
+   "ocorrencia": "0-1",
+   "observacao": "Código do município onde é a incidência do imposto. Consulte nosso artigo para mais informações.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C170",
+   "caminho": "Envio/RPS/Servico/dVencimento",
+   "descricao": "Data de Vencimento da Fatura",
+   "tipo": "DateTime",
+   "ocorrencia": "0-1",
+   "observacao": "Data de Vencimento da Fatura. Formato: AAAA-MM-DDTHH:MM:SS",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C171",
+   "caminho": "Envio/RPS/Servico/ObsInsPagamento",
+   "descricao": "Observações e Instruções de Pagamento",
+   "tipo": "V(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Observações e Instruções de Pagamento",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C172",
+   "caminho": "Envio/RPS/Servico/ObrigoMunic",
+   "descricao": "Obrigação de recolhimento do imposto em outro Município",
+   "tipo": "N(2)",
+   "ocorrencia": "0-1",
+   "observacao": "1-Tomador\n2-Prestador\nNota: Obrigatório para o padrão de Lençóis Paulista",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C173",
+   "caminho": "Envio/RPS/Servico/TributacaoISS",
+   "descricao": "Forma de Tributação do ISS",
+   "tipo": "N(2)",
+   "ocorrencia": "0-1",
+   "observacao": "1-Normal\n10-Tributado por opção do prestador\n11-Não tributado por opção do prestador\nNota: Obrigatório para o padrão de Lençóis Paulista",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C174",
+   "caminho": "Envio/RPS/Servico/CodigoAtividadeEconomica",
+   "descricao": "Codigo da atividade econômica no município",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo e obrigatório no padrão Ágili",
+   "versaoInvoicy": "1.4.0.0"
+  },
+  {
+   "seq": "C175",
+   "caminho": "Envio/RPS/Servico/ServicoViasPublicas",
+   "descricao": "Serviço Executado em Vias Públicas",
+   "tipo": "N(4.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo Padrão eISS.\n1 - Sim;\n2 - Não;",
+   "versaoInvoicy": "1.9.0.0"
+  },
+  {
+   "seq": "C176",
+   "caminho": "Envio/RPS/Servico/NumeroParcelas",
+   "descricao": "Número de Parcelas da Prestação",
+   "tipo": "N(4.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão tecnos",
+   "versaoInvoicy": "1.18.0.0"
+  },
+  {
+   "seq": "C177",
+   "caminho": "Envio/RPS/Servico/NroOrcamento",
+   "descricao": "Número do Orçamento",
+   "tipo": "N(15.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão RLZ",
+   "versaoInvoicy": "1.22.0.0"
+  },
+  {
+   "seq": "C178",
+   "caminho": "Envio/RPS/Servico/CodigoNBS",
+   "descricao": "Código NBS",
+   "tipo": "V(20)",
+   "ocorrencia": "0-1",
+   "observacao": "Utilizado para Padrão Janela Única, NFS-e Modelo Nacional e para Reforma Tributária",
+   "versaoInvoicy": "1.0.0.0\n2.90.9.0"
+  },
+  {
+   "seq": "C179",
+   "caminho": "Envio/RPS/Servico/docRef",
+   "descricao": "Chave da nota fiscal referenciada",
+   "tipo": "V(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Chave da nota, número identificador da nota, número do contrato ou outro identificador de documento emitido pelo prestador de serviços, que subsidia a emissão dessa nota pelo tomador do serviço ou intermediário (preenchimento obrigatório caso a nota esteja sendo emitida pelo Tomador ou intermediário do serviço).\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C180",
+   "caminho": "Envio/RPS/Servico/idDocTec",
+   "descricao": "Identificador de Documento de Responsabilidade Técnica: ART, RRT, DRT, Outros.",
+   "tipo": "V(40)",
+   "ocorrencia": "0-1",
+   "observacao": "Desambiguação:\nVisando a compatibilidade com o layout Abrasf, quem já possui o campo ConstCivil.Art integrado poderá continuar usando o mesmo sem alteração.\nPara novas integrações, ou mesmo uso de RRT e DRT é recomendado incluir o novo campo.\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C181",
+   "caminho": "Envio/RPS/Servico/CST",
+   "descricao": "Código de Situação Tributária do PIS/COFINS (CST)",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Valores aceitos:\n00 - Nenhum;\n01 - Operação Tributável com Alíquota Básica;\n02 - Operação Tributável com Alíquota Diferenciada;\n03 - Operação Tributável com Alíquota por Unidade de Medida de Produto;\n04 - Operação Tributável monofásica - Revenda a Alíquota Zero;\n05 - Operação Tributável por Substituição Tributária;\n06 - Operação Tributável a Alíquota Zero;\n07 - Operação Isenta da Contribuição;\n08 - Operação sem Incidência da Contribuição;\n09 - Operação com Suspensão da Contribuição;\n49 - Outras Operações de Saída;\n50 - Operação com Direito a Crédito – Vinculada Exclusivamente a Receita\nTributada no Mercado Interno;\n51 - Operação com Direito a Crédito – Vinculada Exclusivamente a Receita\nNão-Tributada no Mercado Interno;\n52 - Operação com Direito a Crédito – Vinculada Exclusivamente a Receita\nde Exportação;\n53 - Operação com Direito a Crédito – Vinculada a Receitas Tributadas e\nNão-Tributadas no Mercado Interno;\n54 - Operação com Direito a Crédito – Vinculada a Receitas Tributadas no\nMercado Interno e de Exportação;\n55 - Operação com Direito a Crédito – Vinculada a Receitas Não Tributadas no Mercado Interno e de Exportação;\n56 - Operação com Direito a Crédito – Vinculada a Receitas Tributadas e\nNão-Tributadas no Mercado Interno e de Exportação;\n60 - Crédito Presumido – Operação de Aquisição Vinculada Exclusivamente a Receita Tributada no Mercado Interno;\n61 - Crédito Presumido – Operação de Aquisição Vinculada Exclusivamente a Receita Não-Tributada no Mercado Interno;\n62 - Crédito Presumido – Operação de Aquisição Vinculada Exclusivamente a Receita de Exportação;\n63 - Crédito Presumido – Operação de Aquisição Vinculada a Receitas\nTributadas e Não-Tributadas no Mercado Interno;\n64 - Crédito Presumido – Operação de Aquisição Vinculada a Receitas\nTributadas no Mercado Interno e de Exportação;\n65 - Crédito Presumido – Operação de Aquisição Vinculada a Receitas NãoTributadas no Mercado Interno e de Exportação;\n66 - Crédito Presumido – Operação de Aquisição Vinculada a Receitas\nTributadas e Não-Tributadas no Mercado Interno e de Exportação;\n67 - Crédito Presumido – Outras Operações;\n70 - Operação de Aquisição sem Direito a Crédito;\n71 - Operação de Aquisição com Isenção;\n72 - Operação de Aquisição com Suspensão;\n73 - Operação de Aquisição a Alíquota Zero;\n74 - Operação de Aquisição sem Incidência da Contribuição;\n75 - Operação de Aquisição por Substituição Tributária;\n98 - Outras Operações de Entrada;\n99 - Outras Operações.\n\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C182",
+   "caminho": "Envio/RPS/Servico/Valores",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C183",
+   "caminho": "Envio/RPS/Servico/Valores/ValServicos",
+   "descricao": "Valor dos serviços",
+   "tipo": "N(16.2)",
+   "ocorrencia": "1-1",
+   "observacao": "Valor monetário do serviço (R$).\n(Para os códigos de tributação nacional do subitem 99.03, vServ = pCopropriedade x vTotOper)",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C184",
+   "caminho": "Envio/RPS/Servico/Valores/ValPercDeducoes",
+   "descricao": "Valor percentual padrão para dedução/redução do valor do serviço",
+   "tipo": "N(6.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C185",
+   "caminho": "Envio/RPS/Servico/Valores/ValDeducoes",
+   "descricao": "Valor das deduções",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "O valor da dedução refere-se à compra de materiais envolvidos na prestação do serviço, e deve ser descontada da base de cálculo do ISSQN.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C186",
+   "caminho": "Envio/RPS/Servico/Valores/ValPIS",
+   "descricao": "Valor do PIS",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Utilizado para Reforma Tributária NFPaulistana, porém não é de uso exclusivo do NFPaulistana",
+   "versaoInvoicy": "1.0.0.0\n2.90.9.0"
+  },
+  {
+   "seq": "C187",
+   "caminho": "Envio/RPS/Servico/Valores/ValPISRetido",
+   "descricao": "Valor do PIS Retido",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.98.3"
+  },
+  {
+   "seq": "C188",
+   "caminho": "Envio/RPS/Servico/Valores/ValBCPIS",
+   "descricao": "Valor base de cálculo do PIS",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C189",
+   "caminho": "Envio/RPS/Servico/Valores/ValCOFINS",
+   "descricao": "Valor do COFINS",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Utilizado para Reforma Tributária NFPaulistana, porém não é de uso exclusivo do NFPaulistana",
+   "versaoInvoicy": "1.0.0.0\n2.90.9.0"
+  },
+  {
+   "seq": "C190",
+   "caminho": "Envio/RPS/Servico/Valores/ValCOFINSRetido",
+   "descricao": "Valor do COFINS Retido",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.98.3"
+  },
+  {
+   "seq": "C191",
+   "caminho": "Envio/RPS/Servico/Valores/ValBCCOFINS",
+   "descricao": "Valor base de cálculo do COFINS",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C192",
+   "caminho": "Envio/RPS/Servico/Valores/ValINSS",
+   "descricao": "Valor do INSS",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Utilizado para Reforma Tributária NFPaulistana, porém não é de uso exclusivo do NFPaulistana",
+   "versaoInvoicy": "1.0.0.0\n2.90.9.0"
+  },
+  {
+   "seq": "C193",
+   "caminho": "Envio/RPS/Servico/Valores/ValBCINSS",
+   "descricao": "Valor base de cálculo do INSS",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C194",
+   "caminho": "Envio/RPS/Servico/Valores/ValIR",
+   "descricao": "Valor do IR",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Utilizado para Reforma Tributária NFPaulistana, porém não é de uso exclusivo do NFPaulistana",
+   "versaoInvoicy": "1.0.0.0\n2.90.9.0"
+  },
+  {
+   "seq": "C195",
+   "caminho": "Envio/RPS/Servico/Valores/ValBCIRRF",
+   "descricao": "Valor base de cálculo do IRRF",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C196",
+   "caminho": "Envio/RPS/Servico/Valores/ValCSLL",
+   "descricao": "Valor da CSLL",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Utilizado para Reforma Tributária NFPaulistana, porém não é de uso exclusivo do NFPaulistana",
+   "versaoInvoicy": "1.0.0.0\n2.90.9.0"
+  },
+  {
+   "seq": "C197",
+   "caminho": "Envio/RPS/Servico/Valores/ValBCCSLL",
+   "descricao": "Valor base de cálculo da CSLL",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C198",
+   "caminho": "Envio/RPS/Servico/Valores/RespRetencao",
+   "descricao": "Rsponsável pela Retenção",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "1- Tomador, ou não tributar para o prestador.\n2 - Intermediário.\n3 - Prestador.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C199",
+   "caminho": "Envio/RPS/Servico/Valores/Tributavel",
+   "descricao": "É tributável?",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Obrigatório nos padrões DSFNET e Elotech.\nS – Item Tributável\nN – Não tributável\nPara o preenchimento do campo orienta-se a consultar o tópico DSFNET e Atividades de itens de serviços com marcação Não tributável – DSFNET",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C200",
+   "caminho": "Envio/RPS/Servico/Valores/ValISS",
+   "descricao": "Valor do ISS",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C201",
+   "caminho": "Envio/RPS/Servico/Valores/ISSRetido",
+   "descricao": "ISS Retido?",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - Sim;\n2 - Não;\n3 - Substituição Tributária - exclusivo para o padrão Betha 1.0",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C202",
+   "caminho": "Envio/RPS/Servico/Valores/ValISSRetido",
+   "descricao": "Valor do ISS Retido",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Valor do ISS Retido",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C203",
+   "caminho": "Envio/RPS/Servico/Valores/ValTotal",
+   "descricao": "Valor Total",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Valor do Serviço - descontos",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C204",
+   "caminho": "Envio/RPS/Servico/Valores/ValTotalRecebido",
+   "descricao": "Valor Total Recebido",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Valor Total Recebido em R$ (inclusive valores repassados a terceiros). Exclusivo NF Paulistana",
+   "versaoInvoicy": "3.21.0.0"
+  },
+  {
+   "seq": "C205",
+   "caminho": "Envio/RPS/Servico/Valores/ValBaseCalculo",
+   "descricao": "Base de cálculo",
+   "tipo": "N(16.2)",
+   "ocorrencia": "1-1",
+   "observacao": "(Valor dos serviços - Valor das deduções - descontos incondicionais)",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C206",
+   "caminho": "Envio/RPS/Servico/Valores/ValOutrasRetencoes",
+   "descricao": "Valor das outras retenções",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Valor das outras retenções",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C207",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqISS",
+   "descricao": "Aliquota do ISS",
+   "tipo": "N(8.4)",
+   "ocorrencia": "1-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C208",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqPIS",
+   "descricao": "Aliquota do PIS",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C209",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqPISRetido",
+   "descricao": "Aliquota do PIS Retido",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "2.98.3"
+  },
+  {
+   "seq": "C210",
+   "caminho": "Envio/RPS/Servico/Valores/PISRetido",
+   "descricao": "PIS Retido?",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - Sim;\n2 - Não;\nExclusivo padrão Tributos Web - Elotech 2.03",
+   "versaoInvoicy": "3.18.0.0"
+  },
+  {
+   "seq": "C211",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqCOFINS",
+   "descricao": "Aliquota do COFINS",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C212",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqCOFINSRetido",
+   "descricao": "Aliquota do COFINS Retido",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "2.98.3"
+  },
+  {
+   "seq": "C213",
+   "caminho": "Envio/RPS/Servico/Valores/COFINSRetido",
+   "descricao": "CONFINS Retido?",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - Sim;\n2 - Não;\nExclusivo padrão Tributos Web - Elotech 2.03",
+   "versaoInvoicy": "3.18.0.0"
+  },
+  {
+   "seq": "C214",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqIR",
+   "descricao": "Aliquota do IR",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C215",
+   "caminho": "Envio/RPS/Servico/Valores/IRRetido",
+   "descricao": "IR Retido?",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - Sim;\n2 - Não;\nExclusivo padrão Tributos Web - Elotech 2.03",
+   "versaoInvoicy": "3.18.0.0"
+  },
+  {
+   "seq": "C216",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqCSLL",
+   "descricao": "Aliquota do CSLL",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C217",
+   "caminho": "Envio/RPS/Servico/Valores/CSLLRetido",
+   "descricao": "CSLL Retido?",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - Sim;\n2 - Não;\nExclusivo padrão Tributos Web - Elotech 2.03",
+   "versaoInvoicy": "3.18.0.0"
+  },
+  {
+   "seq": "C218",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqINSS",
+   "descricao": "Aliquota do INSS",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C219",
+   "caminho": "Envio/RPS/Servico/Valores/INSSRetido",
+   "descricao": "INSS Retido?",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - Sim;\n2 - Não;\nExclusivo padrão Tributos Web - Elotech 2.03",
+   "versaoInvoicy": "3.18.0.0"
+  },
+  {
+   "seq": "C220",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqCpp",
+   "descricao": "Valor da alíquota do CPP",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Valor da alíquota do CPP. Exclusivo padrão Tributos Web - Elotech 2.03",
+   "versaoInvoicy": "3.18.0.0"
+  },
+  {
+   "seq": "C221",
+   "caminho": "Envio/RPS/Servico/Valores/CppRetido",
+   "descricao": "CPP Retido?",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - Sim;\n2 - Não;\nExclusivo padrão Tributos Web - Elotech 2.03",
+   "versaoInvoicy": "3.18.0.0"
+  },
+  {
+   "seq": "C222",
+   "caminho": "Envio/RPS/Servico/Valores/ValCpp",
+   "descricao": "Valor do CPP",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Valor do CPP. Exclusivo padrão Tributos Web - Elotech 2.03",
+   "versaoInvoicy": "3.18.0.0"
+  },
+  {
+   "seq": "C223",
+   "caminho": "Envio/RPS/Servico/Valores/OutrasRetencoesRetido",
+   "descricao": "Outras Retenções com retenção?",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - Sim;\n2 - Não;\nExclusivo e uma peculiaridade do padrão Tributos Web - Elotech 2.03",
+   "versaoInvoicy": "3.18.0.0"
+  },
+  {
+   "seq": "C224",
+   "caminho": "Envio/RPS/Servico/Valores/ValBCOutrasRetencoes",
+   "descricao": "Valor da base de cálculos das outras retenções",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "3.29.0.0"
+  },
+  {
+   "seq": "C225",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqOutrasRetencoes",
+   "descricao": "Valor da aliquota das outras informações",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "3.29.0.0"
+  },
+  {
+   "seq": "C226",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqTotTributos",
+   "descricao": "Valor da aliquota do total dos tributos",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Valor da aliquota do total dos tributos. Exclusivo padrão Tributos Web - Elotech 2.03",
+   "versaoInvoicy": "3.18.0.0"
+  },
+  {
+   "seq": "C227",
+   "caminho": "Envio/RPS/Servico/Valores/ValLiquido",
+   "descricao": "Valor líquido do serviço",
+   "tipo": "N(16.2)",
+   "ocorrencia": "1-1",
+   "observacao": "O valor informado neste campo NORMALMENTE compreende o seguinte cálculo:  Valor dos Serviços - Valor de PIS - Valor de COFINS - Valor de INSS - Valor de IR - Valor de CSLL - Outras Retenções - Valor IISS Retido - Desconto Incondicionado - Desconto Condicionado",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C228",
+   "caminho": "Envio/RPS/Servico/Valores/ValDescIncond",
+   "descricao": "Valor do desconto incondicionado",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Valor do desconto incondicionado",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C229",
+   "caminho": "Envio/RPS/Servico/Valores/ValDescCond",
+   "descricao": "Valor do desconto condicionado",
+   "tipo": "N(16.2)",
+   "ocorrencia": "1-1",
+   "observacao": "Valor do desconto condicionado",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C230",
+   "caminho": "Envio/RPS/Servico/Valores/ValAcrescimos",
+   "descricao": "Valor dos acréscimos",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C231",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqISSoMunic",
+   "descricao": "Alíquota ISS em outro Município",
+   "tipo": "N(6.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Obrigatório para o padrão de Lençóis Paulista. Informar preferencialmente no formato decimal. Ex: 0,05 para 5%.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C232",
+   "caminho": "Envio/RPS/Servico/Valores/InfValPIS",
+   "descricao": "Informação sobre o valor do PIS",
+   "tipo": "V (100)",
+   "ocorrencia": "0-1",
+   "observacao": "Em obediência a Lei Federal 12.741/2012\nObrigatório para o padrão de Lençóis Paulista",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C233",
+   "caminho": "Envio/RPS/Servico/Valores/InfValCOFINS",
+   "descricao": "Informação sobre o valor do COFINS",
+   "tipo": "V (100)",
+   "ocorrencia": "0-1",
+   "observacao": "Em obediência a Lei Federal 12.741/2012\nObrigatório para o padrão de Lençóis Paulista",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C234",
+   "caminho": "Envio/RPS/Servico/Valores/ValLiqFatura",
+   "descricao": "Valor líquido total das faturas/parcelas",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão INFISC",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C235",
+   "caminho": "Envio/RPS/Servico/Valores/ValBCISSRetido",
+   "descricao": "Base de Cálculo do ISS Retido",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão INFISC",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C236",
+   "caminho": "Envio/RPS/Servico/Valores/NroFatura",
+   "descricao": "Número da Fatura",
+   "tipo": "N(15.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo Padrão eISS",
+   "versaoInvoicy": "1.9.0.0"
+  },
+  {
+   "seq": "C237",
+   "caminho": "Envio/RPS/Servico/Valores/CargaTribValor",
+   "descricao": "Valor da Carga Tributária",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo Padrão NFPaulistana",
+   "versaoInvoicy": "1.12.0.0"
+  },
+  {
+   "seq": "C238",
+   "caminho": "Envio/RPS/Servico/Valores/CargaTribPercentual",
+   "descricao": "Percentual da Carga Tributária",
+   "tipo": "N(8.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo Padrão NFPaulistana",
+   "versaoInvoicy": "1.12.0.0"
+  },
+  {
+   "seq": "C239",
+   "caminho": "Envio/RPS/Servico/Valores/CargaTribFonte",
+   "descricao": "Fonte da Carga Tributária - Ex.: IBPT",
+   "tipo": "V(10)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo Padrão NFPaulistana",
+   "versaoInvoicy": "1.12.0.0"
+  },
+  {
+   "seq": "C240",
+   "caminho": "Envio/RPS/Servico/Valores/JustDed",
+   "descricao": "Descrição justificativa da dedução",
+   "tipo": "V(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão Equiplano",
+   "versaoInvoicy": "1.12.0.0"
+  },
+  {
+   "seq": "C241",
+   "caminho": "Envio/RPS/Servico/Valores/ValCredito",
+   "descricao": "Valor do crédito",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C242",
+   "caminho": "Envio/RPS/Servico/Valores/OutrosImp",
+   "descricao": "Valor de outros impostos",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C243",
+   "caminho": "Envio/RPS/Servico/Valores/ValRedBC",
+   "descricao": "Valor da redução da base de cálculo",
+   "tipo": "(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C244",
+   "caminho": "Envio/RPS/Servico/Valores/ValRetFederais",
+   "descricao": "Valor total das retenções federais",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C245",
+   "caminho": "Envio/RPS/Servico/Valores/ValAproxTrib",
+   "descricao": "Valor aproximado dos tributos",
+   "tipo": "(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "3.18.0.0"
+  },
+  {
+   "seq": "C246",
+   "caminho": "Envio/RPS/Servico/Valores/NroDeducao",
+   "descricao": "Número da dedução do serviço",
+   "tipo": "N(19.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo para o padrão BOANF",
+   "versaoInvoicy": "3.43.0.0"
+  },
+  {
+   "seq": "C247",
+   "caminho": "Envio/RPS/Servico/Valores/mdPrestacao",
+   "descricao": "Modo de prestação",
+   "tipo": "N (1)",
+   "ocorrencia": "0-1",
+   "observacao": "Os valores aceitos são:\n0 - Desconhecido (tipo não informado na nota de origem);\n1 - Transfronteiriço;\n2 - Consumo no Brasil;\n3 - Presença Comercial no Exterior;\n4 - Movimento Temporário de Pessoas Físicas;\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C248",
+   "caminho": "Envio/RPS/Servico/Valores/vincPrest",
+   "descricao": "Vínculo entre as partes no negócio",
+   "tipo": "N (1)",
+   "ocorrencia": "0-1",
+   "observacao": "Os valores aceitos são:\n0 - Sem vínculo com o tomador/ Prestador\n1 - Controlada;\n2 - Controladora;\n3 - Coligada;\n4 - Matriz;\n5 - Filial ou sucursal;\n6 - Outro vínculo;\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C249",
+   "caminho": "Envio/RPS/Servico/Valores/tpMoeda",
+   "descricao": "Identifica a moeda da transação comercial",
+   "tipo": "V(3)",
+   "ocorrencia": "0-1",
+   "observacao": "Conforme lista https://www.bcb.gov.br/estabilidadefinanceira/todasmoedas\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C250",
+   "caminho": "Envio/RPS/Servico/Valores/ValServEst",
+   "descricao": "Valor do Serviço em Moeda estrangeira",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C251",
+   "caminho": "Envio/RPS/Servico/Valores/mecAFComexP",
+   "descricao": "Mecanismo de apoio/fomento ao Comércio Exterior utilizado pelo prestador do serviço",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Os valores aceitos são:\n00 - Desconhecido (tipo não informado na nota de origem);\n01 - Nenhum;\n02 - ACC - Adiantamento sobre Contrato de Câmbio – Redução a Zero do IR e do IOF;\n03 - ACE – Adiantamento sobre Cambiais Entregues - Redução a Zero do IR e do IOF;\n04 - BNDES-Exim Pós-Embarque – Serviços;\n05 - BNDES-Exim Pré-Embarque - Serviços;\n06 - FGE - Fundo de Garantia à Exportação;\n07 - PROEX - EQUALIZAÇÃO\n08 - PROEX - Financiamento;\n\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C252",
+   "caminho": "Envio/RPS/Servico/Valores/mecAFComexT",
+   "descricao": "Mecanismo de apoio/fomento ao Comércio Exterior utilizado pelo tomador do serviço",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Os valores aceitos são:\n00 - Desconhecido (tipo não informado na nota de origem);\n01 - Nenhum;\n02 - Adm. Pública e Repr. Internacional;\n03 - Alugueis e Arrend. Mercantil de maquinas, equip., embarc. e aeronaves;\n04 - Arrendamento Mercantil de aeronave para empresa de transporte aéreo público;\n05 - Comissão a agentes externos na exportação;\n06 - Despesas de armazenagem, mov. e transporte de carga no exterior;\n07 - Eventos FIFA (subsidiária);\n08 - Eventos FIFA;\n09 - Fretes, arrendamentos de embarcações ou aeronaves e outros;\n10 - Material Aeronáutico;\n11 - Promoção de Bens no Exterior;\n12 - Promoção de Dest. Turísticos Brasileiros;\n13 - Promoção do Brasil no Exterior;\n14 - Promoção Serviços no Exterior;\n15 - RECINE;\n16 - RECOPA;\n17 - Registro e Manutenção de marcas, patentes e cultivares;\n18 - REICOMP;\n19 - REIDI;\n20 - REPENEC;\n21 - REPES;\n22 - RETAERO;\n23 - RETID;\n24 - Royalties, Assistência Técnica, Científica e Assemelhados;\n25 - Serviços de avaliação da conformidade vinculados aos Acordos da OMC;\n26 - ZPE;\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C253",
+   "caminho": "Envio/RPS/Servico/Valores/movTempBens",
+   "descricao": "Operação está vinculada à Movimentação Temporária de Bens",
+   "tipo": "N (1)",
+   "ocorrencia": "0-1",
+   "observacao": "Os valores aceitos são:\n0 - Desconhecido (tipo não informado na nota de origem);\n1 - Não\n2 - Vinculada - Declaração de Importação\n3 - Vinculada - Declaração de Exportação\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C254",
+   "caminho": "Envio/RPS/Servico/Valores/nDI",
+   "descricao": "Número da Declaração de Importação (DI/DSI/DA/DRI-E) averbado",
+   "tipo": "V(12)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C255",
+   "caminho": "Envio/RPS/Servico/Valores/nRE",
+   "descricao": "Número do Registro de Exportação (RE) averbado",
+   "tipo": "V(12)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C256",
+   "caminho": "Envio/RPS/Servico/Valores/mdic",
+   "descricao": "Compartilhar as informações da NFS-e gerada a partir desta DPS com a Secretaria de Comércio Exterior",
+   "tipo": "N (1)",
+   "ocorrencia": "0-1",
+   "observacao": "Os valores aceitos são:\n0 - Não enviar para o MDIC;\n1 - Enviar para o MDIC;\n\n\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C257",
+   "caminho": "Envio/RPS/Servico/Valores/vRecebInterm",
+   "descricao": "Valor monetário recebido pelo intermediário do serviço",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C258",
+   "caminho": "Envio/RPS/Servico/Valores/ValRedBenef",
+   "descricao": "Valor monetário informado pelo emitente para redução da base de cálculo (BC) do ISSQN devido a um Benefício Municipal (BM).",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C259",
+   "caminho": "Envio/RPS/Servico/Valores/PercRedBenef",
+   "descricao": "Valor percentual informado pelo emitente para redução da base de cálculo (BC) do ISSQN devido a um Benefício Municipal (BM)",
+   "tipo": "N(6.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C260",
+   "caminho": "Envio/RPS/Servico/Valores/ValRetEstaduais",
+   "descricao": "Valor monetário total aproximado dos tributos estaduais",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C261",
+   "caminho": "Envio/RPS/Servico/Valores/ValRetMunicipais",
+   "descricao": "Valor monetário total aproximado dos tributos municipais",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C262",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqRetFederais",
+   "descricao": "Valor percentual total aproximado dos tributos federais",
+   "tipo": "N(6.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C263",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqRetEstaduais",
+   "descricao": "Valor percentual total aproximado dos tributos estaduais",
+   "tipo": "N(6.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C264",
+   "caminho": "Envio/RPS/Servico/Valores/ValAliqRetMunicipais",
+   "descricao": "Valor percentual total aproximado dos tributos municipais",
+   "tipo": "N(6.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C265",
+   "caminho": "Envio/RPS/Servico/Valores/ValAproxTribAliqSN",
+   "descricao": "Valor percentual aproximado do total dos tributos da alíquota do Simples Nacional (%).",
+   "tipo": "N(6.2)",
+   "ocorrencia": "0-2",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C266",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS",
+   "descricao": "Grupo de valores relacionados a IBS e CBS",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C267",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribRegular",
+   "descricao": "Grupo de informações de tributação regular",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C268",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribRegular/ValpAliqEfeRegIBSUF",
+   "descricao": "Alíquota efetiva de tributação regular do IBS estadual",
+   "tipo": "N(5.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C269",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribRegular/ValTribRegIBSUF",
+   "descricao": "Valor da tributação regular do IBS estadual",
+   "tipo": "N(17.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C270",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribRegular/ValpAliqEfeRegIBSMun",
+   "descricao": "Alíquota efetiva de tributação regular do IBS municipal",
+   "tipo": "N(5.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C271",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribRegular/ValTribRegIBSMun",
+   "descricao": "Valor da tributação regular do IBS municipal",
+   "tipo": "N(17.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C272",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribRegular/ValpAliqEfeRegCBS",
+   "descricao": "Alíquota efetiva de tributação regular da CBS",
+   "tipo": "N(5.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C273",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribRegular/ValTribRegCBS",
+   "descricao": "Valor da tributação regular da CBS",
+   "tipo": "N(17.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "ValBCCBSIBS x ValpAliqEfeRegCBS\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C274",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribCompraGov",
+   "descricao": "Grupo de informações da composição\ndo valor do IBS e da CBS em compras\ngovernamentais",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C275",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribCompraGov/ValpIBSUF",
+   "descricao": "Alíquota do IBS de competência do Estado",
+   "tipo": "N(5.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C276",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribCompraGov/ValIBSUF",
+   "descricao": "Valor do Tributo do IBS da UF calculado",
+   "tipo": "N(17.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C277",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribCompraGov/ValpIBSMun",
+   "descricao": "Alíquota do IBS de competência do Município",
+   "tipo": "N(5.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C278",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribCompraGov/ValIBSMun",
+   "descricao": "Valor do Tributo do IBS do Município calculado",
+   "tipo": "N(17.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C279",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribCompraGov/ValpCBS",
+   "descricao": "Alíquota da CBS",
+   "tipo": "N(5.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C280",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/TribCompraGov/ValCBS",
+   "descricao": "Valor do Tributo da CBS calculado",
+   "tipo": "N(17.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C281",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS",
+   "descricao": "Grupo de Informações Relativas às Totalizações do IBS",
+   "tipo": "-",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C282",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValIBSTot",
+   "descricao": "Valor total do IBS(UF  + Mun)",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C283",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValCredPresIBS",
+   "descricao": "Valor do Crédito Presumido do IBS.",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C284",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValpCredPresIBS",
+   "descricao": "Percentual do Crédito Presumido do IBS.",
+   "tipo": "N(6.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C285",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValIBSUF",
+   "descricao": "Total valor do IBS estadual.",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C286",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValpIBSUF",
+   "descricao": "Alíquota da UF para IBS da localidade de incidência parametrizada no sistema",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C287",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValDifUF",
+   "descricao": "Total do Diferimento estadual",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C288",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValpDifUF",
+   "descricao": "Percentual de diferimento estadual.",
+   "tipo": "N(5.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C289",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValpRedAliqUF",
+   "descricao": "Percentual de redução de alíquota estadual.",
+   "tipo": "N(5.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C290",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValpAliqEfetUF",
+   "descricao": "Valorpercentual da alíquota efetiva UF",
+   "tipo": "N(5.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C291",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValIBSMun",
+   "descricao": "Total valor do IBS municipal",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C292",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValpIBSMun",
+   "descricao": "Alíquota do IBS de competência do Município",
+   "tipo": "N(5.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária IPM",
+   "versaoInvoicy": "2.92.0.0"
+  },
+  {
+   "seq": "C293",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValDifMun",
+   "descricao": "Total de diferimento Municipal",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C294",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValpDifMun",
+   "descricao": "Percentual de diferimento municipal",
+   "tipo": "N(6.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C295",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValpAliqEfetMun",
+   "descricao": "Percentual de alíquota efetiva municipal",
+   "tipo": "N(5.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Se pRedAliqMun não for informado na DPS, então\npAliqEfetMun é a própria pIBSMun\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C296",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValpRedAliqMun",
+   "descricao": "Percentual de redução de alíquota Municipal",
+   "tipo": "N(5.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C297",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValIBSEstCred",
+   "descricao": "Valor do IBS a ser estornado",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C298",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValIBSAjuste",
+   "descricao": "Valor do IBS a ser ajustado (NFS-e de crédito ou débito)",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar quando finNFSe = 1 ou 2.",
+   "versaoInvoicy": "3.1.0.1"
+  },
+  {
+   "seq": "C299",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValpIBSSN",
+   "descricao": "Alíquota do IBS Total para optantes do Simples Nacional.",
+   "tipo": "N(5.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar quando OptSN diferente de 2(Não) e há incidência de IBS pelo SN.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C300",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/IBS/ValIBSSN",
+   "descricao": "Valor do IBS para optantes do Simples Nacional.",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar quando OptSN diferente de 2(Não) e há incidência de IBS pelo SN.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C301",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/CBS",
+   "descricao": "Grupo de Informações Relativas às Totalizações do CBS",
+   "tipo": "-",
+   "ocorrencia": "45658.0",
+   "observacao": null,
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C302",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/CBS/ValCBS",
+   "descricao": "Total valor da CBS da União",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C303",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/CBS/ValpCBS",
+   "descricao": "Alíquota da UF para CBS da localidade de incidência",
+   "tipo": "N(5.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C304",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/CBS/ValCredPresCBS",
+   "descricao": "Valor do Crédito Presumido da CBS.",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C305",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/CBS/ValpCredPresCBS",
+   "descricao": "Alíquota do crédito presumido para a CBS",
+   "tipo": "N(5.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C306",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/CBS/ValDifCBS",
+   "descricao": "Total do Diferimento CBS",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C307",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/CBS/ValpDifCBS",
+   "descricao": "Percentual de diferimento da CBS",
+   "tipo": "N(6.2)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C308",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/CBS/ValpAliqEfetCBS",
+   "descricao": "Percentual da alíquota efetiva do CBS",
+   "tipo": "N(5.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C309",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/CBS/ValpRedAliqCBS",
+   "descricao": "Percentual da redução de alíquota CBS",
+   "tipo": "N(5.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C310",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/CBS/ValCBSEstCred",
+   "descricao": "Valor do CBS a ser estornado",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C311",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/CBS/ValCBSAjuste",
+   "descricao": "Valor da CBS a ser ajustada (NFS-e de crédito ou débito).",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar quando finNFSe = 1 ou 2.",
+   "versaoInvoicy": null
+  },
+  {
+   "seq": "C312",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/CBS/ValpCBSSN",
+   "descricao": "Alíquota da CBS para optantes do Simples Nacional.",
+   "tipo": "N(5.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar quando OptSN diferente de 2(Não).",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C313",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/CBS/ValCBSSN",
+   "descricao": "Valor da CBS para optantes do Simples Nacional.",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar quando OptSN diferente de 2(Não)",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C314",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/ValTotNF",
+   "descricao": "Valor Total da NF considerando os impostos por fora: IBS e CBS",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "O IBS e a CBS são por fora, por isso seus valores devem ser adicionados ao valor total da NF\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C315",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/ValBCIBSCBS",
+   "descricao": "Valor da base de cálculo (BC) do IBS/CBS antes das reduções para cálculo do tributo bruto",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Até 2026: vBC = vServ – descIncond – vCalcAjusteBCIBSCBS ou vCalcAjusteBCLocImoveis – vISSQN – vPIS – vCOFINS\nDe 2027 a 2032: vBC = vServ – descIncond – vCalcAjusteBCIBSCBS ou vCalcAjusteBCLocImoveis – vISSQN\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C316",
+   "caminho": "Envio/RPS/Servico/Valores/ValRetMunicipais/ValCalcReeRepRes",
+   "descricao": "Valor monetário (R$) total relativo ao fornecimento",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C317",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/ValCalcAjusteBCIBSCBS",
+   "descricao": "Valor monetário (R$) total relativo a glosa de serviços de saúde ou a operações de terceiros, objeto de reembolso, repasse ou ressarcimento pelo recebedor, devidamente referenciados, e que não integram da base de cálculo (BC) do IBS e da CBS.",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "\"vCalcAjusteBCIBSCBS é:\n\nA soma dos valores de ajuste da BC do IBS e da CBS, quando um ou mais documentos são informados nos campos vAjusteBC pelo emitente na DPS. Neste caso, o resultado do somatório é o valor deste campo do leiaute NFS-e quando os tipos dos documentos forem relacionados a glosa de serviços de saúde ou operações de terceiros, objeto de reembolso, repasse ou ressarcimento pelo recebedor, correspondentes aos códigos 105 a 199 em tpAjusteBC\"\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C318",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/ValCalcAjusteBCLocImoveis",
+   "descricao": "Valor monetário (R$) total relativo aos valores de ajuste (dedução/redução) da Base de Cálculo do IBS e da CBS referentes às operações de locação, cessão onerosa ou arrendamento de bens imóveis. Apenas para os subitens 99.03.",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Campo é o somatório dos ajustes (deduções/reduções) do grupo gAjusteBCLocImoveis multiplicado pelo pCopropriedade.\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C319",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/ValpAjusteBCISSQN",
+   "descricao": "Valor percentual padrão para ajuste dos valores de base de cálculo do\nISSQN.",
+   "tipo": "N(5.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": null
+  },
+  {
+   "seq": "C320",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/ValAjusteBCISSQN",
+   "descricao": "Valor monetário padrão para ajuste dos valores de base de cálculo do\nISSQN",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": null
+  },
+  {
+   "seq": "C321",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/ValReceitaBrutaSN",
+   "descricao": "Valor da Receita Bruta para os Optantes do Simples Nacional.",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "vReceitaBrutaSN = vServ – descIncond – vCalcAjusteBCIBSCBS – vCalcAjusteBCISSQN*\n(*apenas quando tpAjusteBC = 9 — Profissional parceiro)",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C322",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/ValpRedutor",
+   "descricao": "Percentual de redução compras governamentais",
+   "tipo": "N(5.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C323",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/ValMulta",
+   "descricao": "Valor da multa",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Geralmente por atraso no pagamento.\nUso específico para Reforma Tributária NFPaulistana",
+   "versaoInvoicy": "2.90.9.0"
+  },
+  {
+   "seq": "C324",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/ValJuros",
+   "descricao": "Valor dos juros",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Geralmente por atraso no pagamento.\nUso específico para Reforma Tributária NFPaulistana",
+   "versaoInvoicy": "2.90.9.0"
+  },
+  {
+   "seq": "C325",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/ValInicialCobrado",
+   "descricao": "Valor inicial cobrado pela prestação do serviço",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Valor do serviço antes da incidência dos impostos(\"gross-up\").\nUso específico para Reforma Tributária NFPaulistana",
+   "versaoInvoicy": "2.90.9.0"
+  },
+  {
+   "seq": "C326",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/ValFinalCobrado",
+   "descricao": "Valor total cobrado pela prestação do serviço",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Valor total já com os impostos inclusos.\nUso específico para Reforma Tributária NFPaulistana",
+   "versaoInvoicy": "2.90.9.0"
+  },
+  {
+   "seq": "C327",
+   "caminho": "Envio/RPS/Servico/Valores/IBSCBS/ValIPI",
+   "descricao": "Valor do IPI",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Quando a operação é mista (serviço + produto).\nUso específico para Reforma Tributária NFPaulistana",
+   "versaoInvoicy": "2.90.9.0"
+  },
+  {
+   "seq": "C328",
+   "caminho": "Envio/RPS/Servico/LocalPrestacao",
+   "descricao": "Local Prestação",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C329",
+   "caminho": "Envio/RPS/Servico/LocalPrestacao/SerEndTpLgr",
+   "descricao": "Tipo de Logradouro",
+   "tipo": "V(40)",
+   "ocorrencia": "45658.0",
+   "observacao": "Ex: Rua, Avenida, Travessa.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C330",
+   "caminho": "Envio/RPS/Servico/LocalPrestacao/SerEndLgr",
+   "descricao": "Endereço",
+   "tipo": "V(255)",
+   "ocorrencia": "45658.0",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C331",
+   "caminho": "Envio/RPS/Servico/LocalPrestacao/SerEndNumero",
+   "descricao": "Número",
+   "tipo": "V(10)",
+   "ocorrencia": "45658.0",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C332",
+   "caminho": "Envio/RPS/Servico/LocalPrestacao/SerEndComplemento",
+   "descricao": "Complemento",
+   "tipo": "V(60)",
+   "ocorrencia": "45658.0",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C333",
+   "caminho": "Envio/RPS/Servico/LocalPrestacao/SerEndBairro",
+   "descricao": "Bairro",
+   "tipo": "V(60)",
+   "ocorrencia": "45658.0",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C334",
+   "caminho": "Envio/RPS/Servico/LocalPrestacao/SerEndxMun",
+   "descricao": "Nome do Município",
+   "tipo": "V(255)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C335",
+   "caminho": "Envio/RPS/Servico/LocalPrestacao/SerEndcMun",
+   "descricao": "Código IBGE do município",
+   "tipo": "N(7)",
+   "ocorrencia": "45658.0",
+   "observacao": "Consulte nosso artigo para mais informações.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C336",
+   "caminho": "Envio/RPS/Servico/LocalPrestacao/SerEndCep",
+   "descricao": "CEP",
+   "tipo": "N(8)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C337",
+   "caminho": "Envio/RPS/Servico/LocalPrestacao/SerEndSiglaUF",
+   "descricao": "Sigla da Unidade Federativa",
+   "tipo": "V(2)",
+   "ocorrencia": "45658.0",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C338",
+   "caminho": "Envio/RPS/Servico/IBSCBS",
+   "descricao": "Grupo de informações declaradas pelo emitente referentes ao\nIBS e à CBS",
+   "tipo": "-",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C339",
+   "caminho": "Envio/RPS/Servico/IBSCBS/TribRegular",
+   "descricao": "Grupo de informações da Tributação Regular",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C340",
+   "caminho": "Envio/RPS/Servico/IBSCBS/TribRegular/CSTReg",
+   "descricao": "Código de Situação Tributária do\r\nIBS e da CBS de tributação regular",
+   "tipo": "V(3)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C341",
+   "caminho": "Envio/RPS/Servico/IBSCBS/TribRegular/cClassTribReg",
+   "descricao": "Código da Classificação Tributária do\r\nIBS e da CBS de tributação regular",
+   "tipo": "V(6)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C342",
+   "caminho": "Envio/RPS/Servico/IBSCBS/cLocalidadeIncid",
+   "descricao": "Código IBGE da localidade de incidência do IBS/CBS (local da operação)",
+   "tipo": "N(7.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C343",
+   "caminho": "Envio/RPS/Servico/IBSCBS/xLocalidadeIncid",
+   "descricao": "Nome da localidade de incidência do IBS/CBS.",
+   "tipo": "V(600)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C344",
+   "caminho": "Envio/RPS/Servico/IBSCBS/CSTIBSCBS",
+   "descricao": "Código de Situação Tributária do IBS e da CBS",
+   "tipo": "V(3)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C345",
+   "caminho": "Envio/RPS/Servico/IBSCBS/cClassTrib",
+   "descricao": "Código de Classificação Tributária do  IBS e CBS",
+   "tipo": "N(6.0)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C346",
+   "caminho": "Envio/RPS/Servico/IBSCBS/cCredPres",
+   "descricao": "Código e classificação do crédito presumido: IBS e CBS",
+   "tipo": "N(2.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C347",
+   "caminho": "Envio/RPS/Servico/IBSCBS/Onerosidade",
+   "descricao": "Serviço Oneroso",
+   "tipo": "N(1.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico padrão Conan. Descontinuado NF Paulistana",
+   "versaoInvoicy": null
+  },
+  {
+   "seq": "C348",
+   "caminho": "Envio/RPS/Servico/IBSCBS/PagParceladoAntecipado",
+   "descricao": "Indica se a nota se refere a um pagamento antecipado",
+   "tipo": "V(1)",
+   "ocorrencia": "0-1",
+   "observacao": "0 = Não\n1 = Sim\n\nUso específico para Reforma Tributária NFPaulistana",
+   "versaoInvoicy": "2.90.9.0"
+  },
+  {
+   "seq": "C349",
+   "caminho": "Envio/RPS/Servico/IBSCBS/NCM",
+   "descricao": "Código padronizado para mercadorias (NCM - Nomenclatura Comum do Mercosul)",
+   "tipo": "V(10)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária NFPaulistana",
+   "versaoInvoicy": "2.90.9.0"
+  },
+  {
+   "seq": "C350",
+   "caminho": "Envio/RPS/Servico/IBSCBS/indCompGov",
+   "descricao": "Indicador de compra governamental",
+   "tipo": "V(1)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - Sim; 2 - Não;\nUso específico para Reforma Tributária NFPaulistana",
+   "versaoInvoicy": "2.90.9.0"
+  },
+  {
+   "seq": "C351",
+   "caminho": "Envio/RPS/Servico/IBSCBS/tpRetPisCofins",
+   "descricao": "Tipo de Retenção PIS/COFINS e CSLL",
+   "tipo": "V(1)",
+   "ocorrencia": "0-1",
+   "observacao": "0 - PIS/COFINS/CSLL Não Retidos;\n1 - PIS/COFINS Retido;\n2 - PIS/COFINS Não Retido;\n3 - PIS/COFINS/CSLL Retidos;\n4 - PIS/COFINS Retidos, CSLL Não Retido;\n5 - PIS Retido, COFINS/CSLL Não Retido;\n6 - COFINS Retido, PIS/CSLL Não Retido;\n7 - PIS Não Retido, COFINS/CSLL Retidos;\n8 - PIS/COFINS Não Retidos, CSLL Retido;\n9 - COFINS Não Retido, PIS/CSLL Retidos;\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.98.0.4"
+  },
+  {
+   "seq": "C352",
+   "caminho": "Envio/RPS/Tomador",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C353",
+   "caminho": "Envio/RPS/Tomador/TomaCNPJ",
+   "descricao": "CNPJ do tomador",
+   "tipo": "C(14)",
+   "ocorrencia": "0-1",
+   "observacao": "CNPJ do tomador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C354",
+   "caminho": "Envio/RPS/Tomador/TomaCPF",
+   "descricao": "CPF do tomador",
+   "tipo": "C(11)",
+   "ocorrencia": "0-1",
+   "observacao": "CPF do tomador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C355",
+   "caminho": "Envio/RPS/Tomador/TomaIM",
+   "descricao": "Inscrição Municipal do tomador",
+   "tipo": "C(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Inscrição Municipal do tomador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C356",
+   "caminho": "Envio/RPS/Tomador/TomaRazaoSocial",
+   "descricao": "Razão social do tomador",
+   "tipo": "C(115)",
+   "ocorrencia": "0-1",
+   "observacao": "Razão social do tomador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C357",
+   "caminho": "Envio/RPS/Tomador/TomatpLgr",
+   "descricao": "Tipo de logradouro",
+   "tipo": "C(10)",
+   "ocorrencia": "0-1",
+   "observacao": "Tipo do logradouro do tomador (Rua, Avenida, Travessa, etc.)",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C358",
+   "caminho": "Envio/RPS/Tomador/TomaEndereco",
+   "descricao": "Endereço do tomador",
+   "tipo": "C(125)",
+   "ocorrencia": "0-1",
+   "observacao": "Endereço do tomador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C359",
+   "caminho": "Envio/RPS/Tomador/TomaNumero",
+   "descricao": "Número do endereço",
+   "tipo": "C(10)",
+   "ocorrencia": "0-1",
+   "observacao": "Número do endereço",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C360",
+   "caminho": "Envio/RPS/Tomador/TomaComplemento",
+   "descricao": "Complemento do endereço",
+   "tipo": "C(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Complemento do endereço",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C361",
+   "caminho": "Envio/RPS/Tomador/TomaBairro",
+   "descricao": "Bairro do tomador",
+   "tipo": "C(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Bairro do tomador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C362",
+   "caminho": "Envio/RPS/Tomador/TomacMun",
+   "descricao": "Código do município",
+   "tipo": "N(7)",
+   "ocorrencia": "0-1",
+   "observacao": "Código do município",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C363",
+   "caminho": "Envio/RPS/Tomador/TomaxMun",
+   "descricao": "Descrição do município",
+   "tipo": "C(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Descrição do município",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C364",
+   "caminho": "Envio/RPS/Tomador/TomaUF",
+   "descricao": "UF do tomador",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "UF do tomador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C365",
+   "caminho": "Envio/RPS/Tomador/TomaPais",
+   "descricao": "País do tomador",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Sigla do país do Tomador. Lista de siglas https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C366",
+   "caminho": "Envio/RPS/Tomador/TomaCEP",
+   "descricao": "CEP do tomador",
+   "tipo": "N(8)",
+   "ocorrencia": "0-1",
+   "observacao": "Somente números",
+   "versaoInvoicy": "1.3.0.0"
+  },
+  {
+   "seq": "C367",
+   "caminho": "Envio/RPS/Tomador/TomaTelefone",
+   "descricao": "Telefone do tomador",
+   "tipo": "C(11)",
+   "ocorrencia": "0-1",
+   "observacao": "Telefone do tomador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C368",
+   "caminho": "Envio/RPS/Tomador/TomaTipoTelefone",
+   "descricao": "Tipo de Telefone do Tomador",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão BSIT-BR.\nValores Aceitos:\nCE - Celular\nCO - Comercial\nRE - Residencial",
+   "versaoInvoicy": "1.8.0.0"
+  },
+  {
+   "seq": "C369",
+   "caminho": "Envio/RPS/Tomador/TomaEmail",
+   "descricao": "E-mail do tomador",
+   "tipo": "C(80)",
+   "ocorrencia": "0-1",
+   "observacao": "E-mail do tomador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C370",
+   "caminho": "Envio/RPS/Tomador/TomaSite",
+   "descricao": "Site do tomador",
+   "tipo": "C(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Site do tomador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C371",
+   "caminho": "Envio/RPS/Tomador/TomaIE",
+   "descricao": "Inscrição estadual do tomador",
+   "tipo": "C(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Inscrição estadual do tomador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C372",
+   "caminho": "Envio/RPS/Tomador/TomaIME",
+   "descricao": "Inscrição municipal eventual do tomador",
+   "tipo": "C(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão INFISC",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C373",
+   "caminho": "Envio/RPS/Tomador/TomaSituacaoEspecial",
+   "descricao": "Situação especial do Tomador",
+   "tipo": "C(1)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão NF-em\n1 - SUS\n2 - Órgão do poder Executivo\n3 - Bancos\n4 - Comércio/Indústria\n5 - Poder Legislativo/Judiciário\n0 - Outro",
+   "versaoInvoicy": "1.7.0.0"
+  },
+  {
+   "seq": "C374",
+   "caminho": "Envio/RPS/Tomador/DocTomadorEstrangeiro",
+   "descricao": "Documento do Tomador Estrangeiro",
+   "tipo": "V(30)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo para os Padrões Equiplano e IPM",
+   "versaoInvoicy": "1.12.0.0"
+  },
+  {
+   "seq": "C375",
+   "caminho": "Envio/RPS/Tomador/TomaRegEspTrib",
+   "descricao": "Regime Especial de Tributação do Prestador",
+   "tipo": "N(2.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão NF-Eletrônica\n0 - Não\n1 - Empresa Adm Pública/Condomínios\n2 - Instituição Financeira\n3 - Tomador Inscrito no PRODEVA",
+   "versaoInvoicy": "1.18.0.0"
+  },
+  {
+   "seq": "C376",
+   "caminho": "Envio/RPS/Tomador/TomaCadastroMunicipio",
+   "descricao": "Tomador Cadastrado no Município",
+   "tipo": "N(1.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão Consist\n1 - Cadastrado no Município\n2 - Não cadastrado no município\n3 - Fora do Município\n4 - Consumidor Final",
+   "versaoInvoicy": "1.20.0.0"
+  },
+  {
+   "seq": "C377",
+   "caminho": "Envio/RPS/Tomador/TomaOrgaoPublico",
+   "descricao": "Tomador Órgão Público",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo padrão Obaratech\n1 - Sim, do município\n2 - Sim, fora do município\n3 - Não.",
+   "versaoInvoicy": "1.22.0.0"
+  },
+  {
+   "seq": "C378",
+   "caminho": "Envio/RPS/Tomador/TomaEnderecoInformado",
+   "descricao": "Endereço do tomador a ser validados pela prefeitura",
+   "tipo": "C(1)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo para o Padrão IPM. Indica se o endereço do tomador validado será o que for informado no XML ou o já cadastrado na prefeitura.\nS -Sim\nN- Não",
+   "versaoInvoicy": "2.52.0.0"
+  },
+  {
+   "seq": "C379",
+   "caminho": "Envio/RPS/Tomador/TomaCAEPF",
+   "descricao": "Número do Cadastro de Atividade Econômica da Pessoa Física (CAEPF)",
+   "tipo": "V(14)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C380",
+   "caminho": "Envio/RPS/Tomador/TomaExSemNIF",
+   "descricao": "Motivo para não informação do NIF",
+   "tipo": "N (1)",
+   "ocorrencia": "0-1",
+   "observacao": "Os valores aceitos são:\n0 - Não informado na nota de origem;\n1 - Dispensado do NIF;\n2 - Não exigência do NIF;\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C381",
+   "caminho": "Envio/RPS/IntermServico",
+   "descricao": "Intermediário do Serviço",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "Intermediário do Serviço",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C382",
+   "caminho": "Envio/RPS/IntermServico/IntermRazaoSocial",
+   "descricao": "Razão social do intermediário",
+   "tipo": "C(115)",
+   "ocorrencia": "1-1",
+   "observacao": "Razão social do intermediário",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C383",
+   "caminho": "Envio/RPS/IntermServico/IntermCNPJ",
+   "descricao": "CNPJ do intermediário",
+   "tipo": "C(14)",
+   "ocorrencia": "1-1",
+   "observacao": "CNPJ do intermediário",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C384",
+   "caminho": "Envio/RPS/IntermServico/IntermCPF",
+   "descricao": "CPF do intermediário",
+   "tipo": "C(11)",
+   "ocorrencia": "1-1",
+   "observacao": "CPF do intermediário",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C385",
+   "caminho": "Envio/RPS/IntermServico/IntermNIF",
+   "descricao": "Documento do intermediário extrangeiro",
+   "tipo": "V(40)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C386",
+   "caminho": "Envio/RPS/IntermServico/IntermExSemNIF",
+   "descricao": "Motivo para não informação do NIF",
+   "tipo": "N (1)",
+   "ocorrencia": "0-1",
+   "observacao": "Os valores aceitos são:\n0 - Não informado na nota de origem;\n1 - Dispensado do NIF;\n2 - Não exigência do NIF;\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C387",
+   "caminho": "Envio/RPS/IntermServico/IntermIM",
+   "descricao": "Inscrição Municipal do intermediário",
+   "tipo": "C(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Inscrição Municipal do intermediário",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C388",
+   "caminho": "Envio/RPS/IntermServico/IntermEmail",
+   "descricao": "Email do Intermediario",
+   "tipo": "V(100)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão NFPaulistana",
+   "versaoInvoicy": "1.12.0.0"
+  },
+  {
+   "seq": "C389",
+   "caminho": "Envio/RPS/IntermServico/IntermEndereco",
+   "descricao": "Endereço",
+   "tipo": "V(125)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão SigCorp Rio Grande",
+   "versaoInvoicy": "1.16.0.0"
+  },
+  {
+   "seq": "C390",
+   "caminho": "Envio/RPS/IntermServico/IntermNumero",
+   "descricao": "Número do Endereço",
+   "tipo": "V(10)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão SigCorp Rio Grande",
+   "versaoInvoicy": "1.16.0.0"
+  },
+  {
+   "seq": "C391",
+   "caminho": "Envio/RPS/IntermServico/IntermComplemento",
+   "descricao": "Complemento do Endereço",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão SigCorp Rio Grande",
+   "versaoInvoicy": "1.16.0.0"
+  },
+  {
+   "seq": "C392",
+   "caminho": "Envio/RPS/IntermServico/IntermBairro",
+   "descricao": "Bairro",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão SigCorp Rio Grande",
+   "versaoInvoicy": "1.16.0.0"
+  },
+  {
+   "seq": "C393",
+   "caminho": "Envio/RPS/IntermServico/IntermCep",
+   "descricao": "Cep",
+   "tipo": "V(10)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão SigCorp Rio Grande",
+   "versaoInvoicy": "1.16.0.0"
+  },
+  {
+   "seq": "C394",
+   "caminho": "Envio/RPS/IntermServico/IntermCmun",
+   "descricao": "Código IBGE do Município",
+   "tipo": "N(7)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão SigCorp Rio Grande. Consulte nosso artigo para mais informações.",
+   "versaoInvoicy": "1.16.0.0"
+  },
+  {
+   "seq": "C395",
+   "caminho": "Envio/RPS/IntermServico/IntermXmun",
+   "descricao": "Descrição do município",
+   "tipo": "V(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão SigCorp Rio Grande",
+   "versaoInvoicy": "1.16.0.0"
+  },
+  {
+   "seq": "C396",
+   "caminho": "Envio/RPS/IntermServico/IntermFone",
+   "descricao": "Fone",
+   "tipo": "C(11)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão SigCorp Rio Grande",
+   "versaoInvoicy": "1.16.0.0"
+  },
+  {
+   "seq": "C397",
+   "caminho": "Envio/RPS/IntermServico/ItermIE",
+   "descricao": "Inscrição Estadual",
+   "tipo": "V(40)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão SigCorp Rio Grande",
+   "versaoInvoicy": "1.16.0.0"
+  },
+  {
+   "seq": "C398",
+   "caminho": "Envio/RPS/IntermServico/IntermPais",
+   "descricao": "Código do País do Intermediário",
+   "tipo": "V(5)",
+   "ocorrencia": "0-1",
+   "observacao": "Sigla da tabela ISO ou código BACEN.\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C399",
+   "caminho": "Envio/RPS/IntermServico/IntermUF",
+   "descricao": "UF/província/região do intermediário",
+   "tipo": "V(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Obrigatório quando intermediário for do exterior\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C400",
+   "caminho": "Envio/RPS/IntermServico/IntermCAEPF",
+   "descricao": "Número do Cadastro de Atividade Econômica da Pessoa Física (CAEPF)",
+   "tipo": "V(14)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C401",
+   "caminho": "Envio/RPS/Destinatario",
+   "descricao": "Grupo de informações relativas ao Destinatário",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "-",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C402",
+   "caminho": "Envio/RPS/Destinatario/DestCNPJ",
+   "descricao": "Número da inscrição no Cadastro Nacional de Pessoa Jurídica (CNPJ) do destinatário de serviço",
+   "tipo": "V(14)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C403",
+   "caminho": "Envio/RPS/Destinatario/DestCPF",
+   "descricao": "Número da inscrição no Cadastro Nacional de Pessoa Física (CPF) do destinatário do serviço",
+   "tipo": "V(11)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C404",
+   "caminho": "Envio/RPS/Destinatario/DestNIF",
+   "descricao": "Número de identificação fiscal fornecido por órgão de administração tributária no exterior",
+   "tipo": "V(40)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C405",
+   "caminho": "Envio/RPS/Destinatario/DestcNaoNIF",
+   "descricao": "Motivo para não informação do NIF",
+   "tipo": "C(1)",
+   "ocorrencia": "0-1",
+   "observacao": "0 - Não informado na nota de origem;\n1 - Dispensado do NIF;\n2 - Não exigência do NIF\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C406",
+   "caminho": "Envio/RPS/Destinatario/DestNome",
+   "descricao": "Nome / Nome Empresarial do destinatário",
+   "tipo": "V(150)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C407",
+   "caminho": "Envio/RPS/Destinatario/DestEndereco",
+   "descricao": "Tipo e nome do logradouro do endereço do\ndestinatário do serviço.",
+   "tipo": "V(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C408",
+   "caminho": "Envio/RPS/Destinatario/DestNumero",
+   "descricao": "Número no logradouro do endereço do destinatário\ndo serviço",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C409",
+   "caminho": "Envio/RPS/Destinatario/DestComplemento",
+   "descricao": "Complemento do endereço do destinatário do serviço.",
+   "tipo": "V(156)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C410",
+   "caminho": "Envio/RPS/Destinatario/DestBairro",
+   "descricao": "Bairro do endereço do destinatário do serviço",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C411",
+   "caminho": "Envio/RPS/Destinatario/DestFone",
+   "descricao": "Número do telefone do destinatário.\n(Preencher com o Código DDD + número do\ntelefone)",
+   "tipo": "N(20)",
+   "ocorrencia": "0-1",
+   "observacao": "Nas operações com exterior é permitido\ninformar o código do país + código da localidade +\nnúmero do telefone)\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C412",
+   "caminho": "Envio/RPS/Destinatario/DestEmail",
+   "descricao": "E-mail do destinatário",
+   "tipo": "C(80)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C413",
+   "caminho": "Envio/RPS/Destinatario/DestcMun",
+   "descricao": "Código do município do endereço do destinatário do\r\nserviço.",
+   "tipo": "N(7)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C414",
+   "caminho": "Envio/RPS/Destinatario/DestxMun",
+   "descricao": "Nome da cidade do destinatário do\nserviço",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Obrigatório para destinatário do exterior\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C415",
+   "caminho": "Envio/RPS/Destinatario/DestCEP",
+   "descricao": "Código numérico do Endereçamento Postal nacional (CEP)\n do endereço do destinatário do serviço.",
+   "tipo": "V(8)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C416",
+   "caminho": "Envio/RPS/Destinatario/DestPais",
+   "descricao": "Código do país do endereço do destinatário do\r\nserviço",
+   "tipo": "V(4)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C417",
+   "caminho": "Envio/RPS/Destinatario/DestEstProvReg",
+   "descricao": "Estado, província ou região da cidade no exterior do\r\ndestinatário do serviço",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Preencher para destinatário do exterior\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C418",
+   "caminho": "Envio/RPS/ConstCivil",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C419",
+   "caminho": "Envio/RPS/ConstCivil/CodObra",
+   "descricao": "Código da obra / Número do projeto",
+   "tipo": "C(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar o código da obra",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C420",
+   "caminho": "Envio/RPS/ConstCivil/Art",
+   "descricao": "Código ART",
+   "tipo": "C(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar o número ART",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C421",
+   "caminho": "Envio/RPS/ConstCivil/ObraLog",
+   "descricao": "Logradouro\\Endereço da Obra",
+   "tipo": "C(100)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão INFISC",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C422",
+   "caminho": "Envio/RPS/ConstCivil/ObraCompl",
+   "descricao": "Complemento do End. da Obra",
+   "tipo": "C(100)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão INFISC",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C423",
+   "caminho": "Envio/RPS/ConstCivil/ObraNumero",
+   "descricao": "Número do End. da Obra",
+   "tipo": "C(10)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão INFISC",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C424",
+   "caminho": "Envio/RPS/ConstCivil/ObraBairro",
+   "descricao": "Bairro da Obra",
+   "tipo": "C(100)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão INFISC",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C425",
+   "caminho": "Envio/RPS/ConstCivil/ObraCEP",
+   "descricao": "CEP da Obra",
+   "tipo": "N(8)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão INFISC",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C426",
+   "caminho": "Envio/RPS/ConstCivil/ObraMun",
+   "descricao": "Código IBGE do município da Obra",
+   "tipo": "N(7)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão INFISC. Consulte nosso artigo para mais informações.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C427",
+   "caminho": "Envio/RPS/ConstCivil/ObraUF",
+   "descricao": "UF da Obra",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão INFISC",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C428",
+   "caminho": "Envio/RPS/ConstCivil/ObraPais",
+   "descricao": "País da Obra",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Sigla do País da Obra. Exclusivo padrão INFISC. Lista de siglas https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C429",
+   "caminho": "Envio/RPS/ConstCivil/ObraCEI",
+   "descricao": "Número CEI da Obra",
+   "tipo": "C(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo padrão INFISC, NF Paulistana",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C430",
+   "caminho": "Envio/RPS/ConstCivil/ObraMatricula",
+   "descricao": "Número de Matrícula da Obra",
+   "tipo": "C(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo padrão INFISC, NF Paulistana",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C431",
+   "caminho": "Envio/RPS/ConstCivil/ObraValRedBC",
+   "descricao": "Valor da redução da base de cálculo da construção civil",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do padrão INFISC",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C432",
+   "caminho": "Envio/RPS/ConstCivil/ObraTipo",
+   "descricao": "Tipo de Obra",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão SigCorp Rio Grande\nValores:\n1 – Minha Casa Minha Vida;\n2 – Regime Presumido;\n3 – Regime Ordinário;",
+   "versaoInvoicy": "1.16.0.0"
+  },
+  {
+   "seq": "C433",
+   "caminho": "Envio/RPS/ConstCivil/ObraNomeFornecedor",
+   "descricao": "Nome do fornecedor",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.16.0.0"
+  },
+  {
+   "seq": "C434",
+   "caminho": "Envio/RPS/ConstCivil/ObraNumeroNF",
+   "descricao": "Número da nota fiscal",
+   "tipo": "N(15.0)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.16.0.0"
+  },
+  {
+   "seq": "C435",
+   "caminho": "Envio/RPS/ConstCivil/ObraDataNF",
+   "descricao": "Data de emissão da nota fiscal",
+   "tipo": "DateTime",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.16.0.0"
+  },
+  {
+   "seq": "C436",
+   "caminho": "Envio/RPS/ConstCivil/ObraNumEncapsulamento",
+   "descricao": "Código do encapsulamento de notas dedutoras",
+   "tipo": "V(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo do Padrão NF Paulistana.\nVerificar valores aceitos com o setor fiscal da prefeitura.",
+   "versaoInvoicy": "1.19.0.0"
+  },
+  {
+   "seq": "C437",
+   "caminho": "Envio/RPS/ConstCivil/AbatimentoMateriais",
+   "descricao": "Abatimento de Materiais",
+   "tipo": "N(1)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo padrão Obaratech.\n1-Abatimento padrão\n2-Abatimento por nota fiscal\n3-Sem abatimento",
+   "versaoInvoicy": "1.22.0.0"
+  },
+  {
+   "seq": "C438",
+   "caminho": "Envio/RPS/ConstCivil/ObraXMun",
+   "descricao": "Nome do município da Obra",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.90.0.0"
+  },
+  {
+   "seq": "C439",
+   "caminho": "Envio/RPS/ConstCivil/ObraInscImobFis",
+   "descricao": "Inscrição imobiliária fiscal da obra",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.90.0.0"
+  },
+  {
+   "seq": "C440",
+   "caminho": "Envio/RPS/ConstCivil/ObraCIB",
+   "descricao": "Cadastro Imobiliário Brasileiro da Obra",
+   "tipo": "V(8)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.94.10.0"
+  },
+  {
+   "seq": "C441",
+   "caminho": "Envio/RPS/ConstCivil/ObraDesc",
+   "descricao": "Descrição da obra",
+   "tipo": "V(100)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.94.10.0"
+  },
+  {
+   "seq": "C442",
+   "caminho": "Envio/RPS/ConstCivil/ObraCPFNF",
+   "descricao": "CNPJ do fornecedor da NF da Obra",
+   "tipo": "V(14)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.94.10.0"
+  },
+  {
+   "seq": "C443",
+   "caminho": "Envio/RPS/ConstCivil/ObraCNPJNF",
+   "descricao": "CPF do fornecedor da NF da Obra",
+   "tipo": "V(11)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.94.10.0"
+  },
+  {
+   "seq": "C444",
+   "caminho": "Envio/RPS/ConstCivil/ListaMaterial",
+   "descricao": "Lista de materiais da Obra",
+   "tipo": "-",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "1.4.0.0"
+  },
+  {
+   "seq": "C445",
+   "caminho": "Envio/RPS/ConstCivil/ListaMaterial/Material",
+   "descricao": "Grupo de materiais da Obra",
+   "tipo": "-",
+   "ocorrencia": "1-N",
+   "observacao": "Não informar este grupo quando a integração for API Rest.",
+   "versaoInvoicy": "1.4.0.0"
+  },
+  {
+   "seq": "C446",
+   "caminho": "Envio/RPS/ConstCivil/ListaMaterial/Material/MatCodigo",
+   "descricao": "Código do material",
+   "tipo": "V(20)",
+   "ocorrencia": "1-1",
+   "observacao": "Código do material",
+   "versaoInvoicy": "1.4.0.0"
+  },
+  {
+   "seq": "C447",
+   "caminho": "Envio/RPS/ConstCivil/ListaMaterial/Material/MatDescricao",
+   "descricao": "Descrição do material",
+   "tipo": "V(120)",
+   "ocorrencia": "1-1",
+   "observacao": "Descrição do material",
+   "versaoInvoicy": "1.4.0.0"
+  },
+  {
+   "seq": "C448",
+   "caminho": "Envio/RPS/ConstCivil/ListaMaterial/Material/MatUndMedCodigo",
+   "descricao": "Código da unidade de medida",
+   "tipo": "V(20)",
+   "ocorrencia": "1-1",
+   "observacao": "Código da unidade de medida",
+   "versaoInvoicy": "1.4.0.0"
+  },
+  {
+   "seq": "C449",
+   "caminho": "Envio/RPS/ConstCivil/ListaMaterial/Material/MatUndMedSigla",
+   "descricao": "Sigla da unidade de medida",
+   "tipo": "V(7)",
+   "ocorrencia": "1-1",
+   "observacao": "Sigla da unidade de medida",
+   "versaoInvoicy": "1.4.0.0"
+  },
+  {
+   "seq": "C450",
+   "caminho": "Envio/RPS/ConstCivil/ListaMaterial/Material/MatQuantidade",
+   "descricao": "Quantidade",
+   "tipo": "N(4)",
+   "ocorrencia": "1-1",
+   "observacao": "Quantidade",
+   "versaoInvoicy": "1.4.0.0"
+  },
+  {
+   "seq": "C451",
+   "caminho": "Envio/RPS/ConstCivil/ListaMaterial/Material/MatVlrTotal",
+   "descricao": "Valor total",
+   "tipo": "N(16.2)",
+   "ocorrencia": "1-1",
+   "observacao": "Valor total",
+   "versaoInvoicy": "1.4.0.0"
+  },
+  {
+   "seq": "C452",
+   "caminho": "Envio/RPS/ConstCivil/ListaMaterial/Material/MatValUni",
+   "descricao": "Valor unitário do material",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.4.0.0"
+  },
+  {
+   "seq": "C453",
+   "caminho": "Envio/RPS/ListaDed",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "Utilizado apenas pelo padrão DSFNET",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C454",
+   "caminho": "Envio/RPS/ListaDed/Ded",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "1-N",
+   "observacao": "Não informar este grupo quando a integração for API Rest",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C455",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedSeq",
+   "descricao": "Número sequencial da dedução",
+   "tipo": "N(18.0)",
+   "ocorrencia": "1-1",
+   "observacao": "Número sequencial da dedução",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C456",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedValPer",
+   "descricao": "Identificação de valor ou percentual",
+   "tipo": "C(3)",
+   "ocorrencia": "1-1",
+   "observacao": "Informar se a dedução é medida em valor ou percentual\n1 – Valor \n2 – Percentual",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C457",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedTipo",
+   "descricao": "Tipo de dedução",
+   "tipo": "C(3)",
+   "ocorrencia": "1-1",
+   "observacao": "1 – Despesas Materiais \n2 – Despesas Sub-empreitadas\n17 - Profissional",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C458",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedFornIM",
+   "descricao": "Inscrição Municipal do Fornecedor",
+   "tipo": "V(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C459",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedCNPJRef",
+   "descricao": "CNPJ do fornecedor ou prestador",
+   "tipo": "C(14)",
+   "ocorrencia": "0-1",
+   "observacao": "CNPJ do fornecedor ou prestador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C460",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedCPFRef",
+   "descricao": "CPF do fornecedor ou prestador",
+   "tipo": "C(11)",
+   "ocorrencia": "0-1",
+   "observacao": "CPF do fornecedor ou prestador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C461",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedFornNome",
+   "descricao": "Razão Social do fornecedor",
+   "tipo": "V (300)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C462",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedFornCEP",
+   "descricao": "CEP do fornecedor",
+   "tipo": "V(8)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C463",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedForncMun",
+   "descricao": "Código IBGE do fornecedor",
+   "tipo": "V(7)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C464",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedFornxMun",
+   "descricao": "Nome do Município do fornecedor",
+   "tipo": "V(70)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C465",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedFornUF",
+   "descricao": "UF/Província/região do fornecedor",
+   "tipo": "C(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C466",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedFornLogr",
+   "descricao": "Logradouro do endereço do Fornecedor",
+   "tipo": "V(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C467",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedFornNumero",
+   "descricao": "Número do endereço do Fornecedor",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C468",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedFornCompl",
+   "descricao": "Complemento do endereço do Fornecedor",
+   "tipo": "V(156)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C469",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedFornBairro",
+   "descricao": "Bairro do endereço do Fornecedo",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C470",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedFornFone",
+   "descricao": "Telefone do fornecedor com DDD",
+   "tipo": "V(20)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C471",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedFornEmail",
+   "descricao": "E-mail do fornecedor",
+   "tipo": "V(80)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C472",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedNifFornecedor",
+   "descricao": null,
+   "tipo": "V(40)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C473",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedForncExSemNIF",
+   "descricao": "Motivo para não informação do NIF",
+   "tipo": "N (1)",
+   "ocorrencia": "0-1",
+   "observacao": "Os valores aceitos são:\n0 - Não informado na nota de origem;\n1 - Dispensado do NIF;\n2 - Não exigência do NIF;\n\n\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C474",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedPaisFornecedor",
+   "descricao": "Código do país do fornecedor",
+   "tipo": "V (10)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C475",
+   "caminho": "Envio/RPS/ListaDed/Ded/DednNFRef",
+   "descricao": "Número da nota fiscal de referência",
+   "tipo": "N(10.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Número da nota fiscal de referência",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C476",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedvlTotRef",
+   "descricao": "Valor total de referência",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Valor total da nota fiscal de referência",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C477",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedUFNFe",
+   "descricao": "UF gerador da NF-e de referência",
+   "tipo": "C (2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C478",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedChaveAcesso",
+   "descricao": "Chave de acesso da NF-e de referência",
+   "tipo": "C (50)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C479",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedChAcesNacional",
+   "descricao": "Chave de Acesso da NFS-e (Padrão Nacional)",
+   "tipo": "V(50)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C480",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedDEmis",
+   "descricao": "Data de emissão da NF-e de referência",
+   "tipo": "DateTime",
+   "ocorrencia": "0-1",
+   "observacao": "Formato: AAAA-MM-DDTHH:MM:SS",
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C481",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedPer",
+   "descricao": "Percentual a deduzir",
+   "tipo": "N(7.4)",
+   "ocorrencia": "0-1",
+   "observacao": "Obrigatório caso DedValPer = 2 (Percentual)",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C482",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedValor",
+   "descricao": "Valor a ser deduzido",
+   "tipo": "N(16.2)",
+   "ocorrencia": "1-1",
+   "observacao": "Valor a ser deduzido",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C483",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedQtde",
+   "descricao": "Quantidade de itens de dedução",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo Padrão Assessor Público",
+   "versaoInvoicy": "1.2.0.0"
+  },
+  {
+   "seq": "C484",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedValUnit",
+   "descricao": "Valor Unitário",
+   "tipo": "N(16.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo Padrão Assessor Público",
+   "versaoInvoicy": "1.2.0.0"
+  },
+  {
+   "seq": "C485",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedDescricao",
+   "descricao": "Descrição",
+   "tipo": "V(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Exclusivo Padrão Assessor Público",
+   "versaoInvoicy": "1.2.0.0"
+  },
+  {
+   "seq": "C486",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedTipoItem",
+   "descricao": "Tipo de Item",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C487",
+   "caminho": "Envio/RPS/ListaDed/Ded/DednNFSeRef",
+   "descricao": "Número da NFS-e de referência",
+   "tipo": "N (18.0)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C488",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedcVerificaNFSe",
+   "descricao": "Código de verificação da NFS-e de referência",
+   "tipo": "V (40)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C489",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedcMunNFSe",
+   "descricao": "Código do município Gerador da NFS-e de referência",
+   "tipo": "N (7.0)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C490",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedOutroDoc",
+   "descricao": "Número da identificação de outro documento",
+   "tipo": "V (40)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "2.38.0.0"
+  },
+  {
+   "seq": "C491",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedOutroDocFisc",
+   "descricao": "Número de outro documento fiscal",
+   "tipo": "V(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C492",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedRedTipo",
+   "descricao": "Tipo de dedução/Redução modelo nacional",
+   "tipo": "N(2.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C493",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedRetxDesc",
+   "descricao": "Descrição da Dedução/Redução quando a opção é \"99 – Outras Deduções\"",
+   "tipo": "V(150)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C494",
+   "caminho": "Envio/RPS/ListaDed/Ded/DedFornCAEPF",
+   "descricao": "Número do Cadastro de Atividade Econômica da Pessoa Física (CAEPF)",
+   "tipo": "V(14)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C495",
+   "caminho": "Envio/RPS/Transportadora",
+   "descricao": "Dados da Transportadora",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "Grupo exclusivo do padrão INFISC",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C496",
+   "caminho": "Envio/RPS/Transportadora/TraNome",
+   "descricao": "Nome ou Razão Social da Transportadora",
+   "tipo": "C(100)",
+   "ocorrencia": "1-1",
+   "observacao": "Nome ou Razão Social da Transportadora",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C497",
+   "caminho": "Envio/RPS/Transportadora/TraCPFCNPJ",
+   "descricao": "CPF ou CNPJ da transportadora",
+   "tipo": "C(14)",
+   "ocorrencia": "0-1",
+   "observacao": "CPF ou CNPJ da transportadora",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C498",
+   "caminho": "Envio/RPS/Transportadora/TraIE",
+   "descricao": "Inscrição Estadual da Transportadora",
+   "tipo": "C(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Inscrição Estadual da Transportadora",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C499",
+   "caminho": "Envio/RPS/Transportadora/TraPlaca",
+   "descricao": "Placa do veículo da Transportadora",
+   "tipo": "C(10)",
+   "ocorrencia": "0-1",
+   "observacao": "Placa do veículo da Transportadora",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C500",
+   "caminho": "Envio/RPS/Transportadora/TraEnd",
+   "descricao": "Endereço da Transportadora",
+   "tipo": "C(100)",
+   "ocorrencia": "0-1",
+   "observacao": "Endereço da Transportadora",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C501",
+   "caminho": "Envio/RPS/Transportadora/TraMun",
+   "descricao": "Código IBGE do município da Transportadora",
+   "tipo": "N(7)",
+   "ocorrencia": "0-1",
+   "observacao": "Consulte nosso artigo para mais informações.",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C502",
+   "caminho": "Envio/RPS/Transportadora/TraUF",
+   "descricao": "UF da Transportadora",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "UF da Transportadora",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C503",
+   "caminho": "Envio/RPS/Transportadora/TraPais",
+   "descricao": "País da Transportadora",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "Sigla do país da Transportadora. Lista de siglas https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C504",
+   "caminho": "Envio/RPS/Transportadora/TraTipoFrete",
+   "descricao": "Responsável pelo pagamento do frete",
+   "tipo": "N(1.0)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - Tomador\n2 - Prestador",
+   "versaoInvoicy": "1.0.0.0"
+  },
+  {
+   "seq": "C505",
+   "caminho": "Envio/RPS/Locacao",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "-",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C506",
+   "caminho": "Envio/RPS/Locacao/LocacaoItem",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "-",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C507",
+   "caminho": "Envio/RPS/Locacao/LocacaoItem/categServ",
+   "descricao": "Categoria do Serviço",
+   "tipo": "N (1)",
+   "ocorrencia": "0-1",
+   "observacao": "Os valores aceitos são:\n1 - Locação;\n2 - Sublocação;\n3 - Arrendamento;\n4 - Direito de passagem;\n5 - Permissão de uso;\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C508",
+   "caminho": "Envio/RPS/Locacao/LocacaoItem/objetoLocacao",
+   "descricao": "Tipo de objetos da locação, sublocação, arrendamento, direito de passagem ou permissão de uso",
+   "tipo": "N (1)",
+   "ocorrencia": "0-1",
+   "observacao": "Os valores aceitos são:\n1 - Ferrovia;\n2 - Rodovia;\n3 - Postes;\n4 - Cabos;\n5 - Dutos;\n6 - Condutos de qualquer natureza;\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C509",
+   "caminho": "Envio/RPS/Locacao/LocacaoItem/extensaoFerrovia",
+   "descricao": "Extensão total da ferrovia, rodovia, cabos, dutos ou condutos",
+   "tipo": "N(5.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C510",
+   "caminho": "Envio/RPS/Locacao/LocacaoItem/nPostes",
+   "descricao": "Número total de postes",
+   "tipo": "(6.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C511",
+   "caminho": "Envio/RPS/AtividadeEvento",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C512",
+   "caminho": "Envio/RPS/AtividadeEvento/AtivDesc",
+   "descricao": "Descrição do evento Artístico, Cultural, Esportivo, etc",
+   "tipo": "V(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C513",
+   "caminho": "Envio/RPS/AtividadeEvento/AtivDataInicial",
+   "descricao": "Data de início da atividade de evento",
+   "tipo": "DateTime",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C514",
+   "caminho": "Envio/RPS/AtividadeEvento/AtivDataFinal",
+   "descricao": "Data de fim da atividade de evento.",
+   "tipo": "DateTime",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C515",
+   "caminho": "Envio/RPS/AtividadeEvento/AtivIdEvento",
+   "descricao": "Identificação da Atividade de Evento (código identificador de evento determinado pela Administração Tributária Municipal)",
+   "tipo": "V(30)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C516",
+   "caminho": "Envio/RPS/AtividadeEvento/AtivEndLogradouro",
+   "descricao": "Logradouro do endereço do evento",
+   "tipo": "V(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C517",
+   "caminho": "Envio/RPS/AtividadeEvento/AtivEndNumero",
+   "descricao": "Número do endereço do evento",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C518",
+   "caminho": "Envio/RPS/AtividadeEvento/AtivEndCompl",
+   "descricao": "Complemento do endereço do evento",
+   "tipo": "V(156)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C519",
+   "caminho": "Envio/RPS/AtividadeEvento/AtivEndBairro",
+   "descricao": "Bairro do endereço do evento",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C520",
+   "caminho": "Envio/RPS/AtividadeEvento/AtivEndCEP",
+   "descricao": "CEP do endereço do evento",
+   "tipo": "V(8)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C521",
+   "caminho": "Envio/RPS/AtividadeEvento/AtivEndcMun",
+   "descricao": "Código IBGE do município do endereço do evento",
+   "tipo": "V(7)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C522",
+   "caminho": "Envio/RPS/AtividadeEvento/AtivEndxMun",
+   "descricao": "Nome do município do endereço do evento",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C523",
+   "caminho": "Envio/RPS/AtividadeEvento/AtivEndUF",
+   "descricao": "UF/província/Região do evento",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C524",
+   "caminho": "Envio/RPS/Pedagio",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C525",
+   "caminho": "Envio/RPS/Pedagio/PedCategVeiculo",
+   "descricao": "Categorias de veículos para cobrança",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "00 - Categoria de Veículos (tipo não informado na nota de origem);\n01 - Automóvel, caminhonete e furgão;\n02 - Caminhão leve, ônibus, caminhão trator e furgão;\n03 - Automóvel e caminhonete com semireboque;\n04 - Caminhão, caminhão-trator, caminhão-trator com semi-reboque e ônibus;\n05 - Automóvel e caminhonete com reboque;\n06 - Caminhão com reboque;\n07 - Caminhão trator com semi-reboque;\n08 - Motocicletas, motonetas e bicicletas motorizadas;\n09 - Veículo especial;\n10 - Veículo Isento;\n\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C526",
+   "caminho": "Envio/RPS/Pedagio/PednEixos",
+   "descricao": "Número de eixos para fins de cobrança",
+   "tipo": "N(2.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C527",
+   "caminho": "Envio/RPS/Pedagio/PedRodagem",
+   "descricao": "Tipo de rodagem",
+   "tipo": "N(1.0)",
+   "ocorrencia": "0-1",
+   "observacao": "1 - Simples;\n2 - Dupla;\n\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C528",
+   "caminho": "Envio/RPS/Pedagio/PedSentido",
+   "descricao": "Orientação de passagem do veículo",
+   "tipo": "N(3.0)",
+   "ocorrencia": "0-1",
+   "observacao": "Ângulo em graus a partir do norte geográfico em sentido horário, número inteiro de 0 a 359, onde 0º seria o norte, 90º o leste, 180º o sul, 270º o oeste. Precisão mínima de 10\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C529",
+   "caminho": "Envio/RPS/Pedagio/PedPlaca",
+   "descricao": "Placa do veículo",
+   "tipo": "V(15)",
+   "ocorrencia": "0-1",
+   "observacao": "Deve ser informada no padrão [A-Z]{2,3}[0-9]{4}|[A-Z]{3,4}[0-9]{3}\n\nUso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C530",
+   "caminho": "Envio/RPS/Pedagio/PedCodAcesso",
+   "descricao": "Código de acesso gerado automaticamente pelo sistema emissor da concessionária",
+   "tipo": "V (10)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C531",
+   "caminho": "Envio/RPS/Pedagio/PedCodContrato",
+   "descricao": "Código de contrato gerado automaticamente pelo sistema nacional no cadastro da concessionária",
+   "tipo": "V(4)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para NFS-e Modelo Nacional",
+   "versaoInvoicy": "2.62.1.0"
+  },
+  {
+   "seq": "C532",
+   "caminho": "Envio/RPS/Imovel",
+   "descricao": "Grupo de Informações de Operações Relacionadas a Bens Imóveis, Exceto Obras",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "-",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C533",
+   "caminho": "Envio/RPS/Imovel/ImovcMun",
+   "descricao": "Código do município do endereço do imóvel",
+   "tipo": "V(7)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C534",
+   "caminho": "Envio/RPS/Imovel/ImovInscImobFisc",
+   "descricao": "Inscrição imobiliária fiscal \n(código fornecido pela prefeitura para a identificação da obra ou para fins de recolhimento do IPTU",
+   "tipo": "V(30)",
+   "ocorrencia": "0-1",
+   "observacao": "Inscrição imobiliária fiscal\n(código fornecido pela prefeitura para a\nidentificação da obra ou para fins de recolhimento IPTU\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C535",
+   "caminho": "Envio/RPS/Imovel/ImovCIB",
+   "descricao": "Código do Cadastro Imobiliário Brasileiro - CIB",
+   "tipo": "V(8)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C536",
+   "caminho": "Envio/RPS/Imovel/ImovCEP",
+   "descricao": "Código de Endereçamento Postal numérico do\nendereço nacional do imóvel.",
+   "tipo": "V(8)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C537",
+   "caminho": "Envio/RPS/Imovel/ImovEndereco",
+   "descricao": "Tipo e nome do logradouro do endereço do imóvel",
+   "tipo": "V(255)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C538",
+   "caminho": "Envio/RPS/Imovel/ImovNumero",
+   "descricao": "Número no logradouro do endereço do imóvel",
+   "tipo": "V(60)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C539",
+   "caminho": "Envio/RPS/Imovel/ImovComplemento",
+   "descricao": "Complemento do endereço do imóve",
+   "tipo": "V(156)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C540",
+   "caminho": "Envio/RPS/Imovel/ImovBairro",
+   "descricao": "Bairro do endereço do imóvel.",
+   "tipo": "V(60)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C541",
+   "caminho": "Envio/RPS/Imovel/ImovxMun",
+   "descricao": "Nome da cidade no local do imóvel",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Obrigatário para imóvel do exterior\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C542",
+   "caminho": "Envio/RPS/Imovel/ImovEstProvReg",
+   "descricao": "Estado, província ou região da cidade no exterior,\nlocal do imóvel.",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Preencher para imóvel do exterior\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C543",
+   "caminho": "Envio/RPS/Imovel/Locacao",
+   "descricao": "Grupo de informações relativas às operações de locação, cessão onerosa ou arrendamento de bens imóveis.",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "Operações de locação/cessão/arrendamento imobiliário.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C544",
+   "caminho": "Envio/RPS/Imovel/Locacao/ImovpCopropriedade",
+   "descricao": "Percentual de copropriedade do locador.",
+   "tipo": "N(15.2)",
+   "ocorrencia": "1-1",
+   "observacao": "Percentual de Copropriedade.\nInformar 100% quando houver apenas um locador/cedente/arrendador.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C545",
+   "caminho": "Envio/RPS/Imovel/Locacao/ImovValTotOper",
+   "descricao": "Valor total da operação imobiliária.",
+   "tipo": "N(15.2)",
+   "ocorrencia": "1-1",
+   "observacao": "Valor total da operação com bem imóvel (art. 255 da LC 214/2025).\nNão informar o valor proporcional do coproprietário.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C546",
+   "caminho": "Envio/RPS/Imovel/Locacao/ImovValDescIncondTot",
+   "descricao": "Desconto incondicionado total (pré-copropriedade).",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Valor total do Desconto Incondicionado na operação de locação, cessão onerosa ou arrendamento.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C547",
+   "caminho": "Envio/RPS/Imovel/Locacao/ImovValDescCondTot",
+   "descricao": "Desconto condicionado total (pré-copropriedade).",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Valor total do Desconto Condicionado na operação de locação, cessão onerosa ou arrendamento.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C548",
+   "caminho": "Envio/RPS/Imovel/Locacao/ImovdVencOrig",
+   "descricao": "Data de vencimento original do aluguel, renda ou equivalente",
+   "tipo": "Date",
+   "ocorrencia": "0-1",
+   "observacao": "Data de vencimento original. Informar na locação/cessão/arrendamento.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C549",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias",
+   "descricao": "Lista de unidades imobiliárias",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C550",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria",
+   "descricao": "Grupo de informações relativas às unidades imobiliárias objeto da operação.",
+   "tipo": "-",
+   "ocorrencia": "1-99",
+   "observacao": "Permite até 99 registros (mesmos atores, mesmo município, mesmo % copropriedade).\nNão informar este grupo quando a integração for API Rest.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C551",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ImovInscImobFisc",
+   "descricao": "Inscrição imobiliária fiscal (código IPTU da prefeitura).",
+   "tipo": "V(30)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C552",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ImovCIB",
+   "descricao": "Código do Cadastro Imobiliário Brasileiro — CIB.",
+   "tipo": "C(8)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C553",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ImovCEP",
+   "descricao": "Código de Endereçamento Postal numérico do\nendereço nacional do imóvel.",
+   "tipo": "V(8)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C554",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ImovEndereco",
+   "descricao": "Tipo e nome do logradouro do endereço do imóvel",
+   "tipo": "V(255)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C555",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ImovNumero",
+   "descricao": "Número no logradouro do endereço do imóvel",
+   "tipo": "V(60)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C556",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ImovComplemento",
+   "descricao": "Complemento do endereço do imóvel",
+   "tipo": "V(156)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C557",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ImovBairro",
+   "descricao": "Bairro do endereço do imóvel.",
+   "tipo": "V(60)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C558",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ImovxMun",
+   "descricao": "Nome da cidade no local do imóvel",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Obrigatário para imóvel do exterior\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C559",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ImovEstProvReg",
+   "descricao": "Estado, província ou região da cidade no exterior,\nlocal do imóvel.",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": "Preencher para imóvel do exterior\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C560",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ListaAjusteBCLocImoveis",
+   "descricao": "Lista Grupo de ajustes da BC do IBS e CBS",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C561",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ListaAjusteBCLocImoveis/AjusteBCLocImovel",
+   "descricao": "Grupo de ajustes da BC do IBS e CBS — parcelas não integrantes por locação imobiliária.",
+   "tipo": "-",
+   "ocorrencia": "1-1000",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C562",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ListaAjusteBCLocImoveis/AjusteBCLocImovel/ImovTpAjusteBCLocImoveis",
+   "descricao": "Tipo de parcela não integrante da BC do IBS/CBS na locação.",
+   "tipo": "N(2.0)",
+   "ocorrencia": "1-1",
+   "observacao": "01=Tributos (IPTU) | 02=Emolumento | 03=Condomínio | 04=Redutor Social | 05=Glosa Serviços Médicos | 99=Outras",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C563",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ListaAjusteBCLocImoveis/AjusteBCLocImovel/ImovxTpAjusteBCLocImoveis",
+   "descricao": "Descrição tipo de parcela não integrante da BC do IBS/CBS na locação.",
+   "tipo": "V(150)",
+   "ocorrencia": "0-1",
+   "observacao": "Quando ImovTpAjusteBCLocImoveis = 99.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C564",
+   "caminho": "Envio/RPS/Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ListaAjusteBCLocImoveis/AjusteBCLocImovel/ValAjusteBCLocImoveis",
+   "descricao": "Valor monetário utilizado para não inclusão na base de cálculo do IBS e da CBS da NFS-e que está sendo emitida (R$).",
+   "tipo": "N(17.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Informar o valor total da parcela não integrante da base de cálculo - IPTU, Condomínio, Redutor social, etc. -, não devendo ser inserido o valor proporcional do coproprietário",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C565",
+   "caminho": "Envio/RPS/ListaDocumentos",
+   "descricao": "Grupo relativo aos documentos referenciados nos casos de reembolso, repasse e ressarcimento que serão considerados na base de cálculo do ISSQN, do IBS e da CBS.",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "-",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C566",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "1-1000",
+   "observacao": "Não informar este grupo quando a integração for API Rest.",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C567",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/DocTpAjusteBC",
+   "descricao": "Tipo de Ajuste da Base de cálculo",
+   "tipo": null,
+   "ocorrencia": "N(3)",
+   "observacao": "1 – Alimentação e bebidas/frigobar;\n2 – Materiais;\n3 - Produção Externa;\n4 - Reembolso de despesas;\n5 – Repasse consorciado;\n6 – Repasse plano de saúde;\n7 – Serviços;\n8 – Subempreitada de mão de obra;\n9 - Profissional parceiro;\n99 – Outras deduções exclusivas do ISSQN;\n101 – Repasse de remuneração por intermediação de imóveis a demais\ncorretores envolvidos na operação\n102 – Repasse de valores a fornecedor relativo a fornecimento\nintermediado por agência de turismo\n103 – Reembolso ou ressarcimento recebido por agência de propaganda e\npublicidade por valores pagos relativos a serviços de produção externa por\nconta e ordem de terceiro\n104 – Reembolso ou ressarcimento recebido por agência de propaganda e\npublicidade por valores pagos relativos a serviços de mídia por conta e\nordem de terceiro\n105 – Glosa de Serviços de Saúde\n199 – Outros reembolsos ou ressarcimentos recebidos por valores pagos\nrelativos a operações por conta e ordem de terceiro",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C568",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/DocxTpAjusteBC",
+   "descricao": "Descrição do ajuste",
+   "tipo": null,
+   "ocorrencia": "V(150)",
+   "observacao": "Quando o tipo informado (tpAjusteBC) é \"99 – Outras\ndeduções exclusivas do ISSQN\"\nou\n\"199 – Outros reembolsos ou ressarcimentos recebidos por valores pagos\nrelativos a operações por conta e ordem de terceiro\".",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C569",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/DocValTotDoc",
+   "descricao": "Valor monetário total do documento",
+   "tipo": null,
+   "ocorrencia": "V(15.2)",
+   "observacao": "Valor monetário total do documento informado (R$).",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C570",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/DocValAjusteAplic",
+   "descricao": "Valor monetário efetivamente utilizado para ajuste",
+   "tipo": null,
+   "ocorrencia": "V(15.2)",
+   "observacao": "Deve ser menor ou igual ao valor total do documento (vTotDoc).",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C571",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/DocDataEmissao",
+   "descricao": "Data da emissão do documento dedutível",
+   "tipo": "Date",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C572",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/DocDCompetencia",
+   "descricao": "Data da competência do documento dedutível",
+   "tipo": "Date",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C573",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/RepositorioNacional",
+   "descricao": "Grupo de informações de documentos fiscais eletrônicos que se encontram no repositório nacional.",
+   "tipo": "-",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C574",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/DoctpReeRepRes/DocTipoChaveDFe",
+   "descricao": "Documento fiscal a que se refere a chaveDfe que seja um dos documentos do Repositório Nacional",
+   "tipo": "N(1)",
+   "ocorrencia": "1-1",
+   "observacao": "1 = NFS-e;\n2 = NF-e;\n 3 = CT-e;\n9 = Outro\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C575",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/DoctpReeRepRes/DocxTipoChaveDFe",
+   "descricao": "Descrição da DF-e a que se refere a DocchaveDfe que seja um dos documentos do Repositório Nacional. Deve ser preenchido apenas quando tipoChaveDFe = 9 (Outro).",
+   "tipo": "C(255)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C576",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/DoctpReeRepRes/DocChaveDFe",
+   "descricao": "Chave do Documento Fiscal eletrônico do repositório nacional referenciado para os casos de operações já tributadas.",
+   "tipo": "C(50)",
+   "ocorrencia": "0-1",
+   "observacao": "Deve ser preenchido apenas quando tipoChaveDFe = 9 (Outro)\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C577",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/DocumentoFiscalOutro",
+   "descricao": "Grupo de informações de documento não fiscal.",
+   "tipo": "-",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C578",
+   "caminho": "Envio/RPS/ListaNFSeReferenciadas/NFSeReferenciada/DoccMun",
+   "descricao": "Código do município emissor do documento fiscal que não se encontra no repositório nacional",
+   "tipo": " C(255)",
+   "ocorrencia": "0-1",
+   "observacao": "Apenas para documentos não fiscais\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C579",
+   "caminho": "Envio/RPS/ListaNFSeReferenciadas/NFSeReferenciada/DocNumero",
+   "descricao": "Número do documento fiscal/Não fiscal",
+   "tipo": " C(255)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C580",
+   "caminho": "Envio/RPS/ListaNFSeReferenciadas/NFSeReferenciada/DocDescricao",
+   "descricao": "Descrição do documento fiscal/Não fiscal",
+   "tipo": " C(255)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C581",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/Fornecedor",
+   "descricao": "Grupo de informações do fornecedor do documento referenciado",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C582",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelcNCM/DocCNPJ",
+   "descricao": "Número da inscrição federal (CNPJ) do fornecedor do documento",
+   "tipo": "V(14)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C583",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelcNCM/DocCPF",
+   "descricao": "Número da inscrição federal (CPF) do fornecedor",
+   "tipo": " V(11)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C584",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelcNCM/DocNIF",
+   "descricao": "Este elemento só deverá ser preenchido para fornecedores não residentes no Brasil.",
+   "tipo": " C(255)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C585",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelcNCM/DoccNaoNIF",
+   "descricao": "Motivo para não informação do NIF",
+   "tipo": "C(1)",
+   "ocorrencia": "0-1",
+   "observacao": "0 - Não informado na nota de origem;\n1 - Dispensado do NIF;\n2 - Não exigência do NIF;\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C586",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelcNCM/DocxNome",
+   "descricao": "Nome / Razão Social do fornecedor.",
+   "tipo": " C(150)",
+   "ocorrencia": "45658.0",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C587",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelcNCM/DocEndereco",
+   "descricao": "Endereço do Fornecedor do documento",
+   "tipo": "V(255",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C588",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelcNCM/DoccMun",
+   "descricao": "Código do município do endereço do fornecedor.",
+   "tipo": "V(7)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C589",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelcNCM/DocxMun",
+   "descricao": "Nome da cidade no exterior do fornecedor",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C590",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelcNCM/DocCEP",
+   "descricao": "Código alfanumérico do Endereçamento Postal exterior do fornecedor",
+   "tipo": "V(8)",
+   "ocorrencia": "1-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C591",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelcNCM/DocEstProvReg",
+   "descricao": "stado, província ou região da cidade no exterior do fornecedor",
+   "tipo": "V(60)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C592",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelcNCM/DoccPais",
+   "descricao": "Código do país do endereço do prestador do fornecedor.",
+   "tipo": "V(4)",
+   "ocorrencia": "0-1",
+   "observacao": null,
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C573",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/DoctpReeRepRes",
+   "descricao": "Tipo de valor incluído neste documento, recebido por motivo de estarem relacionadas a operações de terceiros, objeto de reembolso, repasse ou ressarcimento pelo recebedor, já tributados e aqui referenciados",
+   "tipo": "C(2)",
+   "ocorrencia": "0-1",
+   "observacao": "01 = Repasse de remuneração por intermediação de imóveis a demais corretores envolvidos na operação\r\n 02 = Repasse de valores a fornecedor relativo a fornecimento intermediado por agência de turismo\r\n 03 = Reembolso ou ressarcimento recebido por agência de propaganda e publicidade por valores pagos relativos a serviços de produção externa por conta  e ordem de terceiro\r\n 04 = Reembolso ou ressarcimento recebido por agência de propaganda e publicidade por valores pagos relativos a serviços de mídia por conta e ordem de terceiro\r\n 99 = Outros reembolsos ou ressarcimentos recebidos por valores pagos relativos a operações por conta e ordem de terceiro\n\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C574",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/DocDescTpReeRepRes",
+   "descricao": "Descrição do reembolso ou ressarcimento",
+   "tipo": "C(150)",
+   "ocorrencia": "0-1",
+   "observacao": "Quando a opção é 99 – Outros reembolsos ou ressarcimentos recebidos por valores pagos relativos a operações por conta e ordem de terceiro\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C575",
+   "caminho": "Envio/RPS/ListaDocumentos/Documento/DocValorReeRepRes",
+   "descricao": "Valor monetário (total ou parcial, conforme documento informado) utilizado para não inclusão na base de cálculo do ISS e do IBS e da CBS da NFS-e que está sendo emitida (R$).",
+   "tipo": "N(15.2)",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C576",
+   "caminho": "Envio/RPS/ListaNFSeReferenciadas",
+   "descricao": "Grupo de NFS-e referenciadas.",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "-",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C577",
+   "caminho": "Envio/RPS/ListaNFSeReferenciadas/NFSeReferenciada",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "1-99",
+   "observacao": "Não informar este grupo quando a integração for API Rest.",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C578",
+   "caminho": "Envio/RPS/ListaNFSeReferenciadas/NFSeReferenciada/DocChaveNFSe",
+   "descricao": "Chave da NFS-e referenciada.",
+   "tipo": "V(50)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.89.0.0"
+  },
+  {
+   "seq": "C579",
+   "caminho": "Envio/RPS/ListaBensMoveis",
+   "descricao": "Grupo de bens móveis objetos de locação",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C580",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "1-1000",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C581",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelcNCM",
+   "descricao": "Código da Nomenclatura Comum do Mercosul\n(NCM) do bem móvel objeto da locação",
+   "tipo": " C(8)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C582",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelxNCM",
+   "descricao": "Descrição do Bem Móvel objeto de locação",
+   "tipo": " V(150)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C583",
+   "caminho": "Envio/RPS/ListaBensMoveis/BemMovel/BemMovelqtdNCM",
+   "descricao": "Quantidade de Bem Móvel objeto de locação",
+   "tipo": " N(3)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C584",
+   "caminho": "Envio/RPS/ListaDedIBSCBS",
+   "descricao": "Grupo de deduções e reduções do IBS e da CBS",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C585",
+   "caminho": "Envio/RPS/ListaDedIBSCBS/DedIBSCBS",
+   "descricao": null,
+   "tipo": "-",
+   "ocorrencia": "1-1000",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C586",
+   "caminho": "Envio/RPS/ListaDedIBSCBS/DedIBSCBS/DedtpRedIBSCBS",
+   "descricao": "Tipo parcela não integrante da base de cálculo do IBS e da CBS",
+   "tipo": "V(2)",
+   "ocorrencia": "1-1",
+   "observacao": "Tipo de parcela não integrante da base de cálculo do IBS e da CBS\n 01 = Tributos inclusos no aluguel ou equivalente (Ex.: IPTU, Contribuição de melhoria) - apenas para NBS 1.1002.10.00 ou 1.1002.20.00\n 02 = Emolumento incluso no aluguel ou equivalente - apenas para NBS 1.1002.10.00 ou 1.1002.20.00\n 03 = Condomínio incluso no aluguel ou equivalente - apenas para NBS 1.1002.10.00 ou 1.1002.20.00\n04 = Redutor Social - apenas para a NBS 1.1002.10.00\n 05 = Glosa de Serviços Médicos\n 99 = Outras parcelas inclusa\n\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C587",
+   "caminho": "Envio/RPS/ListaDedIBSCBS/DedIBSCBS/DedxTpRedIBSCBS",
+   "descricao": "Descrição Tipo parcela não integrante da base de cálculo do IBS e da CBS",
+   "tipo": "V(150)",
+   "ocorrencia": "0-1",
+   "observacao": "Descrição do tipo de parcela não integrante da base de cálculo do IBS e da CBS quando a opção for “99 = Outras parcelas inclusas no aluguel ou equivalente\"\n\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C588",
+   "caminho": "Envio/RPS/ListaDedIBSCBS/DedIBSCBS/DedvlrRedIBSCBS",
+   "descricao": "Valor utilizado para não inclusão na base de cálculo IBS e CBS da NFS-e",
+   "tipo": "N(15.2)",
+   "ocorrencia": "1-1",
+   "observacao": "Valor monetário (total ou parcial) utilizado para não inclusão na base de cálculo do IBS e da CBS da NFS-e que está sendo emitida (R$).\r\n\nUso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C589",
+   "caminho": "Envio/RPS/ListaNFSeRefPagAntecipado",
+   "descricao": "Grupo de referenciamento das NFS-e de pagamento antecipado para abatimento",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C590",
+   "caminho": "Envio/RPS/ListaNFSeRefPagAntecipado/NFSeRefPagAntecipado",
+   "descricao": null,
+   "tipo": null,
+   "ocorrencia": "1-99",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C591",
+   "caminho": "Envio/RPS/ListaNFSeRefPagAntecipado/NFSeRefPagAntecipado/DocRefPgaAntNFSe",
+   "descricao": "Chave da NFS-e de pagamento antecipado referenciada",
+   "tipo": "V(50)",
+   "ocorrencia": "1-1",
+   "observacao": "Uso específico para Reforma Tributária",
+   "versaoInvoicy": "2.92.5.0"
+  },
+  {
+   "seq": "C592",
+   "caminho": "Envio/RPS/ListaPagamentoVinculado",
+   "descricao": "Grupo de informações da vinculação com a transação de pagamento.",
+   "tipo": "-",
+   "ocorrencia": "0-1",
+   "observacao": "Transações de pagamento por NFS-e.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C593",
+   "caminho": "Envio/RPS/ListaPagamentoVinculado/PagamentoVinculado",
+   "descricao": "Dados de um pagamento vinculado à NFS-e.",
+   "tipo": "-",
+   "ocorrencia": "1-99",
+   "observacao": "Lista de Subgrupo de cada pagamento.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C594",
+   "caminho": "Envio/RPS/ListaPagamentoVinculado/PagamentoVinculado/PgtoNumero",
+   "descricao": "Numerador único de cada pagamento.",
+   "tipo": "N(3.0)",
+   "ocorrencia": "1-1",
+   "observacao": "Identificador sequencial do pagamento.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C595",
+   "caminho": "Envio/RPS/ListaPagamentoVinculado/PagamentoVinculado/PgtoIdTransacao",
+   "descricao": "Identificador específico da transação financeira.",
+   "tipo": "V(35)",
+   "ocorrencia": "1-1",
+   "observacao": "ID da transação (ex: endToEndId do PIX, linha digitável do boleto).",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C596",
+   "caminho": "Envio/RPS/ListaPagamentoVinculado/PagamentoVinculado/PgtoTpMeioPgto",
+   "descricao": "Código do  tipo de meio de pagamento utilizado",
+   "tipo": "N(2.0)",
+   "ocorrencia": "1-1",
+   "observacao": "15=Boleto | 17=PIX QRCode dinâmico | 18=TED | 20=PIX chave ou QRCode estático | 23=PIX automático | 24=TEF/booktransfer",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C597",
+   "caminho": "Envio/RPS/ListaPagamentoVinculado/PagamentoVinculado/PgtoCNPJReceb",
+   "descricao": "CNPJ completo do recebedor do pagamento (fornecedor, plataforma ou entidade recebedora).",
+   "tipo": "C(14)",
+   "ocorrencia": "1-1",
+   "observacao": "CNPJ alfanumérico do recebedor.",
+   "versaoInvoicy": "3.1.0.0"
+  },
+  {
+   "seq": "C598",
+   "caminho": "Envio/RPS/ListaPagamentoVinculado/PagamentoVinculado/PgtoCNPJBasePSP",
+   "descricao": "CNPJ base da instituição financeira ou PSP utilizada pelo recebedor.",
+   "tipo": "C(8)",
+   "ocorrencia": "1-1",
+   "observacao": "CNPJ base do PSP/banco recebedor.",
+   "versaoInvoicy": "3.1.0.0"
+  }
+ ]
+}
