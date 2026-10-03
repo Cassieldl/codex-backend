@@ -1,3 +1,4 @@
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -44,10 +45,10 @@ public sealed class ItemBuscaConfiguration : IEntityTypeConfiguration<ItemBusca>
 
         builder.Property(x => x.TipoItem).HasColumnName("tipoitem").HasMaxLength(20).HasConversion<string>().IsRequired();
         builder.Property(x => x.ItemId).HasColumnName("itemid").IsRequired();
-        builder.Property(x => x.Chave).HasColumnName("chave").HasMaxLength(80);
-        builder.Property(x => x.Titulo).HasColumnName("titulo").HasMaxLength(300).IsRequired();
-        builder.Property(x => x.Subtitulo).HasColumnName("subtitulo").HasMaxLength(300);
-        builder.Property(x => x.Url).HasColumnName("url").HasMaxLength(400).IsRequired();
+        builder.Property(x => x.Chave).HasColumnName("chave").HasMaxLength(LimitesItemBusca.Chave);
+        builder.Property(x => x.Titulo).HasColumnName("titulo").HasMaxLength(LimitesItemBusca.Titulo).IsRequired();
+        builder.Property(x => x.Subtitulo).HasColumnName("subtitulo").HasMaxLength(LimitesItemBusca.Subtitulo);
+        builder.Property(x => x.Url).HasColumnName("url").HasMaxLength(LimitesItemBusca.Url).IsRequired();
         builder.Property(x => x.Publicado).HasColumnName("publicado").HasDefaultValue(false).IsRequired();
         builder.Property(x => x.ProvedorId).HasColumnName("provedorid").IsRequired(false);
         builder.Property(x => x.VersaoProvedorId).HasColumnName("versaoprovedorid").IsRequired(false);

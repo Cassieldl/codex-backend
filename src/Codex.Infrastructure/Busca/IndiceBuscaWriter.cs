@@ -212,8 +212,10 @@ public sealed class IndiceBuscaWriter : IIndiceBuscaWriter
     /// </summary>
     public async Task AtualizarPesosAsync(TipoItemIndexado tipoItem, int itemId, string? pesoA, string? pesoB, string? pesoC, string? pesoD, CancellationToken ct)
     {
-        var metadados = await CarregarMetadadosAsync(tipoItem, itemId, ct)
+        var metadadosBrutos = await CarregarMetadadosAsync(tipoItem, itemId, ct)
             ?? throw new EntidadeNaoEncontradaException($"Entidade de origem '{tipoItem}'/{itemId} não encontrada para indexação de busca.");
+
+        var metadados = AplicarTetoDeExibicao(metadadosBrutos);
 
         var existente = await _contexto.ItensBusca
             .FirstOrDefaultAsync(x => x.TipoItem == tipoItem && x.ItemId == itemId, ct);
@@ -376,6 +378,44 @@ public sealed class IndiceBuscaWriter : IIndiceBuscaWriter
         int? ProvedorId,
         int? VersaoProvedorId,
         IReadOnlyCollection<int> ProvedorIds);
+
+    /// <summary>
+    /// Ponto ÚNICO onde os tetos de <c>codex.itensbusca</c> (<see cref="LimitesItemBusca"/>) são
+    /// aplicados — para TODO <see cref="TipoItemIndexado"/>, criação ou atualização, não só
+    /// <c>campolayout</c> (QA de produção: um significado de campo canônico acima de 300
+    /// caracteres derrubava o <c>INSERT</c> inteiro com <c>22001</c>, 500 na requisição HTTP).
+    ///
+    /// <para>
+    /// <see cref="MetadadosItemBusca.Titulo"/>/<see cref="MetadadosItemBusca.Subtitulo"/> são texto
+    /// de EXIBIÇÃO — truncados na última palavra inteira antes do limite, com "…" (<see cref="TruncamentoExibicao"/>).
+    /// <see cref="MetadadosItemBusca.Chave"/>/<see cref="MetadadosItemBusca.Url"/> NUNCA são
+    /// truncados: truncar a URL quebraria o link, e nenhuma origem atual deveria produzir um valor
+    /// acima do teto (chave vem só de <c>Erro.Codigo</c>, <c>varchar(40)</c>; URL é composta a
+    /// partir de slugs com teto de 160-200 — a pior combinação, aviso de escopo versão, fica em
+    /// ~340 de 400). Se isso um dia deixar de ser verdade, é bug de outra camada: falhar alto aqui
+    /// é melhor do que gravar um link morto em silêncio.
+    /// </para>
+    /// </summary>
+    private static MetadadosItemBusca AplicarTetoDeExibicao(MetadadosItemBusca metadados)
+    {
+        if (metadados.Chave is { Length: > LimitesItemBusca.Chave } chave)
+            throw new InvalidOperationException(
+                $"Chave do item de busca ('{chave}', {chave.Length} caracteres) excede o limite de "
+                + $"{LimitesItemBusca.Chave} — chave é identificador, nunca truncada em silêncio.");
+
+        if (metadados.Url.Length > LimitesItemBusca.Url)
+            throw new InvalidOperationException(
+                $"URL do item de busca ('{metadados.Url}', {metadados.Url.Length} caracteres) excede "
+                + $"o limite de {LimitesItemBusca.Url} — truncar quebraria o link.");
+
+        return metadados with
+        {
+            Titulo = TruncamentoExibicao.Truncar(metadados.Titulo, LimitesItemBusca.Titulo),
+            Subtitulo = metadados.Subtitulo is null
+                ? null
+                : TruncamentoExibicao.Truncar(metadados.Subtitulo, LimitesItemBusca.Subtitulo),
+        };
+    }
 
     /// <summary>
     /// Deriva titulo/url/chave/subtitulo/provedorId(s) da entidade de origem — um bloco por tipo,
