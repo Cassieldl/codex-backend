@@ -23,6 +23,16 @@ public sealed class VersaoProvedorRepositorioInterno : RepositorioBase<CodexDbCo
         return query.FirstOrDefaultAsync(ct);
     }
 
+    /// <summary>
+    /// S-01 (demanda 008): parametrizado por interpolação (<c>FromSqlInterpolated</c>/<c>ExecuteSqlInterpolatedAsync</c>
+    /// — nunca concatenação, rules/security.md A03). Sem filtro de <c>desativadoem</c> de propósito:
+    /// quem chama já validou a linha antes (ela existe e está carregada); o lock é só sobre a
+    /// identidade física da linha, não sobre o predicado de negócio.
+    /// </summary>
+    public async Task BloquearParaAlteracaoAsync(int id, CancellationToken ct) =>
+        await Contexto.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT 1 FROM codex.versoesprovedor WHERE versaoprovedorid = {id} FOR UPDATE", ct);
+
     public async Task<IReadOnlyCollection<VersaoAdminListaItemDto>> ListarPorProvedorAsync(int provedorId, CancellationToken ct) =>
         await Contexto.VersoesProvedor.AsNoTracking()
             .Where(v => v.ProvedorId == provedorId && v.DesativadoEm == null)

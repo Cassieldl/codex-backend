@@ -36,7 +36,12 @@ public sealed class VersoesProvedorInternoController : ControllerBase
         return Ok(new ApiResponse<VersaoAdminDetalheDto> { Data = detalhe });
     }
 
-    /// <summary>I8b — atualização (sem <c>versaoLayoutId</c>).</summary>
+    /// <summary>
+    /// I8b — atualização. <c>versaoLayoutId</c> é opcional: omitido ou igual ao atual, mantém o
+    /// layout de origem; informado e diferente, troca-o — e só é aceito quando o layout de destino
+    /// existe/está ativo (senão <c>422 VERSAO_LAYOUT_INVALIDA</c>) e esta versão não tem nenhum
+    /// campo cadastrado (senão <c>422 VERSAO_COM_CAMPOS</c>).
+    /// </summary>
     [HttpPut("{id:int}")]
     [Authorize(Roles = "versoesprovedor-atualizar")]
     [ProducesResponseType(typeof(ApiResponse<VersaoAdminDetalheDto>), StatusCodes.Status200OK)]

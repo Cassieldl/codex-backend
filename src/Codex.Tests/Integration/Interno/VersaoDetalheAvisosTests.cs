@@ -83,6 +83,8 @@ public sealed class VersaoDetalheAvisosTests
             new VersaoProvedorRepositorioInterno(contexto),
             new ProvedorRepositorioInterno(contexto),
             new AvisoRepositorioInterno(contexto),
+            new VersaoLayoutRepositorioInterno(contexto),
+            new CampoVersaoRepositorioInterno(contexto),
             new Codex.Infrastructure.Busca.IndiceBuscaWriter(contexto),
             new UnidadeDeTrabalhoInterna(contexto));
 

@@ -108,7 +108,10 @@ public sealed class CampoVersaoNomeCanonicoTests
     }
 
     private static CampoVersaoServicoInterno CriarServico(Codex.Infrastructure.Data.CodexDbContext contexto) =>
-        new(new CampoVersaoRepositorioInterno(contexto), new VersaoProvedorRepositorioInterno(contexto));
+        new(
+            new CampoVersaoRepositorioInterno(contexto),
+            new VersaoProvedorRepositorioInterno(contexto),
+            new UnidadeDeTrabalhoInterna(contexto));
 
     private static async Task<Cenario> SemearAsync(
         Codex.Infrastructure.Data.CodexDbContext contexto, string sufixo)

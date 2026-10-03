@@ -59,12 +59,19 @@ public sealed record CriarVersaoDto
     public string? Introducao { get; init; }
 }
 
-/// <summary>Atualização (I8b) — sem <c>versaoLayoutId</c> (vínculo de origem imutável após criação).</summary>
+/// <summary>
+/// Atualização (I8b). <see cref="VersaoLayoutId"/> é opcional — <c>null</c> mantém o layout de
+/// origem atual, e é o que o frontend hoje envia (campo não existe no formulário). Trocar o
+/// layout exige a versão de provedor sem nenhum <c>CampoVersao</c>: campo da versão só existe
+/// porque o campo canônico tem origem no layout ATUAL — ver <c>VersaoProvedorServicoInterno.AtualizarAsync</c>.
+/// </summary>
 public sealed record AtualizarVersaoDto
 {
     public required string Rotulo { get; init; }
 
     public string? Introducao { get; init; }
+
+    public int? VersaoLayoutId { get; init; }
 }
 
 /// <summary>Registro de verificação (I10) — sem <c>ambiente</c> (U3).</summary>

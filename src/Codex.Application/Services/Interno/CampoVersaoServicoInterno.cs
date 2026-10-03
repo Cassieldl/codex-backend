@@ -1,5 +1,6 @@
 using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Codex.Domain.Exceptions;
 
@@ -16,12 +17,16 @@ public sealed class CampoVersaoServicoInterno : ICampoVersaoServicoInterno
 
     private readonly ICampoVersaoRepositorioInterno _repositorio;
     private readonly IVersaoProvedorRepositorioInterno _versaoRepositorio;
+    private readonly IUnidadeDeTrabalho _unidadeDeTrabalho;
 
     public CampoVersaoServicoInterno(
-        ICampoVersaoRepositorioInterno repositorio, IVersaoProvedorRepositorioInterno versaoRepositorio)
+        ICampoVersaoRepositorioInterno repositorio,
+        IVersaoProvedorRepositorioInterno versaoRepositorio,
+        IUnidadeDeTrabalho unidadeDeTrabalho)
     {
         _repositorio = repositorio;
         _versaoRepositorio = versaoRepositorio;
+        _unidadeDeTrabalho = unidadeDeTrabalho;
     }
 
     public async Task<CamposVersaoAgregadoDto> ListarAgregadoAsync(int versaoProvedorId, CancellationToken ct)
@@ -49,8 +54,22 @@ public sealed class CampoVersaoServicoInterno : ICampoVersaoServicoInterno
             dto.Tamanho, dto.Mascara, dto.Dominio, dto.Condicao, dto.Exemplo,
             dto.NotaPreenchimento, dto.DestinoXml, dto.NotaTransformacao);
 
-        await _repositorio.AdicionarAsync(campoVersao, ct);
-        await _repositorio.SalvarAlteracoesAsync(ct);
+        await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
+        {
+            // S-01 (demanda 008): mesmo lock da troca de layout — serializa contra um PUT
+            // concorrente de /interno/versoes/{id} que esteja trocando versaoLayoutId.
+            await _versaoRepositorio.BloquearParaAlteracaoAsync(versaoProvedorId, ctInterno);
+
+            // Revalida sob o lock: o FluentValidation leu o layout ANTES deste commit — uma troca
+            // pode ter sido confirmada na janela entre a validação e aqui.
+            if (!await _repositorio.CampoLayoutEstaAtivoNaVersaoDoProvedorAsync(dto.CampoLayoutId, versaoProvedorId, ctInterno))
+                throw new RegraDeNegocioException(
+                    CodigosErro.CampoLayoutOrigemAlterado,
+                    "O layout de origem desta versão mudou durante a operação. Recarregue e tente novamente.");
+
+            await _repositorio.AdicionarAsync(campoVersao, ctInterno);
+            await _repositorio.SalvarAlteracoesAsync(ctInterno);
+        }, ct);
 
         return await LerDtoOuFalharAsync(campoVersao.Id, ct);
     }

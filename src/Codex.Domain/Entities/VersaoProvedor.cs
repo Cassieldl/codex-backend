@@ -60,6 +60,20 @@ public class VersaoProvedor : EntidadeAuditada
         Introducao = introducao;
     }
 
+    /// <summary>
+    /// Troca o layout de origem desta versão. A entidade não conhece os campos da versão — a
+    /// regra "só pode trocar se não houver nenhum <c>CampoVersao</c> cadastrado" (o vínculo de
+    /// origem de cada campo depende do layout atual) é do service, que também confirma que o
+    /// layout de destino existe e está ativo.
+    /// </summary>
+    public void TrocarVersaoLayout(int versaoLayoutId)
+    {
+        if (versaoLayoutId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(versaoLayoutId), "Versão de layout precisa ser um id válido.");
+
+        VersaoLayoutId = versaoLayoutId;
+    }
+
     /// <summary>Sem parâmetro de ambiente (U3).</summary>
     public void RegistrarVerificacao(DateOnly data)
     {
