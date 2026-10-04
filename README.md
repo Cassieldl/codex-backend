@@ -89,6 +89,38 @@ Testes de integração (`Codex.Tests/Integration/`) usam Testcontainers — sobe
 descartável automaticamente, não dependem do `docker-compose.yml` deste repositório. Docker
 Desktop precisa estar rodando na máquina.
 
+## Carga de conteúdo
+
+`database/carga/emissor-nacional/importar.mjs` carrega o provedor **Emissor Nacional** (versão 0.20)
+pela API interna: erros e avisos da Sefin, o vocabulário do Layout InvoiCy 8 (545 campos), os campos
+da versão e o artigo de emissão judicial. Escreve sempre pela API — nunca por SQL —, então slug,
+índice de busca e regras de negócio são os mesmos do produto.
+
+- **Sincroniza**, não só cria: rodar de novo corrige o que mudou e não duplica nada.
+- **Não publica nada.** Publicar é decisão editorial, feita na área interna.
+- Material do InvoiCy (XSD de entrada, extrato da planilha v8, mapeamento das telas do provedor) fica
+  versionado na pasta. O material da Sefin (leiaute e regras da DPS) é lido de uma pasta local,
+  passada como argumento.
+
+Com a API e o Keycloak no ar:
+
+```bash
+CODEX_DEV_USUARIO=codex.dev CODEX_DEV_SENHA=codex.dev \
+  node database/carga/emissor-nacional/importar.mjs <pasta-do-material-da-sefin>
+```
+
+| Variável | Uso |
+|---|---|
+| `CODEX_DEV_USUARIO` / `CODEX_DEV_SENHA` | Login no Keycloak local (fluxo PKCE do `codex-front`; o realm não tem login direto por senha) |
+| `CODEX_TOKEN` | Token pronto, no lugar do login — para ambiente que não seja o local |
+| `CODEX_API_URL` / `CODEX_KEYCLOAK_URL` | Endereços, se diferentes dos locais |
+
+Testes da carga (Node, sem dependência): `node --test <arquivo>.test.mjs` em
+`database/carga/emissor-nacional/`. Passar o diretório falha nesta versão do Node — passe o arquivo.
+
+O que ainda depende de resposta do time do InvoiCy está no relatório de completude da demanda 008
+(`.dev-team/demandas/008-campos-emissor-nacional/relatorio-completude.md`, fora deste repositório).
+
 ## Variáveis de ambiente
 
 Ver `.env.example`. Principais:

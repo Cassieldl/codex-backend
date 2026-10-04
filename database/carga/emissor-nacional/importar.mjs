@@ -226,8 +226,8 @@ async function sincronizarErros(api, provedorSlug, versaoId, erros) {
     const somenteDestaVersao =
       detalhe.versoesProvedorIds.length === 1 && detalhe.versoesProvedorIds[0] === versaoId
 
-    // Desvincular exige PUT com as variantes, e o detalhe interno hoje não as devolve: regravar a
-    // partir dele apagaria as mensagens. Erro compartilhado com outra versão fica para ajuste manual.
+    // Erro que também vale para outra versão não é removido: tirar só este vínculo é decisão
+    // editorial sobre o outro provedor, feita na área interna, não efeito de rodar a carga.
     if (!somenteDestaVersao) {
       console.warn(`  ${erro.codigo} também vale para outra versão — desvincule manualmente.`)
       continue
