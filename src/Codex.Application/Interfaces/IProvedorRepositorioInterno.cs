@@ -13,7 +13,9 @@ public interface IProvedorRepositorioInterno
     /// <summary>
     /// <paramref name="rastreada"/> = true para o caminho de update/delete (nunca
     /// AsNoTracking — ver <see cref="Codex.Infrastructure.Repositories.RepositorioBase{TDbContext}"/>);
-    /// false para leitura pura de detalhe.
+    /// false para leitura pura de detalhe. Em ambos os casos traz <see cref="Provedor.Aliases"/>:
+    /// o detalhe interno os devolve ao formulário, e a edição precisa deles carregados para
+    /// removê-los (<see cref="RemoverAliasesAsync"/>) antes de <see cref="Provedor.SubstituirAliases"/>.
     /// </summary>
     Task<Provedor?> ObterPorIdAsync(int id, bool rastreada, CancellationToken ct);
 
@@ -30,6 +32,16 @@ public interface IProvedorRepositorioInterno
 
     /// <summary>Todos os provedores ativos, com <see cref="Provedor.Aliases"/> carregado — usado por I22 (reconstrução total do índice).</summary>
     Task<IReadOnlyCollection<Provedor>> ListarTodosAtivosComAliasesAsync(CancellationToken ct);
+
+    /// <summary>
+    /// Remove explicitamente os <see cref="AliasProvedor"/> existentes — chamar ANTES de
+    /// <see cref="Provedor.SubstituirAliases"/> num <see cref="Provedor"/> rastreado.
+    /// <see cref="AliasProvedor.ProvedorId"/> é obrigatória e a relação usa
+    /// <c>OnDelete(DeleteBehavior.Restrict)</c>: limpar a coleção de navegação sozinha deixa os
+    /// filhos antigos órfãos sem que o EF saiba apagá-los, e o <c>SaveChanges</c> lança. Remover
+    /// pelo <c>DbSet</c> marca as linhas como <c>Deleted</c> explicitamente.
+    /// </summary>
+    Task RemoverAliasesAsync(int provedorId, CancellationToken ct);
 
     /// <summary>Rastreia a nova entidade para o próximo <see cref="SalvarAlteracoesAsync"/>.</summary>
     Task AdicionarAsync(Provedor provedor, CancellationToken ct);

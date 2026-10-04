@@ -81,6 +81,10 @@ public sealed class ErroServicoInterno : IErroServicoInterno
             await _repositorio.RemoverVariantesAsync(erro.Id, ctInterno);
             erro.SubstituirVariantes(dto.Variantes);
 
+            // Variantes e junções mudam sem tocar a linha do erro: sem isto o xmin não anda e o
+            // If-Match seguinte não percebe a edição anterior.
+            _unidadeDeTrabalho.ForcarConferenciaDeConcorrencia(erro);
+
             await _repositorio.SubstituirVersoesAplicaveisAsync(erro.Id, dto.VersoesProvedorIds, ctInterno);
             await _repositorio.SubstituirCamposRelacionadosAsync(erro.Id, dto.CamposLayoutIds, ctInterno);
             await _repositorio.SalvarAlteracoesAsync(ctInterno);

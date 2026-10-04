@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Codex.Application.DTOs.Interno;
 using FluentValidation;
 using SlugVo = Codex.Domain.ValueObjects.Slug;
@@ -19,7 +20,7 @@ public sealed class CriarProvedorDtoValidator : AbstractValidator<CriarProvedorD
 
         RuleFor(x => x.Categoria).IsInEnum().WithMessage("Categoria de provedor inválida.");
 
-        RuleForEach(x => x.Aliases).NotEmpty().WithMessage("Alias não pode ser vazio.");
+        RegrasDeAliasProvedor.Aplicar(this, x => x.Aliases);
     }
 }
 
@@ -32,6 +33,51 @@ public sealed class AtualizarProvedorDtoValidator : AbstractValidator<AtualizarP
 
         RuleFor(x => x.Categoria).IsInEnum().WithMessage("Categoria de provedor inválida.");
 
-        RuleForEach(x => x.Aliases).NotEmpty().WithMessage("Alias não pode ser vazio.");
+        RegrasDeAliasProvedor.Aplicar(this, x => x.Aliases);
+    }
+}
+
+/// <summary>
+/// Regras de alias compartilhadas por criar e atualizar provedor — cada uma recusa com 422 o que o
+/// banco recusaria com 500 (R6, demanda 008).
+/// </summary>
+internal static class RegrasDeAliasProvedor
+{
+    /// <summary><c>aliasesprovedor.alias</c> é <c>varchar(160)</c> (<c>AliasProvedorConfiguration</c>).</summary>
+    private const int TamanhoMaximo = 160;
+
+    public static void Aplicar<T>(AbstractValidator<T> validador, Expression<Func<T, IEnumerable<string>>> aliases)
+    {
+        validador.RuleForEach(aliases)
+            .NotEmpty().WithMessage("Alias não pode ser vazio.")
+            .MaximumLength(TamanhoMaximo).WithMessage($"Cada alias deve ter no máximo {TamanhoMaximo} caracteres.");
+
+        validador.RuleFor(aliases).Custom((lista, contexto) =>
+        {
+            var repetido = PrimeiroRepetido(lista);
+            if (repetido is not null)
+                contexto.AddFailure($"O alias '{repetido}' aparece mais de uma vez na lista.");
+        });
+    }
+
+    /// <summary>
+    /// Compara EXATAMENTE como <c>uq_codex_aliasesprovedor_provedorid_alias</c>: índice único comum
+    /// sobre a coluna <c>varchar</c>, sem <c>lower()</c>, sem <c>citext</c> e sem Trim antes de
+    /// gravar — então "ADN" e "adn" são distintos, e " ADN" difere de "ADN". Recusar mais que isso
+    /// barraria o que o banco aceita; recusar menos devolveria 500.
+    /// </summary>
+    private static string? PrimeiroRepetido(IEnumerable<string>? aliases)
+    {
+        if (aliases is null)
+            return null;
+
+        var vistos = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var alias in aliases)
+        {
+            if (alias is not null && !vistos.Add(alias))
+                return alias;
+        }
+
+        return null;
     }
 }

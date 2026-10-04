@@ -66,10 +66,18 @@ public sealed class ProvedorServicoInterno : IProvedorServicoInterno
         var provedor = await CarregarRastreadaOuFalharAsync(id, versaoEsperada, ct);
 
         provedor.Renomear(dto.Nome);
-        provedor.SubstituirAliases(dto.Aliases);
 
         await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
         {
+            // Remove os aliases antigos ANTES de SubstituirAliases mutar a coleção carregada — o
+            // mesmo padrão de ErroServicoInterno.AtualizarAsync (FK obrigatória + Restrict).
+            await _repositorio.RemoverAliasesAsync(provedor.Id, ctInterno);
+            provedor.SubstituirAliases(dto.Aliases);
+
+            // Editar só os aliases não toca a linha do provedor: sem isto o xmin não anda e o
+            // If-Match seguinte não percebe a edição anterior.
+            _unidadeDeTrabalho.ForcarConferenciaDeConcorrencia(provedor);
+
             await _repositorio.SalvarAlteracoesAsync(ctInterno);
 
             var (pesoA, pesoB, pesoC, pesoD) = PesosBusca.DoProvedor(provedor);

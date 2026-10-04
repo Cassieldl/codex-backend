@@ -1,4 +1,5 @@
 using Codex.Application.Interfaces;
+using Codex.Domain.Entities;
 using Codex.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,4 +31,7 @@ public sealed class UnidadeDeTrabalhoInterna : IUnidadeDeTrabalho
             await transacao.CommitAsync(ct);
         });
     }
+
+    public void ForcarConferenciaDeConcorrencia(EntidadeAuditada entidade) =>
+        _contexto.Entry(entidade).Property(nameof(EntidadeAuditada.AtualizadoEm)).IsModified = true;
 }

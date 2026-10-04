@@ -74,6 +74,10 @@ public sealed class ArtigoServicoInterno : IArtigoServicoInterno
 
         await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
         {
+            // As junções mudam sem tocar a linha do artigo: sem isto o xmin não anda e o If-Match
+            // seguinte não percebe a edição anterior.
+            _unidadeDeTrabalho.ForcarConferenciaDeConcorrencia(artigo);
+
             await _repositorio.SubstituirCamposLayoutRelacionadosAsync(artigo.Id, dto.CampoLayoutIds, ctInterno);
             await _repositorio.SubstituirErrosRelacionadosAsync(artigo.Id, dto.ErroIds, ctInterno);
             await _repositorio.SalvarAlteracoesAsync(ctInterno);

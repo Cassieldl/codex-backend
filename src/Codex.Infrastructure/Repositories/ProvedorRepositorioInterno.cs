@@ -19,7 +19,13 @@ public sealed class ProvedorRepositorioInterno : RepositorioBase<CodexDbContext>
         // rastreada=true é o caminho usado antes de Update/Delete/Publicar/Despublicar — NUNCA
         // AsNoTracking aqui, senão xmin (concorrência otimista) quebra no próximo SaveChanges
         // (ver comentário completo em RepositorioBase). rastreada=false é só leitura de detalhe.
-        var query = Contexto.Provedores.Where(p => p.Id == id && p.DesativadoEm == null);
+        //
+        // Os aliases vêm SEMPRE, rastreada ou não: o detalhe interno os devolve ao formulário
+        // (antes devolvia `aliases: []` com aliases no banco) e a edição precisa deles carregados
+        // para removê-los antes de substituir a coleção.
+        IQueryable<Provedor> query = Contexto.Provedores
+            .Where(p => p.Id == id && p.DesativadoEm == null)
+            .Include(p => p.Aliases);
 
         if (!rastreada)
             query = query.AsNoTracking();
@@ -87,6 +93,18 @@ public sealed class ProvedorRepositorioInterno : RepositorioBase<CodexDbContext>
             .Where(p => p.DesativadoEm == null)
             .Include(p => p.Aliases)
             .ToListAsync(ct);
+
+    /// <summary>
+    /// Remoção explícita dos aliases: as instâncias já rastreadas (trazidas por
+    /// <see cref="ObterPorIdAsync"/>) passam a <c>Deleted</c> pelo mesmo identity map. Sem isto,
+    /// <c>Provedor.SubstituirAliases</c> faria <c>Clear()</c> numa coleção carregada com FK
+    /// obrigatória e <c>OnDelete(Restrict)</c> e o EF lançaria <c>InvalidOperationException</c>.
+    /// </summary>
+    public async Task RemoverAliasesAsync(int provedorId, CancellationToken ct)
+    {
+        var existentes = await Contexto.AliasesProvedor.Where(a => a.ProvedorId == provedorId).ToListAsync(ct);
+        Contexto.AliasesProvedor.RemoveRange(existentes);
+    }
 
     public async Task AdicionarAsync(Provedor provedor, CancellationToken ct) =>
         await Contexto.Provedores.AddAsync(provedor, ct);
