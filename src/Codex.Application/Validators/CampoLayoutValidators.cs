@@ -6,16 +6,33 @@ using SlugVo = Codex.Domain.ValueObjects.Slug;
 
 namespace Codex.Application.Validators;
 
+/// <summary>
+/// Tetos das colunas de <c>camposlayout</c>. O do caminho é o do slug (<c>varchar(160)</c>), que
+/// nasce dele: a normalização só encurta, então um caminho de até 160 sempre gera slug que cabe.
+/// </summary>
+public static class LimitesCampoLayout
+{
+    public const int Nome = 120;
+    public const int CaminhoXml = 160;
+    public const int Grupo = 120;
+}
+
 public sealed class CriarCampoLayoutDtoValidator : AbstractValidator<CriarCampoLayoutDto>
 {
     public CriarCampoLayoutDtoValidator()
     {
-        RuleFor(x => x.Nome).NotEmpty().WithMessage("O nome do campo é obrigatório.");
+        RuleFor(x => x.Nome).NotEmpty().WithMessage("O nome do campo é obrigatório.")
+            .MaximumLength(LimitesCampoLayout.Nome)
+            .WithMessage($"O nome do campo tem no máximo {LimitesCampoLayout.Nome} caracteres.");
         RuleFor(x => x.CaminhoXml).NotEmpty().WithMessage("O caminho XML do campo é obrigatório.")
             // O slug nasce do caminho XML (CampoLayout.Criar). Caminho só de separadores ("//",
             // "..") normaliza para vazio — Slug.DeTexto lançaria, e o 500 esconderia o 422 real.
-            .Must(SlugVo.PodeDerivarDe).WithMessage("O caminho XML do campo precisa conter ao menos uma letra ou número.");
+            .Must(SlugVo.PodeDerivarDe).WithMessage("O caminho XML do campo precisa conter ao menos uma letra ou número.")
+            .MaximumLength(LimitesCampoLayout.CaminhoXml)
+            .WithMessage($"O caminho XML do campo tem no máximo {LimitesCampoLayout.CaminhoXml} caracteres.");
         RuleFor(x => x.Significado).NotEmpty().WithMessage("O significado do campo é obrigatório.");
+        RuleFor(x => x.Grupo).MaximumLength(LimitesCampoLayout.Grupo)
+            .WithMessage($"O grupo do campo tem no máximo {LimitesCampoLayout.Grupo} caracteres.");
         RuleFor(x => x.Ordem).GreaterThanOrEqualTo(0).WithMessage("A ordem não pode ser negativa.");
     }
 }
@@ -39,6 +56,12 @@ public sealed class AtualizarCampoLayoutDtoValidator : AbstractValidator<Atualiz
     {
         RuleFor(x => x.Nome).NotEmpty().When(x => x.Nome is not null)
             .WithMessage("O nome do campo não pode ser vazio.");
+
+        RuleFor(x => x.Nome).MaximumLength(LimitesCampoLayout.Nome)
+            .WithMessage($"O nome do campo tem no máximo {LimitesCampoLayout.Nome} caracteres.");
+
+        RuleFor(x => x.Grupo).MaximumLength(LimitesCampoLayout.Grupo)
+            .WithMessage($"O grupo do campo tem no máximo {LimitesCampoLayout.Grupo} caracteres.");
 
         RuleFor(x => x.Significado).NotEmpty().When(x => x.Significado is not null)
             .WithMessage("O significado do campo não pode ser vazio.");
