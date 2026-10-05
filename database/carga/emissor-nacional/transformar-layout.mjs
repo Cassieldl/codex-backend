@@ -10,7 +10,8 @@
  * monta, e o `//` é a convenção que a tela já trata como sintaxe.
  */
 
-export const LIMITES_CAMPO_LAYOUT = { nome: 120, caminhoXml: 300, significado: 1000, grupo: 100 }
+// Os do validator do backend (`LimitesCampoLayout`): o caminho tem o teto do slug que nasce dele.
+export const LIMITES_CAMPO_LAYOUT = { nome: 120, caminhoXml: 160, significado: 1000, grupo: 120 }
 
 const TOKEN = /<(\/?)xs:(\w+)([^>]*?)(\/?)>|([^<]+)/g
 const ATRIBUTO = /(\w+)="([^"]*)"/g
@@ -75,10 +76,20 @@ export function caminhoCanonico(caminhoCompleto) {
   return `//${relativo}`
 }
 
-export function grupoDe(caminhoCompleto) {
+/**
+ * Grupo do campo = caminho do grupo pai no XSD, a partir do RPS (`Servico/Valores/IBSCBS`). Cada
+ * grupo da documentação vira um cabeçalho próprio, na ordem do documento — com só o primeiro
+ * nível, "Servico" juntava 187 campos e misturava os dois `IBSCBS`, que são grupos diferentes.
+ *
+ * Um grupo usado como campo (a lista `ListaDed/Ded`) fica no próprio grupo, à frente dos filhos;
+ * no grupo do pai, ele apareceria longe deles.
+ */
+export function grupoDe(caminhoCompleto, ehGrupo = false) {
   if (!caminhoCompleto.startsWith('Envio/RPS/')) return 'Envio'
-  const segmentos = caminhoCompleto.split('/')
-  return segmentos.length > 3 ? segmentos[2] : 'RPS'
+  const relativo = caminhoCompleto.slice('Envio/RPS/'.length)
+  if (ehGrupo) return relativo
+  const fimDoPai = relativo.lastIndexOf('/')
+  return fimDoPai < 0 ? 'RPS' : relativo.slice(0, fimDoPai)
 }
 
 /** A mesma normalização que o slug faz: o que colidir aqui colide no índice único do banco. */
@@ -168,7 +179,11 @@ export function montarVocabulario(
           LIMITES_CAMPO_LAYOUT.significado,
           `Significado de ${caminhoXml}`,
         ),
-        grupo: grupoDe(elemento.caminho),
+        grupo: exigirLimite(
+          grupoDe(elemento.caminho, elemento.ehGrupo),
+          LIMITES_CAMPO_LAYOUT.grupo,
+          `Grupo de ${caminhoXml}`,
+        ),
         ordem: indice + 1,
       }
     })

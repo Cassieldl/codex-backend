@@ -17,20 +17,41 @@ const CAMPOS_DE_COMPORTAMENTO = [
   'ordem',
 ]
 
+/** Grupo e ordem são a posição do campo na hierarquia do XSD, que é quem os decide. */
+function posicaoMudou(existente, desejado) {
+  return (existente.grupo ?? null) !== desejado.grupo || existente.ordem !== desejado.ordem
+}
+
 /**
  * Cria os campos canônicos que faltam, identificados pelo caminho XML — que é único e imutável, então
- * um campo existente nunca é recriado nem tem o caminho alterado. Devolve caminho completo → id.
+ * um campo existente nunca é recriado nem tem o caminho alterado. Do existente, só a posição (grupo
+ * e ordem) acompanha o XSD; nome e significado ficam como a edição os deixou. Devolve caminho
+ * completo → id.
  */
 export async function sincronizarVocabulario(api, versaoLayoutId, vocabulario) {
   const { dados: existentes } = await api.chamar(
     'GET',
     `/interno/layout/versoes/${versaoLayoutId}/campos`,
   )
+  const existentePorCaminhoXml = new Map(existentes.map((campo) => [campo.caminhoXml, campo]))
   const idPorCaminhoXml = new Map(existentes.map((campo) => [campo.caminhoXml, campo.id]))
 
   let criados = 0
+  let reposicionados = 0
   for (const campo of vocabulario) {
-    if (idPorCaminhoXml.has(campo.caminhoXml)) continue
+    const existente = existentePorCaminhoXml.get(campo.caminhoXml)
+    if (existente) {
+      if (posicaoMudou(existente, campo)) {
+        await api.chamar(
+          'PUT',
+          `/interno/campos-layout/${existente.id}`,
+          { grupo: campo.grupo, ordem: campo.ordem },
+          String(existente.versaoConcorrencia),
+        )
+        reposicionados++
+      }
+      continue
+    }
     const { dados: criado } = await api.chamar(
       'POST',
       `/interno/layout/versoes/${versaoLayoutId}/campos`,
@@ -46,7 +67,10 @@ export async function sincronizarVocabulario(api, versaoLayoutId, vocabulario) {
     criados++
     if (criados % 100 === 0) console.log(`  campos canônicos: ${criados}`)
   }
-  console.log(`vocabulário: ${criados} criados, ${vocabulario.length - criados} já existiam`)
+  console.log(
+    `vocabulário: ${criados} criados, ${reposicionados} reposicionados, ` +
+      `${vocabulario.length - criados} já existiam`,
+  )
 
   return new Map(
     vocabulario.map((campo) => [campo.caminhoCompleto, idPorCaminhoXml.get(campo.caminhoXml)]),

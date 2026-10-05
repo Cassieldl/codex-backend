@@ -69,6 +69,23 @@ test('caminho canônico parte do RPS, ou do Envio para o que está fora dele', (
   assert.equal(grupoDe('Envio/ModeloDocumento'), 'Envio')
 })
 
+test('o grupo é o caminho inteiro do pai, então cada grupo do XSD vira um cabeçalho', () => {
+  assert.equal(
+    grupoDe('Envio/RPS/Servico/Valores/IBSCBS/IBS/ValpIBSUF'),
+    'Servico/Valores/IBSCBS/IBS',
+  )
+  // Os dois IBSCBS do Servico são grupos diferentes e não podem cair no mesmo cabeçalho.
+  assert.notEqual(
+    grupoDe('Envio/RPS/Servico/Valores/IBSCBS/CSTIBSCBS'),
+    grupoDe('Envio/RPS/Servico/IBSCBS/CSTIBSCBS'),
+  )
+})
+
+test('grupo usado como campo abre o próprio grupo, junto dos filhos', () => {
+  assert.equal(grupoDe('Envio/RPS/ListaDed/Ded', true), 'ListaDed/Ded')
+  assert.equal(grupoDe('Envio/RPS/ListaDed/Ded/DedValor'), 'ListaDed/Ded')
+})
+
 test('o vocabulário tem as folhas e só os grupos que algum provedor usa como campo', () => {
   const elementos = lerXsd(XSD)
   assert.deepEqual(
@@ -80,6 +97,19 @@ test('o vocabulário tem as folhas e só os grupos que algum provedor usa como c
       .map((campo) => campo.caminhoXml)
       .includes('//Tomador'),
   )
+})
+
+test('no vocabulário, o grupo usado como campo abre o próprio grupo, e as folhas ficam no do pai', () => {
+  const porCaminho = new Map(
+    montarVocabulario(lerXsd(XSD), SEM_PLANILHA, new Set(['Envio/RPS/Tomador'])).map((campo) => [
+      campo.caminhoXml,
+      campo.grupo,
+    ]),
+  )
+  assert.equal(porCaminho.get('//Tomador'), 'Tomador')
+  assert.equal(porCaminho.get('//Tomador/TomaCNPJ'), 'Tomador')
+  assert.equal(porCaminho.get('//RPSSubs'), 'RPS')
+  assert.equal(porCaminho.get('//ModeloDocumento'), 'Envio')
 })
 
 test('região em dúvida fica inteira fora do vocabulário', () => {
