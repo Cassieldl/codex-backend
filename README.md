@@ -131,7 +131,13 @@ Ver `.env.example`. Principais:
 | `CODEX_APP_DB_PASSWORD` | Senha do role de aplicação `codex_user`, lida por `database/init.sql` via `\getenv` |
 | `Keycloak__auth-server-url` / `Keycloak__realm` / `Keycloak__resource` | Configuração do Keycloak |
 | `Cors__OrigemPermitida` | Única origem permitida no CORS (nunca `*`) |
-| `Busca__LimiarAutocorrecao` / `Busca__TimeoutMs` | Configuração da busca (nunca hardcode no código) |
+| `Busca__LimiarAutocorrecao` / `Busca__TimeoutMs` / `Busca__OrcamentoRequisicaoMs` | Configuração da busca (nunca hardcode no código). Os dois tempos aceitam só 250..30000 ms |
+| `AllowedHosts` | Hosts servidos. Fora de Development a aplicação recusa subir com `*` |
+| `ProxyReverso__KnownProxies__N` / `KnownNetworks__N` | Ingress que termina TLS. Sem ele não sai HSTS e o rate limit vê um IP só |
+| `Keycloak__ValidAudiences__N` / `Keycloak__MetadataAddress` / `Keycloak__RequireHttpsMetadata` | Audiência aceita; endereço interno do discovery; dispensa explícita de HTTPS em rede interna |
+| `Comunicados__ExpiracaoHabilitada` / `Comunicados__IntervaloExpiracaoSegundos` | Job que tira do ar o comunicado vencido |
+
+Produção (imagem, ordem de subida, checklist e smoke): `docs/producao.md`, com os valores em `.env.production.example`.
 
 ## Migrations
 
