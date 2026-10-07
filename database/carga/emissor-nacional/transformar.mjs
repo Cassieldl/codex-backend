@@ -193,6 +193,23 @@ export function montarAvisos() {
         'outra, emita nova DPS com o grupo subst (chSubstda e cMotivo 01 a 05 ou 99): o cancelamento ' +
         'por substituição (105102) é gerado automaticamente.',
     },
+    {
+      // A tabela de campos é exaustiva: o que ainda espera confirmação do InvoiCy precisa ser dito,
+      // senão a ausência leria como "não se aplica".
+      severidade: 'Informativo',
+      titulo: 'Campos ainda em confirmação com o InvoiCy',
+      corpo:
+        'Estas situações ainda não têm campo documentado nesta versão, porque o caminho no layout ' +
+        'InvoiCy está sendo confirmado:\n\n' +
+        '- documentos de reembolso, repasse e ressarcimento (grupo gReeRepRes);\n' +
+        '- endereço no exterior do intermediário, da obra, do evento e do fornecedor da dedução;\n' +
+        '- indicador do total de tributos (indTotTrib);\n' +
+        '- valor recebido pelo intermediário (vReceb);\n' +
+        '- substituição de NFS-e (chave, código e descrição do motivo) e tipo de operação com entes ' +
+        'governamentais (tpOper).\n\n' +
+        'Fora desta lista, campo que não aparece na tabela não se aplica a esta versão. Se precisar ' +
+        'de uma destas situações agora, fale com o suporte.',
+    },
   ]
 
   for (const aviso of avisos)

@@ -39,47 +39,10 @@ import {
   montarCampos,
   obrigatoriosNaNotaRegular,
 } from './transformar-campos.mjs'
+import { ARTIGOS, LAYOUT_INVOICY, PROVEDOR, ROTULO_VERSAO } from './identificacao.mjs'
 import { lerXsd, montarVocabulario } from './transformar-layout.mjs'
 
 const PASTA_DA_CARGA = dirname(fileURLToPath(import.meta.url))
-
-const PROVEDOR = {
-  nome: 'Emissor Nacional',
-  identificadorInvoicy: 'EMISSOR_NACIONAL',
-  categoria: 'Nacional',
-  aliases: ['ADN', 'Sefin Nacional', 'Padrão Nacional', 'NFS-e Nacional'],
-}
-
-const ROTULO_VERSAO = '0.20'
-
-/**
- * Artigos do provedor. Campos pelo caminho completo no XSD de entrada; erros pelo código. A emissão
- * judicial liga os erros do teto de alíquota (E0595, E1300): é por eles que o analista chega quando a
- * nota que devia ser judicial seguiu o fluxo normal.
- */
-const ARTIGOS = [
-  {
-    arquivo: 'artigo-emissao-judicial.md',
-    tipo: 'Procedimento',
-    titulo: 'Emitir NFS-e por decisão judicial no Emissor Nacional',
-    campos: [
-      'Envio/RPS/nNFSeJudicial',
-      'Envio/RPS/NumProcesso',
-      'Envio/RPS/tpSusp',
-      'Envio/RPS/RPSNumero',
-      'Envio/RPS/RPSSerie',
-      'Envio/RPS/IDUnico',
-      'Envio/RPS/Servico/Valores/ValAliqISS',
-    ],
-    erros: ['E0595', 'E1300'],
-  },
-]
-
-const LAYOUT_INVOICY = {
-  rotulo: '8',
-  descricao:
-    'Layout de recepção de NFS-e do InvoiCy, versão 8 (Reforma Tributária, NT 009). Caminhos tirados do XSD de entrada.',
-}
 
 async function lerJson(pasta, arquivo) {
   return JSON.parse(await readFile(join(pasta, arquivo), 'utf8'))
