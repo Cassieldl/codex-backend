@@ -44,6 +44,9 @@ public sealed class CodexDbContext : DbContext
     // Migrada na 003 (U-1/M-a) — saiu de ExcludeFromMigrations().
     public DbSet<Exemplo> Exemplos => Set<Exemplo>();
 
+    // Fila editorial — buscas internas sem resultado.
+    public DbSet<LacunaBusca> LacunasBusca => Set<LacunaBusca>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(Schema);

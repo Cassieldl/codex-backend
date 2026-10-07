@@ -1054,6 +1054,114 @@ namespace Codex.Infrastructure.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Codex.Domain.Entities.LacunaBusca", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("lacunabuscaid");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("AtualizadoEm")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("atualizadoem")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset>("CriadoEm")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criadoem")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset?>("DesativadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("desativadoem");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("estado");
+
+                    b.Property<string>("Nota")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("nota");
+
+                    b.Property<string>("NumeroChamado")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("numerochamado");
+
+                    b.Property<string>("Parceiro")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("parceiro");
+
+                    b.Property<string>("RegistradoPorId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("registradoporid");
+
+                    b.Property<string>("RegistradoPorNome")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("registradopornome");
+
+                    b.Property<DateTimeOffset?>("ResolvidaEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("resolvidaem");
+
+                    b.Property<string>("ResolvidoPorId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("resolvidoporid");
+
+                    b.Property<string>("ResolvidoPorNome")
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("resolvidopornome");
+
+                    b.Property<string>("Termo")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("termo");
+
+                    b.Property<string>("TermoNormalizado")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("termonormalizado");
+
+                    b.Property<uint>("Versao")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_codex_lacunasbusca");
+
+                    b.HasIndex("Estado", "CriadoEm")
+                        .HasDatabaseName("idx_codex_lacunasbusca_estado_criadoem");
+
+                    b.HasIndex("TermoNormalizado", "Estado")
+                        .HasDatabaseName("idx_codex_lacunasbusca_termonormalizado_estado");
+
+                    b.ToTable("lacunasbusca", "codex", t =>
+                        {
+                            t.HasCheckConstraint("ck_codex_lacunasbusca_estado", "estado IN ('Aberta', 'Resolvida', 'Descartada')");
+
+                            t.HasCheckConstraint("ck_codex_lacunasbusca_resolucao_consistente", "(estado = 'Aberta' AND resolvidaem IS NULL AND resolvidoporid IS NULL) OR (estado <> 'Aberta' AND resolvidaem IS NOT NULL AND resolvidoporid IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_codex_lacunasbusca_termo_minimo", "length(btrim(termo)) >= 2");
+                        });
+                });
+
             modelBuilder.Entity("Codex.Domain.Entities.Provedor", b =>
                 {
                     b.Property<int>("Id")

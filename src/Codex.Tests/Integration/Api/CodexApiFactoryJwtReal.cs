@@ -1,8 +1,12 @@
 using System.Security.Cryptography;
+using Codex.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Codex.Tests.Integration.Api;
@@ -57,12 +61,28 @@ public sealed class CodexApiFactoryJwtReal : WebApplicationFactory<Program>
     /// </summary>
     public SecurityKey? ChaveExtraConfiavel { get; init; }
 
+    /// <summary>
+    /// Banco real para os testes que precisam ir além da autorização — por exemplo, provar que
+    /// <c>sub</c> e <c>name</c> de um token validado de verdade chegam à linha gravada. Sem valor,
+    /// a factory não toca no banco.
+    /// </summary>
+    public string? ConnectionString { get; init; }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
 
         builder.ConfigureServices(services =>
         {
+            if (ConnectionString is not null)
+            {
+                services.RemoveAll<IHostedService>();
+                services.RemoveAll<DbContextOptions<CodexDbContext>>();
+                services.AddDbContext<CodexDbContext>(options =>
+                    options.UseNpgsql(ConnectionString, npgsql =>
+                        npgsql.MigrationsHistoryTable("__ef_migrations_history", CodexDbContext.Schema)));
+            }
+
             services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
             {
                 // Sem descoberta OIDC: zerar Authority e ConfigurationManager impede o handler de

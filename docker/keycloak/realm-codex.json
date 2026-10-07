@@ -113,6 +113,15 @@
           "name": "indicebusca-buscar"
         },
         {
+          "name": "lacunasbusca-adicionar"
+        },
+        {
+          "name": "lacunasbusca-atualizar"
+        },
+        {
+          "name": "lacunasbusca-buscar"
+        },
+        {
           "name": "provedores-adicionar"
         },
         {
@@ -241,6 +250,9 @@
           "exemplos-remover",
           "indicebusca-atualizar",
           "indicebusca-buscar",
+          "lacunasbusca-adicionar",
+          "lacunasbusca-atualizar",
+          "lacunasbusca-buscar",
           "provedores-adicionar",
           "provedores-atualizar",
           "provedores-buscar",

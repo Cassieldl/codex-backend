@@ -111,6 +111,16 @@ public sealed class PipelineAutorizacaoTests : IClassFixture<CodexApiFactory>
             (HttpMethod.Put, "/api/v1/interno/exemplos/1", "exemplos-atualizar"),
             (HttpMethod.Delete, "/api/v1/interno/exemplos/1", "exemplos-remover"),
 
+            // Fila editorial — lacunas de busca
+            (HttpMethod.Get, "/api/v1/interno/lacunas-busca", "lacunasbusca-buscar"),
+            (HttpMethod.Get, "/api/v1/interno/lacunas-busca/1", "lacunasbusca-buscar"),
+            (HttpMethod.Get, "/api/v1/interno/lacunas-busca/termos", "lacunasbusca-buscar"),
+            (HttpMethod.Post, "/api/v1/interno/lacunas-busca", "lacunasbusca-adicionar"),
+            (HttpMethod.Put, "/api/v1/interno/lacunas-busca/1/estado", "lacunasbusca-atualizar"),
+
+            // Versões com verificação vencida
+            (HttpMethod.Get, "/api/v1/interno/versoes/verificacoes-vencidas", "versoesprovedor-buscar"),
+
             // Busca interna — I21, I22
             (HttpMethod.Get, "/api/v1/interno/busca?q=teste", "indicebusca-buscar"),
             (HttpMethod.Post, "/api/v1/interno/indice-busca/reconstrucao", "indicebusca-atualizar"),

@@ -24,6 +24,12 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
     public const string SchemeName = "TesteCodex";
     public const string HeaderRoles = "X-Test-Roles";
 
+    /// <summary>Identificador do usuário (<c>sub</c>); omitido, vale <c>teste-usuario</c>.</summary>
+    public const string HeaderSub = "X-Test-Sub";
+
+    /// <summary>Nome de exibição (claim <c>name</c>); omitido, o token não traz nome.</summary>
+    public const string HeaderNome = "X-Test-Name";
+
     public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder)
         : base(options, logger, encoder)
     {
@@ -37,7 +43,14 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
         var roles = rolesHeader.ToString()
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "teste-usuario") };
+        var identificador = Request.Headers.TryGetValue(HeaderSub, out var sub) && !string.IsNullOrWhiteSpace(sub)
+            ? sub.ToString()
+            : "teste-usuario";
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, identificador) };
+
+        if (Request.Headers.TryGetValue(HeaderNome, out var nome) && !string.IsNullOrWhiteSpace(nome))
+            claims.Add(new Claim("name", nome.ToString()));
+
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var identidade = new ClaimsIdentity(claims, SchemeName);

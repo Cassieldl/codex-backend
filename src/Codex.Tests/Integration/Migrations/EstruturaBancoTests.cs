@@ -101,6 +101,7 @@ public sealed class EstruturaBancoTests
             "errosversoes", "erroscampos", "itensbusca", "termosbusca", "redirecionamentos",
             "artigos", "comunicados", "artigoscamposlayout", "artigoserros",
             "exemplos", // 003/M-a — a tabela nasce COM o trigger, então entra na lista esperada.
+            "lacunasbusca",
         ];
 
         await using var conexao = new NpgsqlConnection(_fixture.ConnectionString);
