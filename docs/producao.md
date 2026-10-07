@@ -69,6 +69,7 @@ Quatro variáveis merecem atenção porque **falham em silêncio quando erradas*
 | `AllowedHosts` | A aplicação **recusa subir** com `*` fora de Development — é proposital |
 | `ProxyReverso__KnownProxies` / `KnownNetworks` | Sem declarar o ingress que termina TLS: o HSTS não é emitido e o rate limiting vê o IP do proxy, colapsando em uma partição única. Nunca use curinga: seria aceitar IP forjado pelo cliente |
 | `CSP_CONNECT_SRC` (portal) | Sem a API e o Keycloak nesta lista, a política de segurança do navegador bloqueia o próprio login |
+| `CSP_FRAME_SRC` (portal) | Origem do Keycloak, cujo iframe verifica a sessão. Sem ela o container do portal recusa subir |
 
 ---
 
@@ -92,8 +93,31 @@ dotnet ef migrations script --idempotent \
 O script é idempotente: reaplicá-lo não repete o que já foi aplicado. Revise antes de executar —
 é a última chance de ver o DDL que vai rodar.
 
-O usuário da aplicação (`codex_user`) tem permissão mínima no schema. Rodar migration exige um
-papel com DDL, que **não** é o da aplicação.
+### Preparar o banco (uma vez, antes da primeira migration)
+
+`database/init.sql` cria as extensões, o papel `codex_user`, o schema `codex` (de propriedade dele)
+e as funções de busca de que as migrations dependem. Em banco gerenciado ele roda com o papel de
+administração da instância — no Cloud SQL, o `postgres`, que **não** é superusuário:
+
+```bash
+CODEX_APP_DB_PASSWORD='<senha do codex_user>' \
+  psql "host=<instância> dbname=codex_db user=postgres sslmode=require" \
+  -v ON_ERROR_STOP=1 -f database/init.sql
+```
+
+- Exige `psql` 15 ou mais novo (`\getenv`).
+- Avisos `no privileges were granted for ...` são esperados: as funções das extensões já são
+  executáveis por qualquer papel.
+- A senha do `codex_user` não aparece na saída.
+- Testado num Postgres 18 com o papel de bootstrap sem superusuário (`CREATEROLE`, dono do banco),
+  que é o modelo do Cloud SQL.
+
+### Quem roda a migration
+
+`codex_user` é o dono do schema `codex`, e é com ele que o script de migration roda — é o mesmo
+papel da aplicação. Ele não é superusuário e não alcança outro schema, mas pode alterar as próprias
+tabelas: separar um papel dono (DDL) de um papel da aplicação (só DML) é a melhoria natural, ainda
+não feita.
 
 ---
 

@@ -3,7 +3,8 @@
 -- Roda uma unica vez, na inicializacao do container (volume vazio), como POSTGRES_USER
 -- (superuser de bootstrap). Cria: extensoes, role de aplicacao, schema dedicado,
 -- configuracao de texto e a funcao de normalizacao de busca.
--- Copiado verbatim de modelo-dados.md §9 — nao redigitar, nao "melhorar".
+-- Origem: modelo-dados.md §9. Os desvios dele (saida descartada da senha, GRANT para Postgres
+-- gerenciado) estao comentados no ponto em que acontecem.
 -- =====================================================================================
 
 -- 1. Extensoes — exigem superuser, por isso vivem aqui e nao em migration.
@@ -19,7 +20,11 @@ CREATE EXTENSION IF NOT EXISTS fuzzystrmatch WITH SCHEMA public;
 -- dentro de dollar-quoting ($do$...$do$) — o texto chega cru ao servidor e morre em
 -- `syntax error at or near ":"`. O bloco le o valor com `current_setting`, e a senha continua
 -- fora do arquivo, vinda da variavel de ambiente do container.
+-- A saida do SELECT e descartada: ela imprime o valor, e a senha iria parar no log de quem roda
+-- o script (container, job de deploy).
+\o /dev/null
 SELECT set_config('codex.app_password', :'codex_app_password', false);
+\o
 
 DO $do$
 BEGIN
@@ -30,6 +35,12 @@ BEGIN
     END IF;
 END
 $do$;
+
+-- Quem roda este script precisa poder assumir codex_user (AUTHORIZATION e SET ROLE abaixo). Em
+-- Postgres gerenciado (Cloud SQL) o papel de bootstrap nao e superuser: desde o PG16, criar o role
+-- da ADMIN sobre ele, mas nao a pertinencia — sem este GRANT o script para no CREATE SCHEMA com
+-- "must be able to SET ROLE". Para superuser local e inocuo.
+GRANT codex_user TO CURRENT_USER;
 
 -- 3. Schema dedicado, de propriedade do role de aplicacao — codex_user tem CREATE/USAGE
 --    apenas dentro de codex, nunca em outro schema.
