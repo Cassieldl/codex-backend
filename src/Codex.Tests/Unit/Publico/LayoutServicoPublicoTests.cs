@@ -74,6 +74,42 @@ public sealed class LayoutServicoPublicoTests
             .Which.TipoItem.Should().Be("versaolayout");
     }
 
+    /// <summary>
+    /// "Novo nesta versão" compara com a versão publicada anterior. Na primeira versão do acervo não
+    /// há com o que comparar: marcar todos os campos como novos — 545 selos no Layout InvoiCy 8 — não
+    /// informa nada e tira a força do selo quando ele importar. Testado aqui, e não por HTTP, porque a
+    /// ordem das versões é global no banco compartilhado da suíte: lá a "primeira" deixa de ser.
+    /// </summary>
+    [Fact]
+    public async Task ObterVersao_PrimeiraVersaoPublicada_NaoMarcaNenhumCampoComoNovo()
+    {
+        var versao = VersaoPublicada();
+        PrepararRepositorio(versao, quantidadeDeCampos: 3);
+
+        var resultado = await _servico.ObterVersaoAsync(versao.Slug, CancellationToken.None);
+
+        resultado.Anterior.Should().BeNull();
+        resultado.CamposPorGrupo.SelectMany(grupo => grupo.Campos)
+            .Should().HaveCount(3)
+            .And.OnlyContain(campo => !campo.NovoNestaVersao);
+    }
+
+    [Fact]
+    public async Task ObterVersao_ComVersaoPublicadaAnterior_MarcaComoNovoOCampoNascidoNela()
+    {
+        var versao = VersaoPublicada();
+        var anterior = VersaoLayout.Criar("Layout Anterior", ordem: 2);
+        anterior.Publicar();
+        PrepararRepositorio(versao, quantidadeDeCampos: 1);
+        _repositorio.Setup(r => r.ListarVersoesPublicadasAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([anterior, versao]);
+
+        var resultado = await _servico.ObterVersaoAsync(versao.Slug, CancellationToken.None);
+
+        resultado.Anterior.Should().NotBeNull();
+        resultado.CamposPorGrupo.SelectMany(grupo => grupo.Campos).Single().NovoNestaVersao.Should().BeTrue();
+    }
+
     private static VersaoLayout VersaoPublicada()
     {
         var versao = VersaoLayout.Criar("Layout Cheio", ordem: 3);

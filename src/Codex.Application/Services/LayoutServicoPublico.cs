@@ -69,7 +69,7 @@ public sealed class LayoutServicoPublico : ILayoutServicoPublico
             {
                 Grupo = g.Key,
                 GrupoSlug = GerarGrupoSlug(g.Key),
-                Campos = g.OrderBy(c => c.Ordem).Select(c => MapearCampo(c, versao)).ToArray(),
+                Campos = g.OrderBy(c => c.Ordem).Select(c => MapearCampo(c, versao, existeAnterior: anterior is not null)).ToArray(),
             })
             .ToArray();
 
@@ -150,14 +150,18 @@ public sealed class LayoutServicoPublico : ILayoutServicoPublico
         TotalCampos = camposVisiveis.Count(c => CampoAtivoNaVersao(c.OrigemOrdem, c.DescontinuadoOrdem, versao.Ordem)),
     };
 
-    private static CampoLayoutPublicoDto MapearCampo(CampoLayoutVisivelBrutoDto campo, VersaoLayout versaoAlvo) => new()
+    /// <param name="existeAnterior">
+    /// "Novo" compara com a versão publicada anterior; sem ela, na primeira versão do acervo, todo campo
+    /// seria novo e o selo deixaria de dizer qualquer coisa.
+    /// </param>
+    private static CampoLayoutPublicoDto MapearCampo(CampoLayoutVisivelBrutoDto campo, VersaoLayout versaoAlvo, bool existeAnterior) => new()
     {
         Slug = campo.Slug,
         Nome = campo.Nome,
         CaminhoXml = campo.CaminhoXml,
         Significado = campo.Significado,
         Ordem = campo.Ordem,
-        NovoNestaVersao = campo.VersaoLayoutOrigemId == versaoAlvo.Id,
+        NovoNestaVersao = existeAnterior && campo.VersaoLayoutOrigemId == versaoAlvo.Id,
         DescontinuadoNestaVersao = campo.VersaoLayoutDescontinuadoId == versaoAlvo.Id,
         UrlCanonica = $"/layout/campos/{campo.Slug}",
     };
