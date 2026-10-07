@@ -25,13 +25,6 @@ namespace Codex.API.Controllers.Publico;
 [EnableRateLimiting("vitrine")]
 public sealed class HomeController : ControllerBase
 {
-    /// <summary>
-    /// Conteúdo editorial que muda em minutos, não em segundos: 60 s de cache compartilhado com
-    /// mais 5 min servindo a cópia velha enquanto revalida. Publicar um comunicado leva até um
-    /// minuto para aparecer, e é o trade-off aceito para a rota mais chamada do portal.
-    /// </summary>
-    private const string PoliticaDeCache = "public, max-age=60, stale-while-revalidate=300";
-
     private readonly IHomeServicoPublico _servico;
 
     public HomeController(IHomeServicoPublico servico)
@@ -47,7 +40,7 @@ public sealed class HomeController : ControllerBase
     {
         var home = await _servico.ObterAsync(ct);
 
-        Response.Headers[HeaderNames.CacheControl] = PoliticaDeCache;
+        Response.Headers[HeaderNames.CacheControl] = PoliticasDeCachePublico.ConteudoEditorialCurto;
 
         return Ok(new ApiResponse<HomeDto> { Data = home });
     }

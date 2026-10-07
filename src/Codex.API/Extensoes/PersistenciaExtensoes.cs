@@ -42,6 +42,11 @@ public static class PersistenciaExtensoes
         services.AddScoped<IHomeRepositorioPublico, HomeRepositorioPublico>();
         services.AddScoped<IHomeServicoPublico, HomeServicoPublico>();
 
+        // Comunicados por contexto (provedor/versão) — mesma regra de visibilidade da Home e o
+        // mesmo TimeProvider.
+        services.AddScoped<IComunicadoRepositorioPublico, ComunicadoRepositorioPublico>();
+        services.AddScoped<IComunicadoServicoPublico, ComunicadoServicoPublico>();
+
         // Escrita interna (BACK-4, analise-backend.md §4.2) — repositórios.
         services.AddScoped<IProvedorRepositorioInterno, ProvedorRepositorioInterno>();
         services.AddScoped<IVersaoProvedorRepositorioInterno, VersaoProvedorRepositorioInterno>();
@@ -52,6 +57,8 @@ public static class PersistenciaExtensoes
         services.AddScoped<IErroRepositorioInterno, ErroRepositorioInterno>();
         services.AddScoped<IArtigoRepositorioInterno, ArtigoRepositorioInterno>();
         services.AddScoped<IExemploRepositorioInterno, ExemploRepositorioInterno>();
+        services.AddScoped<ILacunaBuscaRepositorioInterno, LacunaBuscaRepositorioInterno>();
+        services.AddScoped<IVerificacaoVencidaRepositorioInterno, VerificacaoVencidaRepositorioInterno>();
         // Escrita de redirect — compartilhada pelos três services de troca de slug (P-10, I37/I43/I44).
         services.AddScoped<IRedirecionamentoRepositorio, RedirecionamentoRepositorio>();
         services.AddScoped<IUnidadeDeTrabalho, UnidadeDeTrabalhoInterna>();
@@ -66,6 +73,8 @@ public static class PersistenciaExtensoes
         services.AddScoped<IErroServicoInterno, ErroServicoInterno>();
         services.AddScoped<IArtigoServicoInterno, ArtigoServicoInterno>();
         services.AddScoped<IExemploServicoInterno, ExemploServicoInterno>();
+        services.AddScoped<ILacunaBuscaServicoInterno, LacunaBuscaServicoInterno>();
+        services.AddScoped<IVerificacaoVencidaServicoInterno, VerificacaoVencidaServicoInterno>();
         services.AddScoped<IIndiceBuscaReconstrucaoServico, IndiceBuscaReconstrucaoServico>();
 
         return services;

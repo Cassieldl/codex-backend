@@ -2,7 +2,6 @@ using Codex.Application.Common;
 using Codex.Application.DTOs.Publico;
 using Codex.Application.Interfaces;
 using Codex.Domain.Constantes;
-using Codex.Domain.Entities;
 using Codex.Domain.Enums;
 using Codex.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -21,27 +20,18 @@ public sealed class HomeRepositorioPublico : RepositorioBase<CodexDbContext>, IH
     }
 
     /// <summary>
-    /// Vigência vem de <see cref="Comunicado.EhVigenteEm"/> (dono único do predicado, §6.2) e a
-    /// visibilidade é a cascata do ALVO (§6.3): comunicado de escopo provedor/versão cujo provedor
-    /// (ou versão) ainda é rascunho nunca chega à Home — vazaria o nome de um provedor
-    /// pré-lançamento para um anônimo (PQ-04). Global não tem alvo e passa sempre.
+    /// A regra de visibilidade (vigência + cascata do alvo, §6.2/§6.3) vive em
+    /// <see cref="ComunicadosVisiveis"/>, a mesma consulta de <c>GET /comunicados</c>; aqui ficam
+    /// só a ordem e a projeção da Home.
     /// </summary>
     public async Task<IReadOnlyCollection<ComunicadoHomeBrutoDto>> ListarComunicadosVisiveisAsync(
         DateTimeOffset referencia, CancellationToken ct) =>
-        await (
-            from c in Contexto.Comunicados.AsNoTracking().Where(Comunicado.EhVigenteEm(referencia))
-            join provedor in Contexto.Provedores.AsNoTracking() on c.ProvedorId equals (int?)provedor.Id into provedorGroup
-            from provedor in provedorGroup.DefaultIfEmpty()
-            join versao in Contexto.VersoesProvedor.AsNoTracking() on c.VersaoProvedorId equals (int?)versao.Id into versaoGroup
-            from versao in versaoGroup.DefaultIfEmpty()
-            where c.Abrangencia == AbrangenciaComunicado.Global
-                || (provedor != null && provedor.Publicado && provedor.DesativadoEm == null
-                    && (c.VersaoProvedorId == null
-                        || (versao != null && versao.Publicado && versao.DesativadoEm == null)))
+        await ComunicadosVisiveis.Consultar(Contexto, referencia)
             // Mais urgente primeiro; desempate por chave única, que a projeção não carrega para
             // fora mas a ordenação precisa ter.
-            orderby c.ExpiraEm, c.Id
-            select new ComunicadoHomeBrutoDto
+            .OrderBy(c => c.ExpiraEm)
+            .ThenBy(c => c.Id)
+            .Select(c => new ComunicadoHomeBrutoDto
             {
                 Titulo = c.Titulo,
                 Corpo = c.Corpo,
@@ -49,11 +39,11 @@ public sealed class HomeRepositorioPublico : RepositorioBase<CodexDbContext>, IH
                 Abrangencia = c.Abrangencia,
                 ExpiraEm = c.ExpiraEm,
                 ProvedorId = c.ProvedorId,
-                ProvedorNome = provedor != null ? provedor.Nome : null,
-                ProvedorSlug = provedor != null ? provedor.Slug : null,
-                VersaoSlug = versao != null ? versao.Slug : null,
-            }
-        ).ToListAsync(ct);
+                ProvedorNome = c.ProvedorNome,
+                ProvedorSlug = c.ProvedorSlug,
+                VersaoSlug = c.VersaoSlug,
+            })
+            .ToListAsync(ct);
 
     public async Task<IReadOnlyCollection<ProvedorHomeBrutoDto>> ListarProvedoresPublicadosAsync(CancellationToken ct) =>
         await Contexto.Provedores.AsNoTracking()

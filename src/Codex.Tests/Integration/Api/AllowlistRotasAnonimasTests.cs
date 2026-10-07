@@ -47,6 +47,8 @@ public sealed class AllowlistRotasAnonimasTests : IClassFixture<CodexApiFactory>
         "GET api/v1/layout/campos/{campoSlug}",
         // Home — P9 (003, BACK-D). Agregado de leitura da tela inicial: só GET, nada de escrita.
         "GET api/v1/home",
+        // Comunicados por contexto (provedor/versão) — leitura da mesma regra pública da Home, só GET.
+        "GET api/v1/comunicados",
         // Sondas do orquestrador (004). Anônimas porque o probe não carrega token; são controller
         // justamente para caírem sob este detector — ver SaudeController.
         "GET api/v1/saude/vivo",

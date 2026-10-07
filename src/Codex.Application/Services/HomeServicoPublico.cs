@@ -1,6 +1,6 @@
+using Codex.Application.Common;
 using Codex.Application.DTOs.Publico;
 using Codex.Application.Interfaces;
-using Codex.Domain.Enums;
 
 namespace Codex.Application.Services;
 
@@ -53,23 +53,8 @@ public sealed class HomeServicoPublico : IHomeServicoPublico
         Abrangencia = comunicado.Abrangencia.ToString(),
         ExpiraEm = comunicado.ExpiraEm,
         ProvedorNome = comunicado.ProvedorNome,
-        Url = MontarUrl(comunicado),
+        Url = UrlComunicado.Montar(comunicado.Abrangencia, comunicado.ProvedorSlug, comunicado.VersaoSlug),
     };
-
-    /// <summary>
-    /// <c>Global</c> não tem alvo e por isso não tem URL. Nas demais, o slug do provedor só chega
-    /// aqui preenchido quando a cascata do alvo é pública (§6.3) — a ausência dele é tratada como
-    /// "sem link", nunca como uma URL pela metade.
-    /// </summary>
-    private static string? MontarUrl(ComunicadoHomeBrutoDto comunicado)
-    {
-        if (comunicado.Abrangencia == AbrangenciaComunicado.Global || string.IsNullOrWhiteSpace(comunicado.ProvedorSlug))
-            return null;
-
-        return string.IsNullOrWhiteSpace(comunicado.VersaoSlug)
-            ? $"/provedores/{comunicado.ProvedorSlug}"
-            : $"/provedores/{comunicado.ProvedorSlug}/{comunicado.VersaoSlug}";
-    }
 
     private static IReadOnlyCollection<CategoriaProvedoresDto> AgruparPorCategoria(
         IReadOnlyCollection<ProvedorHomeBrutoDto> provedores,
