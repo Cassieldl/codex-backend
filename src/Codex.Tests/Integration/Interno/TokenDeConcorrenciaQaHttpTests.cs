@@ -13,7 +13,7 @@ namespace Codex.Tests.Integration.Interno;
 /// QA da demanda 008 (R6, reteste do QA-R6-01) — complementa <c>PutSoDeFilhosMoveOTokenHttpTests</c>:
 /// (1) a conferência acontece NO BANCO (<c>UPDATE ... WHERE xmin</c>), não só na checagem prévia do
 /// service — provado com uma corrida real; (2) o que um PUT idêntico ao estado atual faz com o
-/// token; (3) o token não anda onde não deve (leitura, criação, publicação repetida); (4) o defeito à
+/// token; (3) o token não anda onde não deve (leitura, criação, publicação repetida).
 /// parte do aviso: <c>campoVersaoIds</c> é aceito e devolvido, mas nunca gravado.
 /// </summary>
 [Collection(PostgresCollection.Nome)]
@@ -199,38 +199,6 @@ public sealed class TokenDeConcorrenciaQaHttpTests : IAsyncLifetime
         TokenDe(corpoGet2).Should().Be(TokenDe(corpo));
     }
 
-    // ------------------------------------------------------------------ (4) defeito à parte: aviso
-
-    /// <summary>
-    /// DEFEITO-AVISO-01 (fora do R6): <c>campoVersaoIds</c> do aviso de versão é aceito, devolvido na
-    /// resposta do POST e descartado — <c>Aviso.CamposAfetadosIds</c> é <c>Ignore</c> no EF e nada grava
-    /// <c>avisoscampos</c>. O GET seguinte volta <c>camposAfetadosIds: []</c>. Fica pulado para não
-    /// derrubar a suíte; remover o <c>Skip</c> para ver o reprodutor falhar.
-    /// </summary>
-    [Fact(Skip = "DEFEITO-AVISO-01 (fora do R6): campoVersaoIds do aviso nunca é gravado — reprodutor aberto, ver qa-backend.md §9")]
-    public async Task Aviso_CampoVersaoIds_EGravadoELidoDeVolta()
-    {
-        var versaoProvedorId = await CriarVersaoProvedorAsync();
-        var campoVersaoId = await SemearCampoVersaoAsync(versaoProvedorId);
-
-        var (statusCriar, corpoCriar) = await EnviarAsync(HttpMethod.Post, $"/api/v1/interno/versoes/{versaoProvedorId}/avisos", new
-        {
-            severidade = nameof(Severidade.Informativo),
-            titulo = $"Aviso campos {NovoSufixo()}",
-            corpo = "Corpo do aviso.",
-            campoVersaoIds = new[] { campoVersaoId },
-        });
-        statusCriar.Should().Be(HttpStatusCode.Created, corpoCriar.ToString());
-        corpoCriar.GetProperty("data").GetProperty("camposAfetadosIds").EnumerateArray().Select(c => c.GetInt32())
-            .Should().BeEquivalentTo([campoVersaoId], because: "a resposta do POST ecoa o que foi enviado");
-
-        var (_, corpoVersao) = await EnviarAsync(HttpMethod.Get, $"/api/v1/interno/versoes/{versaoProvedorId}");
-        var aviso = corpoVersao.GetProperty("data").GetProperty("avisos").EnumerateArray().Single();
-
-        aviso.GetProperty("camposAfetadosIds").EnumerateArray().Select(c => c.GetInt32())
-            .Should().BeEquivalentTo([campoVersaoId], because: "o que o POST aceitou tem de estar no banco");
-    }
-
     // ------------------------------------------------------------------ apoio
 
     private sealed record Criado(int Id, string Nome, uint Token);
@@ -271,45 +239,6 @@ public sealed class TokenDeConcorrenciaQaHttpTests : IAsyncLifetime
 
         status.Should().Be(HttpStatusCode.Created, corpo.ToString());
         return new Criado(corpo.GetProperty("data").GetProperty("id").GetInt32(), titulo, TokenDe(corpo));
-    }
-
-    private async Task<int> CriarVersaoProvedorAsync()
-    {
-        var provedor = await CriarProvedorAsync([]);
-
-        var (statusLayout, corpoLayout) = await EnviarAsync(HttpMethod.Post, "/api/v1/interno/layout/versoes", new
-        {
-            rotulo = $"Layout token qa {NovoSufixo()}",
-            descricao = (string?)null,
-        });
-        statusLayout.Should().Be(HttpStatusCode.Created, corpoLayout.ToString());
-
-        var (status, corpo) = await EnviarAsync(HttpMethod.Post, $"/api/v1/interno/provedores/{provedor.Id}/versoes", new
-        {
-            versaoLayoutId = corpoLayout.GetProperty("data").GetProperty("id").GetInt32(),
-            rotulo = $"Versao token qa {NovoSufixo()}",
-        });
-        status.Should().Be(HttpStatusCode.Created, corpo.ToString());
-        return corpo.GetProperty("data").GetProperty("id").GetInt32();
-    }
-
-    private async Task<int> SemearCampoVersaoAsync(int versaoProvedorId)
-    {
-        await using var contexto = _fixture.CriarContexto();
-
-        var versaoLayoutId = await contexto.VersoesProvedor.AsNoTracking()
-            .Where(v => v.Id == versaoProvedorId).Select(v => v.VersaoLayoutId).SingleAsync();
-        var sufixo = NovoSufixo();
-
-        var campoLayout = Codex.Domain.Entities.CampoLayout.Criar(versaoLayoutId, $"Campo {sufixo}", $"//Campo{sufixo}", "significado", ordem: 1);
-        contexto.CamposLayout.Add(campoLayout);
-        await contexto.SaveChangesAsync();
-
-        var campoVersao = Codex.Domain.Entities.CampoVersao.Criar(versaoProvedorId, campoLayout.Id, "texto", EstadoPreenchimento.Obrigatorio);
-        contexto.CamposVersao.Add(campoVersao);
-        await contexto.SaveChangesAsync();
-
-        return campoVersao.Id;
     }
 
     private async Task<DateTimeOffset> AtualizadoEmDoProvedorAsync(int id)

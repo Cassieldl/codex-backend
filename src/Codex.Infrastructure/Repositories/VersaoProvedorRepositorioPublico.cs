@@ -130,6 +130,37 @@ public sealed class VersaoProvedorRepositorioPublico : RepositorioBase<CodexDbCo
             .Where(a => a.VersaoProvedorId == versaoProvedorId && a.Publicado && a.DesativadoEm == null)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyDictionary<int, IReadOnlyCollection<CampoAfetadoPublicoDto>>> ListarCamposAfetadosPorAvisoAsync(
+        int versaoProvedorId, IReadOnlyCollection<int> avisoIds, CancellationToken ct)
+    {
+        if (avisoIds.Count == 0)
+            return new Dictionary<int, IReadOnlyCollection<CampoAfetadoPublicoDto>>();
+
+        var ids = avisoIds.ToArray();
+
+        var vinculos = await (
+            from ac in Contexto.AvisosCampos.AsNoTracking()
+            join cv in Contexto.CamposVersao.AsNoTracking() on ac.CampoVersaoId equals cv.Id
+            join cl in Contexto.CamposLayout.AsNoTracking() on cv.CampoLayoutId equals cl.Id
+            where ids.Contains(ac.AvisoId)
+                && ac.DesativadoEm == null
+                && cv.VersaoProvedorId == versaoProvedorId
+                && cv.DesativadoEm == null
+                && cl.DesativadoEm == null
+            // Desempate pela chave única: a Ordem canônica pode empatar entre campos.
+            orderby cl.Ordem, cv.Id
+            select new { ac.AvisoId, cl.Slug, cl.Nome, cl.CaminhoXml }
+        ).ToListAsync(ct);
+
+        return vinculos
+            .GroupBy(v => v.AvisoId)
+            .ToDictionary(
+                grupo => grupo.Key,
+                grupo => (IReadOnlyCollection<CampoAfetadoPublicoDto>)grupo
+                    .Select(v => new CampoAfetadoPublicoDto { CampoLayoutSlug = v.Slug, Nome = v.Nome, CaminhoXml = v.CaminhoXml })
+                    .ToArray());
+    }
+
     public async Task<IReadOnlyCollection<ErroResumoPublicoDto>> ListarErrosAplicaveisPublicadosAsync(int versaoProvedorId, CancellationToken ct) =>
         await (
             from ev in Contexto.ErrosVersoes.AsNoTracking()

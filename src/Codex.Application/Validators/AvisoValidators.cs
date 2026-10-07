@@ -4,6 +4,12 @@ using FluentValidation;
 
 namespace Codex.Application.Validators;
 
+public static class LimitesAviso
+{
+    /// <summary>Mesmo teto de campos por versão que a página pública aceita exibir.</summary>
+    public const int MaximoCamposAfetados = 2000;
+}
+
 public sealed class CriarAvisoDeVersaoDtoValidator : AbstractValidator<CriarAvisoDeVersaoDto>
 {
     public CriarAvisoDeVersaoDtoValidator()
@@ -11,6 +17,10 @@ public sealed class CriarAvisoDeVersaoDtoValidator : AbstractValidator<CriarAvis
         RuleFor(x => x.Severidade).IsInEnum().WithMessage("Severidade inválida.");
         RuleFor(x => x.Titulo).NotEmpty().WithMessage("O título do aviso é obrigatório.").MaximumLength(200);
         RuleFor(x => x.Corpo).NotEmpty().WithMessage("O corpo do aviso é obrigatório.");
+
+        RuleFor(x => x.CampoVersaoIds)
+            .Must(campoVersaoIds => campoVersaoIds is null || campoVersaoIds.Count <= LimitesAviso.MaximoCamposAfetados)
+            .WithMessage($"Informe no máximo {LimitesAviso.MaximoCamposAfetados} campos afetados.");
     }
 }
 
@@ -39,6 +49,10 @@ public sealed class AtualizarAvisoDtoValidator : AbstractValidator<AtualizarAvis
         RuleFor(x => x.Severidade).IsInEnum().WithMessage("Severidade inválida.");
         RuleFor(x => x.Titulo).NotEmpty().WithMessage("O título do aviso é obrigatório.").MaximumLength(200);
         RuleFor(x => x.Corpo).NotEmpty().WithMessage("O corpo do aviso é obrigatório.");
+
+        RuleFor(x => x.CampoVersaoIds)
+            .Must(campoVersaoIds => campoVersaoIds is null || campoVersaoIds.Count <= LimitesAviso.MaximoCamposAfetados)
+            .WithMessage($"Informe no máximo {LimitesAviso.MaximoCamposAfetados} campos afetados.");
 
         RuleFor(x => x.CampoVersaoIds)
             .MustAsync(async (campoVersaoIds, ct) =>

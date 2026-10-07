@@ -271,6 +271,66 @@ public sealed class ProvedorServicoPublicoTests
     }
 
     [Fact]
+    public async Task ObterVersaoPaginaAsync_AvisoDeVersao_TrazIdEscopoVersaoEOsCamposAfetadosDoRepositorio()
+    {
+        var provedor = Provedor.Criar("ACME", "INV-5", CategoriaProvedor.Proprio);
+        provedor.Publicar();
+        var versao = VersaoProvedor.Criar(provedor.Id, 1, "v1");
+        versao.Publicar();
+
+        var comCampos = AvisoDeVersaoComId(versao.Id, 11, Severidade.Critico);
+        var semCampos = AvisoDeVersaoComId(versao.Id, 12, Severidade.Informativo);
+        var campoAfetado = new CampoAfetadoPublicoDto { CampoLayoutSlug = "servico-valores", Nome = "Valores", CaminhoXml = "//Servico/Valores" };
+
+        _versaoRepositorio.Setup(r => r.ObterPorSlugsAsync("acme", "v1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ProvedorVersaoBrutaDto(provedor, versao, "Layout 2024"));
+        _versaoRepositorio.Setup(r => r.ContarCamposAsync(versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync(0);
+        _versaoRepositorio.Setup(r => r.ListarCamposAsync(versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        _versaoRepositorio.Setup(r => r.ListarAvisosPublicadosDaVersaoAsync(versao.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([semCampos, comCampos]);
+        _versaoRepositorio.Setup(r => r.ListarCamposAfetadosPorAvisoAsync(
+                versao.Id, It.Is<IReadOnlyCollection<int>>(ids => ids.Order().SequenceEqual(new[] { 11, 12 })), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<int, IReadOnlyCollection<CampoAfetadoPublicoDto>> { [11] = [campoAfetado] });
+        _versaoRepositorio.Setup(r => r.ListarErrosAplicaveisPublicadosAsync(versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        _versaoRepositorio.Setup(r => r.ListarOutrasVersoesPublicadasAsync(provedor.Id, versao.Id, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+
+        var resultado = await _sut.ObterVersaoPaginaAsync("acme", "v1", CancellationToken.None);
+
+        var avisos = resultado.Avisos.ToArray();
+        avisos.Select(a => a.Id).Should().Equal(11, 12);
+        avisos.Should().OnlyContain(a => a.Escopo == "versao");
+        avisos[0].CamposAfetados.Should().Equal(campoAfetado);
+        avisos[1].CamposAfetados.Should().BeEmpty(because: "aviso sem entrada no dicionário não tem campos — lista vazia, nunca nula");
+    }
+
+    [Fact]
+    public async Task ObterDetalheAsync_AvisoDeProvedor_TrazIdEscopoProvedorESemCamposAfetados()
+    {
+        var provedor = Provedor.Criar("Prefeitura X", "INV-1", CategoriaProvedor.Nacional);
+        provedor.Publicar();
+        var aviso = Aviso.CriarDeProvedor(provedor.Id, Severidade.Alerta, "Aviso", "corpo");
+        typeof(Aviso).GetProperty(nameof(Aviso.Id))!.SetValue(aviso, 7);
+
+        _provedorRepositorio.Setup(r => r.ObterPorSlugAsync("prefeitura-x", It.IsAny<CancellationToken>())).ReturnsAsync(provedor);
+        _provedorRepositorio.Setup(r => r.ListarAvisosPublicadosDoProvedorAsync(provedor.Id, It.IsAny<CancellationToken>())).ReturnsAsync([aviso]);
+        _provedorRepositorio.Setup(r => r.ListarVersoesPublicadasAsync(provedor.Id, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+
+        var resultado = await _sut.ObterDetalheAsync("prefeitura-x", CancellationToken.None);
+
+        var avisoPublico = resultado.Avisos.Single();
+        avisoPublico.Id.Should().Be(7);
+        avisoPublico.Escopo.Should().Be("provedor");
+        avisoPublico.CamposAfetados.Should().BeEmpty();
+    }
+
+    private static Aviso AvisoDeVersaoComId(int versaoProvedorId, int avisoId, Severidade severidade)
+    {
+        var aviso = Aviso.CriarDeVersao(versaoProvedorId, severidade, $"Aviso {avisoId}", "corpo");
+        typeof(Aviso).GetProperty(nameof(Aviso.Id))!.SetValue(aviso, avisoId);
+        return aviso;
+    }
+
+    [Fact]
     public async Task ListarAsync_TamanhoPaginaAcimaDoCap_EnviaCemAoRepositorio()
     {
         FiltroProvedorPublico? filtroRecebido = null;

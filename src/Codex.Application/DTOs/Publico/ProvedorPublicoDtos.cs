@@ -67,9 +67,18 @@ public sealed record VersaoResumoMinimaDto
     public required string Rotulo { get; init; }
 }
 
-/// <summary>Aviso na visão pública — nunca expõe <c>Id</c>/FKs, só o conteúdo (compartilhado por P3 e P4).</summary>
+/// <summary>
+/// Aviso na visão pública (compartilhado por P3 e P4). Não expõe as FKs de escopo; o
+/// <see cref="Id"/> existe só para a âncora própria do aviso (<c>#aviso-{id}</c>) — aviso não tem
+/// slug, e só chega aqui o que está publicado.
+/// </summary>
 public sealed record AvisoPublicoDto
 {
+    public required int Id { get; init; }
+
+    /// <summary><c>"provedor"</c> ou <c>"versao"</c> — o que distingue os dois, nunca a cor (U8).</summary>
+    public required string Escopo { get; init; }
+
     public required string Severidade { get; init; }
 
     public required string Titulo { get; init; }
@@ -77,6 +86,22 @@ public sealed record AvisoPublicoDto
     public required string Corpo { get; init; }
 
     public required DateOnly VigenciaInicio { get; init; }
+
+    /// <summary>Sempre presente; <c>[]</c> para aviso de provedor e para aviso de versão sem campos apontados.</summary>
+    public required IReadOnlyCollection<CampoAfetadoPublicoDto> CamposAfetados { get; init; }
+}
+
+/// <summary>
+/// Campo apontado por um aviso de versão: o suficiente para rotular e linkar à linha da tabela
+/// (<c>#campo-{campoLayoutSlug}</c>). Só campo que a própria página da versão exibe.
+/// </summary>
+public sealed record CampoAfetadoPublicoDto
+{
+    public required string CampoLayoutSlug { get; init; }
+
+    public required string Nome { get; init; }
+
+    public required string CaminhoXml { get; init; }
 }
 
 /// <summary>

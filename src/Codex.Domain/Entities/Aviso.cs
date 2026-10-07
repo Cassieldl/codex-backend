@@ -106,16 +106,20 @@ public class Aviso : EntidadeAuditada
     /// <summary>
     /// Só faz sentido para aviso de escopo VERSÃO — aviso de provedor não tem contexto de
     /// versão para apontar um <see cref="CampoVersao"/> (risco #3 do DBA, modelo-dados.md §4.8).
+    /// Lista vazia em aviso de provedor é aceita: não aponta campo nenhum, e é o que o formulário
+    /// envia ao editar um aviso desse escopo. Repetidos são descartados e a ordem é crescente.
     /// </summary>
     public void SubstituirCamposAfetados(IEnumerable<int> campoVersaoIds)
     {
         ArgumentNullException.ThrowIfNull(campoVersaoIds);
 
-        if (ProvedorId is not null)
+        var idsDistintos = campoVersaoIds.Distinct().Order().ToArray();
+
+        if (ProvedorId is not null && idsDistintos.Length > 0)
             throw new RegraDeNegocioException("Aviso de escopo provedor não pode ter campos afetados.");
 
         _camposAfetadosIds.Clear();
-        _camposAfetadosIds.AddRange(campoVersaoIds);
+        _camposAfetadosIds.AddRange(idsDistintos);
     }
 
     public void Publicar()

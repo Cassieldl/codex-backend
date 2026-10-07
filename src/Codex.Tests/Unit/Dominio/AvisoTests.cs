@@ -69,6 +69,27 @@ public sealed class AvisoTests
     }
 
     [Fact]
+    public void SubstituirCamposAfetados_EmAvisoDeVersao_DescartaRepetidosEOrdenaPorId()
+    {
+        var aviso = Aviso.CriarDeVersao(20, Severidade.Critico, "Título", "Corpo");
+
+        aviso.SubstituirCamposAfetados([9, 3, 9, 5, 3]);
+
+        aviso.CamposAfetadosIds.Should().Equal(3, 5, 9);
+    }
+
+    [Fact]
+    public void SubstituirCamposAfetados_EmAvisoDeProvedor_ComListaVazia_Sucede()
+    {
+        var aviso = Aviso.CriarDeProvedor(10, Severidade.Critico, "Título", "Corpo");
+
+        var acao = () => aviso.SubstituirCamposAfetados([]);
+
+        acao.Should().NotThrow(because: "o formulário de aviso de provedor envia lista vazia ao editar");
+        aviso.CamposAfetadosIds.Should().BeEmpty();
+    }
+
+    [Fact]
     public void Criar_ComVigenciaInicioNula_UsaDataCorrente()
     {
         var aviso = Aviso.CriarDeProvedor(1, Severidade.Informativo, "T", "C");

@@ -69,4 +69,11 @@ public static class CodigosErro
     /// válido, o problema é a corrida com esta criação de campo específica.
     /// </summary>
     public const string CampoLayoutOrigemAlterado = "LAYOUT_ALTERADO";
+
+    /// <summary>
+    /// Aviso de versão apontando campo afetado que não existe, foi removido ou pertence a outra
+    /// versão (422). Aceitar gravaria um vínculo para um campo que a página da versão
+    /// não mostra, e o link do aviso levaria a lugar nenhum.
+    /// </summary>
+    public const string CampoAfetadoInvalido = "CAMPO_AFETADO_INVALIDO";
 }

@@ -2,6 +2,7 @@ using Codex.Application.Common;
 using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
 using Codex.Application.Mappings;
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Codex.Domain.Enums;
 using Codex.Domain.Exceptions;
@@ -36,8 +37,11 @@ public sealed class AvisoServicoInterno : IAvisoServicoInterno
         _ = await _versaoRepositorio.ObterPorIdAsync(versaoProvedorId, rastreada: false, ct)
             ?? throw new EntidadeNaoEncontradaException("VersaoProvedor", versaoProvedorId);
 
+        var campoVersaoIds = dto.CampoVersaoIds ?? [];
+        await ValidarCamposAfetadosAsync(versaoProvedorId, campoVersaoIds, ct);
+
         var aviso = Aviso.CriarDeVersao(versaoProvedorId, dto.Severidade, dto.Titulo, dto.Corpo, dto.VigenciaInicio);
-        aviso.SubstituirCamposAfetados(dto.CampoVersaoIds);
+        aviso.SubstituirCamposAfetados(campoVersaoIds);
 
         await SalvarComIndiceAsync(aviso, ct);
 
@@ -61,11 +65,28 @@ public sealed class AvisoServicoInterno : IAvisoServicoInterno
         var aviso = await CarregarRastreadaOuFalharAsync(id, versaoEsperada, ct);
 
         aviso.AtualizarConteudo(dto.Severidade, dto.Titulo, dto.Corpo, dto.VigenciaInicio);
+
+        // Ausente = não mexe nos campos; presente = substitui o conjunto inteiro.
         if (dto.CampoVersaoIds is not null)
+        {
+            if (aviso.VersaoProvedorId is { } versaoProvedorId)
+                await ValidarCamposAfetadosAsync(versaoProvedorId, dto.CampoVersaoIds, ct);
+
             aviso.SubstituirCamposAfetados(dto.CampoVersaoIds); // domínio lança RegraDeNegocioException (422) se o escopo for provedor.
+        }
 
         await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
         {
+            if (dto.CampoVersaoIds is not null && aviso.VersaoProvedorId is not null)
+            {
+                await _repositorio.SubstituirCamposAfetadosAsync(aviso.Id, aviso.CamposAfetadosIds, ctInterno);
+
+                // Os campos mudam sem tocar a linha do aviso: sem isto o xmin não anda e o If-Match
+                // seguinte não percebe a edição anterior.
+                _unidadeDeTrabalho.ForcarConferenciaDeConcorrencia(aviso);
+            }
+
+            await TocarVersaoDoAvisoAsync(aviso, ctInterno);
             await _repositorio.SalvarAlteracoesAsync(ctInterno);
             var (pesoA, pesoB, pesoC, pesoD) = PesosBusca.DoAviso(aviso);
             await _indiceBuscaWriter.AtualizarPesosAsync(TipoItemIndexado.aviso, aviso.Id, pesoA, pesoB, pesoC, pesoD, ctInterno);
@@ -81,6 +102,7 @@ public sealed class AvisoServicoInterno : IAvisoServicoInterno
 
         await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
         {
+            await TocarVersaoDoAvisoAsync(aviso, ctInterno);
             await _repositorio.SalvarAlteracoesAsync(ctInterno);
             await _indiceBuscaWriter.DesativarAsync(TipoItemIndexado.aviso, aviso.Id, ctInterno);
         }, ct);
@@ -94,6 +116,7 @@ public sealed class AvisoServicoInterno : IAvisoServicoInterno
 
         await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
         {
+            await TocarVersaoDoAvisoAsync(aviso, ctInterno);
             await _repositorio.SalvarAlteracoesAsync(ctInterno);
             await _indiceBuscaWriter.RecalcularVisibilidadeAsync(TipoItemBusca.Aviso, aviso.Id, ctInterno);
         }, ct);
@@ -105,11 +128,50 @@ public sealed class AvisoServicoInterno : IAvisoServicoInterno
         await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
         {
             await _repositorio.AdicionarAsync(aviso, ctInterno);
-            await _repositorio.SalvarAlteracoesAsync(ctInterno);
+            await TocarVersaoDoAvisoAsync(aviso, ctInterno);
+            await _repositorio.SalvarAlteracoesAsync(ctInterno); // gera o Id real, necessário para a junção abaixo.
+
+            if (aviso.CamposAfetadosIds.Count > 0)
+            {
+                await _repositorio.SubstituirCamposAfetadosAsync(aviso.Id, aviso.CamposAfetadosIds, ctInterno);
+                await _repositorio.SalvarAlteracoesAsync(ctInterno);
+            }
 
             var (pesoA, pesoB, pesoC, pesoD) = PesosBusca.DoAviso(aviso);
             await _indiceBuscaWriter.AtualizarPesosAsync(TipoItemIndexado.aviso, aviso.Id, pesoA, pesoB, pesoC, pesoD, ctInterno);
         }, ct);
+
+    /// <summary>
+    /// Aviso de versão é filho da página pública da versão, cuja <c>ETag</c> vem do <c>xmin</c> da
+    /// <see cref="VersaoProvedor"/>. Toda escrita nele força um <c>UPDATE</c> na versão pai, no
+    /// mesmo <c>SaveChanges</c> — sem isso, editar ou publicar o aviso deixa a página respondendo
+    /// <c>304</c> com o conteúdo velho (mesmo mecanismo dos exemplos).
+    /// </summary>
+    private async Task TocarVersaoDoAvisoAsync(Aviso aviso, CancellationToken ct)
+    {
+        if (aviso.VersaoProvedorId is not { } versaoProvedorId)
+            return;
+
+        var versao = await _versaoRepositorio.ObterPorIdAsync(versaoProvedorId, rastreada: true, ct);
+        if (versao is not null)
+            _unidadeDeTrabalho.ForcarConferenciaDeConcorrencia(versao);
+    }
+
+    /// <summary>Cada campo afetado tem de ser um campo ativo da MESMA versão do aviso — senão o link do aviso não tem alvo na página.</summary>
+    private async Task ValidarCamposAfetadosAsync(int versaoProvedorId, IReadOnlyCollection<int> campoVersaoIds, CancellationToken ct)
+    {
+        var pedidos = campoVersaoIds.Distinct().ToArray();
+        if (pedidos.Length == 0)
+            return;
+
+        var validos = await _repositorio.ListarCamposAtivosDaVersaoAsync(versaoProvedorId, pedidos, ct);
+        var invalidos = pedidos.Except(validos).Order().ToArray();
+
+        if (invalidos.Length > 0)
+            throw new RegraDeNegocioException(
+                CodigosErro.CampoAfetadoInvalido,
+                $"Campos afetados inexistentes ou de outra versão: {string.Join(", ", invalidos)}.");
+    }
 
     private async Task<Aviso> CarregarRastreadaOuFalharAsync(int id, uint versaoEsperada, CancellationToken ct)
     {

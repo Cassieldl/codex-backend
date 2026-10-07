@@ -17,8 +17,8 @@ namespace Codex.Tests.Integration.Interno;
 ///
 /// <para>
 /// Agregados expostos: provedor (aliases), erro (variantes e junções com versão e com campo) e
-/// artigo (junções com campo de layout e com erro). O aviso não entra: <c>CamposAfetadosIds</c> não
-/// é persistido por nada, então não há coleção que mude no banco.
+/// artigo (junções com campo de layout e com erro). O aviso tem a classe própria
+/// <c>AvisoCamposAfetadosHttpTests</c> (campos afetados em <c>avisoscampos</c>).
 /// </para>
 /// </summary>
 [Collection(PostgresCollection.Nome)]

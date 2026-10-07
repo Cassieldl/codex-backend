@@ -21,6 +21,9 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
     /// <summary>M22 — cap de 2000 campos por versão, defesa também na leitura (a escrita, I12, é de BACK-4).</summary>
     private const int CapCamposPorVersao = 2000;
 
+    private const string EscopoProvedor = "provedor";
+    private const string EscopoVersao = "versao";
+
     private readonly IProvedorRepositorioPublico _provedorRepositorio;
     private readonly IVersaoProvedorRepositorioPublico _versaoRepositorio;
 
@@ -55,7 +58,7 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
             Nome = provedor.Nome,
             Categoria = provedor.Categoria.ToString(),
             IdentificadorInvoicy = provedor.IdentificadorInvoicy,
-            Avisos = OrdenarAvisos(avisos).Select(MapearAviso).ToArray(),
+            Avisos = OrdenarAvisos(avisos).Select(aviso => MapearAviso(aviso, EscopoProvedor, [])).ToArray(),
             Versoes = versoes
                 .OrderByDescending(v => v.CriadoEm)
                 .Select(v => new VersaoResumoPublicoDto
@@ -98,6 +101,8 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
 
         var campos = await _versaoRepositorio.ListarCamposAsync(versao.Id, ct);
         var avisos = await _versaoRepositorio.ListarAvisosPublicadosDaVersaoAsync(versao.Id, ct);
+        var camposAfetadosPorAviso = await _versaoRepositorio.ListarCamposAfetadosPorAvisoAsync(
+            versao.Id, avisos.Select(a => a.Id).ToArray(), ct);
         var erros = await _versaoRepositorio.ListarErrosAplicaveisPublicadosAsync(versao.Id, ct);
         var outrasVersoes = await _versaoRepositorio.ListarOutrasVersoesPublicadasAsync(provedor.Id, versao.Id, ct);
         var exemplos = await _versaoRepositorio.ListarExemplosAsync(versao.Id, ct);
@@ -133,7 +138,9 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
             },
             CamposPorGrupo = camposPorGrupo,
             TotalCampos = totalCampos,
-            Avisos = OrdenarAvisos(avisos).Select(MapearAviso).ToArray(),
+            Avisos = OrdenarAvisos(avisos)
+                .Select(aviso => MapearAviso(aviso, EscopoVersao, camposAfetadosPorAviso.GetValueOrDefault(aviso.Id, [])))
+                .ToArray(),
             ErrosResumo = new ErrosResumoPublicoDto { Total = erros.Count, Itens = erros },
             OutrasVersoes = outrasVersoes
                 .OrderByDescending(v => v.CriadoEm)
@@ -168,8 +175,12 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
         })
         .ThenByDescending(a => a.VigenciaInicio);
 
-    private static AvisoPublicoDto MapearAviso(Aviso aviso) => new()
+    private static AvisoPublicoDto MapearAviso(
+        Aviso aviso, string escopo, IReadOnlyCollection<CampoAfetadoPublicoDto> camposAfetados) => new()
     {
+        Id = aviso.Id,
+        Escopo = escopo,
+        CamposAfetados = camposAfetados,
         Severidade = aviso.Severidade.ToString(),
         Titulo = aviso.Titulo,
         Corpo = aviso.Corpo,

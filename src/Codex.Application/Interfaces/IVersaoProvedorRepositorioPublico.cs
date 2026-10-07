@@ -28,6 +28,15 @@ public interface IVersaoProvedorRepositorioPublico
     /// <summary>Avisos de escopo VERSÃO desta versão, publicados e não desativados (U8 — nunca duplica os avisos de provedor de P3).</summary>
     Task<IReadOnlyCollection<Aviso>> ListarAvisosPublicadosDaVersaoAsync(int versaoProvedorId, CancellationToken ct);
 
+    /// <summary>
+    /// Campos afetados de cada aviso de <paramref name="avisoIds"/>, indexados pelo id do aviso
+    /// (avisos sem campo ficam fora do dicionário). Mesmo critério de visibilidade da tabela da
+    /// página: <c>CampoVersao</c> e <c>CampoLayout</c> ativos, e o campo tem de ser DESTA versão.
+    /// Ordenados pela <c>Ordem</c> canônica, como na tabela.
+    /// </summary>
+    Task<IReadOnlyDictionary<int, IReadOnlyCollection<CampoAfetadoPublicoDto>>> ListarCamposAfetadosPorAvisoAsync(
+        int versaoProvedorId, IReadOnlyCollection<int> avisoIds, CancellationToken ct);
+
     /// <summary>Erros publicados aplicáveis a esta versão (via <c>errosversoes</c>), para <c>errosResumo</c>.</summary>
     Task<IReadOnlyCollection<ErroResumoPublicoDto>> ListarErrosAplicaveisPublicadosAsync(int versaoProvedorId, CancellationToken ct);
 
