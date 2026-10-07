@@ -38,3 +38,21 @@ jobs:
 
       - name: Testes
         run: dotnet test --configuration Release --no-build --logger "console;verbosity=normal"
+
+      # O comando sai 0 mesmo quando acha vulnerabilidade: quem decide é a contagem no JSON. Um
+      # pacote só aparece na lista quando tem vulnerabilidade conhecida.
+      - name: Dependências sem vulnerabilidade conhecida
+        run: |
+          dotnet list package --vulnerable --include-transitive --format json > vulneraveis.json
+          jq -e '[.projects[].frameworks[]? | (.topLevelPackages[]?, .transitivePackages[]?)] | length == 0' vulneraveis.json \
+            || { jq '.projects[].frameworks[]?' vulneraveis.json; exit 1; }
+
+  imagem:
+    # A imagem nunca era construída fora da máquina de quem fazia o smoke. Construir aqui pega
+    # Dockerfile quebrado antes do deploy, que é onde ele custaria mais.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Construir a imagem da API
+        run: docker build -t codex-backend:ci .
