@@ -39,7 +39,13 @@ import {
   montarCampos,
   obrigatoriosNaNotaRegular,
 } from './transformar-campos.mjs'
-import { ARTIGOS, LAYOUT_INVOICY, PROVEDOR, ROTULO_VERSAO } from './identificacao.mjs'
+import {
+  ARTIGOS,
+  ESTADO_LAYOUT_INVOICY,
+  LAYOUT_INVOICY,
+  PROVEDOR,
+  ROTULO_VERSAO,
+} from './identificacao.mjs'
 import { lerXsd, montarVocabulario } from './transformar-layout.mjs'
 
 const PASTA_DA_CARGA = dirname(fileURLToPath(import.meta.url))
@@ -58,12 +64,26 @@ function itensDe(dados) {
 
 async function garantirLayoutInvoicy(api) {
   const { dados } = await api.chamar('GET', '/interno/layout/versoes')
-  const existente = itensDe(dados).find((versao) => versao.rotulo === LAYOUT_INVOICY.rotulo)
-  if (existente) return existente.id
+  let versao = itensDe(dados).find((item) => item.rotulo === LAYOUT_INVOICY.rotulo)
 
-  const { dados: criada } = await api.chamar('POST', '/interno/layout/versoes', LAYOUT_INVOICY)
-  console.log(`versão ${LAYOUT_INVOICY.rotulo} do Layout InvoiCy criada (id ${criada.id})`)
-  return criada.id
+  if (!versao) {
+    ;({ dados: versao } = await api.chamar('POST', '/interno/layout/versoes', LAYOUT_INVOICY))
+    console.log(`versão ${LAYOUT_INVOICY.rotulo} do Layout InvoiCy criada (id ${versao.id})`)
+  }
+
+  if (versao.estado !== ESTADO_LAYOUT_INVOICY) {
+    await api.chamar(
+      'PUT',
+      `/interno/layout/versoes/${versao.id}`,
+      { estado: ESTADO_LAYOUT_INVOICY },
+      String(versao.versaoConcorrencia),
+    )
+    console.log(
+      `versão ${LAYOUT_INVOICY.rotulo} do Layout InvoiCy: ${versao.estado} → ${ESTADO_LAYOUT_INVOICY}`,
+    )
+  }
+
+  return versao.id
 }
 
 async function garantirProvedor(api) {
