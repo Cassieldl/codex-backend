@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Codex.Tests.Integration.Interno;
 
 /// <summary>
-/// QA da demanda 008 (R6) — casos complementares a <c>ProvedorAliasesHttpTests</c> e
+/// Casos complementares a <c>ProvedorAliasesHttpTests</c> e
 /// <c>ProvedorAliasesValidacaoHttpTests</c>: a sequência real do defeito (GET → PUT com o corpo
 /// devolvido → banco) para conjunto igual/trocado/repetido em série, a conferência das LINHAS do banco
 /// (identidade e <c>desativadoem</c>, não só o texto), o efeito na busca PÚBLICA, a troca de slug

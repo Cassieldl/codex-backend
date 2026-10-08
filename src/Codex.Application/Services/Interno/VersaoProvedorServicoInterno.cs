@@ -86,7 +86,7 @@ public sealed class VersaoProvedorServicoInterno : IVersaoProvedorServicoInterno
         {
             if (trocaLayout)
             {
-                // S-01 (demanda 008): lock da linha ANTES do COUNT — serializa com um POST de
+                // Lock da linha ANTES do COUNT — serializa com um POST de
                 // campo concorrente na mesma versão. Sem o lock, o POST valida contra o layout
                 // ATUAL (lido antes deste PUT commitar) e o COUNT deste PUT roda antes do INSERT
                 // daquele POST commitar: os dois passam, e a versão fica com layout trocado E

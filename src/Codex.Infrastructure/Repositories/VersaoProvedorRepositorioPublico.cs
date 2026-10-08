@@ -42,8 +42,8 @@ public sealed class VersaoProvedorRepositorioPublico : RepositorioBase<CodexDbCo
 
     public async Task<IReadOnlyCollection<CampoVersaoProjecaoDto>> ListarCamposAsync(int versaoProvedorId, CancellationToken ct)
     {
-        // M23 (campolayout fora do índice público) é sobre a busca/página standalone do campo
-        // canônico (demanda 002) — NÃO filtra a tabela exaustiva de P4, cujo propósito é mostrar
+        // Campo canônico fora do índice público vale para a busca e a página própria do campo —
+        // NÃO filtra a tabela exaustiva de P4, cujo propósito é mostrar
         // todo campo em uso naquela versão publicada, independentemente do CampoLayout.Publicado.
         var brutos = await (
             from cv in Contexto.CamposVersao.AsNoTracking()

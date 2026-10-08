@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Codex.Tests.Integration.Interno;
 
 /// <summary>
-/// QA-R6-01 (demanda 008), pela classe: quando um PUT muda SÓ filhos ou vínculos do agregado, o EF
+/// Pela classe: quando um PUT muda SÓ filhos ou vínculos do agregado, o EF
 /// não emite <c>UPDATE</c> na linha do pai — o <c>xmin</c> não anda, o <c>WHERE xmin</c> não é
 /// conferido e um segundo PUT com o token antigo responde 200, perdendo a edição anterior sem
 /// aviso. Um teste por agregado exposto: o PUT só da coleção muda o <c>versaoConcorrencia</c>, e o

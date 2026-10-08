@@ -24,7 +24,7 @@ public sealed class VersaoProvedorRepositorioInterno : RepositorioBase<CodexDbCo
     }
 
     /// <summary>
-    /// S-01 (demanda 008): parametrizado por interpolação (<c>FromSqlInterpolated</c>/<c>ExecuteSqlInterpolatedAsync</c>
+    /// Parametrizado por interpolação (<c>FromSqlInterpolated</c>/<c>ExecuteSqlInterpolatedAsync</c>
     /// — nunca concatenação, rules/security.md A03). Sem filtro de <c>desativadoem</c> de propósito:
     /// quem chama já validou a linha antes (ela existe e está carregada); o lock é só sobre a
     /// identidade física da linha, não sobre o predicado de negócio.

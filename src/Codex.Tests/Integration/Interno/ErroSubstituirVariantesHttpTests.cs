@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Codex.Tests.Integration.Interno;
 
 /// <summary>
-/// QA-01 (demanda 008, rodada 2) — complementa <c>ErroVariantesRoundTripHttpTests</c> (que prova o
+/// Complementa <c>ErroVariantesRoundTripHttpTests</c> (que prova o
 /// caso "mesmas variantes" não crasha mais) com o caso que troca o CONJUNTO: menos variantes, e
 /// nenhuma repetida. Confirma não só que o PUT não derruba a requisição, mas que o banco fica com
 /// EXATAMENTE o conjunto novo — sem as antigas órfãs (<c>ErroRepositorioInterno.RemoverVariantesAsync</c>

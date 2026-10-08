@@ -114,7 +114,7 @@ public sealed class ErroRepositorioInterno : RepositorioBase<CodexDbContext>, IE
     }
 
     /// <summary>
-    /// Remoção explícita (QA-01, demanda 008): sem isso, chamar <c>Erro.SubstituirVariantes</c>
+    /// Remoção explícita: sem isso, chamar <c>Erro.SubstituirVariantes</c>
     /// num <see cref="Erro"/> rastreado (que já traz <see cref="Erro.Variantes"/> por
     /// <see cref="ObterPorIdAsync"/>) deixa o EF com filhos órfãos de FK obrigatória e
     /// <c>OnDelete(Restrict)</c> — <c>SaveChanges</c> lança em vez de apagar. As linhas usam o

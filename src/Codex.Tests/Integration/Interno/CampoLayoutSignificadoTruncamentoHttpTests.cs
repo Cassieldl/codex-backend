@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Codex.Tests.Integration.Interno;
 
 /// <summary>
-/// D3 (demanda 008-campos-emissor-nacional) — criar/atualizar campo canônico com <c>significado</c>
+/// Criar/atualizar campo canônico com <c>significado</c>
 /// acima de 300 caracteres derrubava a requisição inteira com <c>500</c>: o writer de índice de
 /// busca gravava o significado INTEIRO em <c>itensbusca.subtitulo</c>, <c>varchar(300)</c>
 /// (<c>IndiceBuscaWriter.CarregarMetadadosAsync</c>, caso <c>campolayout</c>), e o Postgres recusava

@@ -12,7 +12,7 @@ using Npgsql;
 namespace Codex.Tests.Integration.Interno;
 
 /// <summary>
-/// S-01 (auditoria de segurança da demanda 008) — o outro lado da corrida: o POST que cria campo de
+/// O outro lado da corrida: o POST que cria campo de
 /// versão também trava a linha da versão (<c>CampoVersaoServicoInterno.CriarAsync</c>) e REVALIDA o
 /// vínculo campo canônico↔layout sob o lock, porque o FluentValidation leu o layout ANTES de
 /// qualquer lock. Se uma troca de layout (PUT) commitar na janela entre a validação e o lock, a

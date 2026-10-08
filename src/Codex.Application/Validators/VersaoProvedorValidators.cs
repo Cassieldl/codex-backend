@@ -10,7 +10,7 @@ public sealed class CriarVersaoDtoValidator : AbstractValidator<CriarVersaoDto>
     {
         RuleFor(x => x.VersaoLayoutId).GreaterThan(0).WithMessage("A versão do layout de origem é obrigatória.");
 
-        // O-4 (auditoria de segurança da demanda 008): versoesprovedor.rotulo é varchar(80)
+        // versoesprovedor.rotulo é varchar(80)
         // (VersaoProvedorConfiguration.cs) — 160 deixava passar 81–160 e morrer em 22001 (500).
         RuleFor(x => x.Rotulo).NotEmpty().WithMessage("O rótulo da versão é obrigatório.")
             .MaximumLength(80).WithMessage("O rótulo da versão deve ter no máximo 80 caracteres.")
@@ -23,7 +23,7 @@ public sealed class AtualizarVersaoDtoValidator : AbstractValidator<AtualizarVer
 {
     public AtualizarVersaoDtoValidator()
     {
-        // O-4 (auditoria de segurança da demanda 008): mesmo teto de 80 do validator de criação —
+        // Mesmo teto de 80 do validator de criação —
         // vale a coluna, não um número arbitrário duplicado.
         RuleFor(x => x.Rotulo).NotEmpty().WithMessage("O rótulo da versão é obrigatório.")
             .MaximumLength(80).WithMessage("O rótulo da versão deve ter no máximo 80 caracteres.");

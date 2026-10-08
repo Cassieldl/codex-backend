@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Codex.Tests.Integration.Interno;
 
 /// <summary>
-/// QA da demanda 008-campos-emissor-nacional (D1) — casos complementares a
+/// Casos complementares a
 /// <see cref="TrocarLayoutDeVersaoHttpTests"/>: o token de concorrência muda depois da troca (não
 /// fica "a troca funcionou, mas o cliente não consegue encadear outra escrita sem reler"), a troca
 /// respeita o protocolo de <c>If-Match</c> desatualizado (409 antes de qualquer validação de

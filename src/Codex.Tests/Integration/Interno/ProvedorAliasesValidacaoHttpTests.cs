@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Codex.Tests.Integration.Interno;
 
 /// <summary>
-/// R6 (demanda 008) — alias com mais de 160 caracteres (<c>varchar(160)</c>) e alias repetido na
+/// Alias com mais de 160 caracteres (<c>varchar(160)</c>) e alias repetido na
 /// lista (<c>uq_codex_aliasesprovedor_provedorid_alias</c>) tinham de dar 422 em criar e atualizar,
 /// em vez de estourar no banco. Os tetos são LITERAIS (rules/tests.md): 160 passa, 161 reprova.
 ///

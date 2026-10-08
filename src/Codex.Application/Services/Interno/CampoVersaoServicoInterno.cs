@@ -56,7 +56,7 @@ public sealed class CampoVersaoServicoInterno : ICampoVersaoServicoInterno
 
         await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
         {
-            // S-01 (demanda 008): mesmo lock da troca de layout — serializa contra um PUT
+            // Mesmo lock da troca de layout — serializa contra um PUT
             // concorrente de /interno/versoes/{id} que esteja trocando versaoLayoutId.
             await _versaoRepositorio.BloquearParaAlteracaoAsync(versaoProvedorId, ctInterno);
 

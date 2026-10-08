@@ -12,7 +12,7 @@ using Npgsql;
 namespace Codex.Tests.Integration.Interno;
 
 /// <summary>
-/// S-01 (auditoria de segurança da demanda 008): a guarda <c>VERSAO_COM_CAMPOS</c> contava campos
+/// A guarda <c>VERSAO_COM_CAMPOS</c> contava campos
 /// FORA de lock — criar campo não toca a linha da versão, então o If-Match do PUT de troca de
 /// layout não detectava a corrida. Reproduz as duas interleavings com um lock de banco real
 /// (<c>SELECT ... FOR UPDATE</c> numa transação crua), não com <c>Task.Delay</c>: o teste só avança

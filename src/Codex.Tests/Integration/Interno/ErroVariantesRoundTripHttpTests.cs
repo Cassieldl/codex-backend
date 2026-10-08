@@ -8,7 +8,7 @@ using FluentAssertions;
 namespace Codex.Tests.Integration.Interno;
 
 /// <summary>
-/// QA da demanda 008-campos-emissor-nacional (D2) — reproduz o cenário de produção INTEIRO, não só
+/// Reproduz o cenário de produção INTEIRO, não só
 /// a metade que <c>DetalheErroVariantesHttpTests</c> cobre. O defeito real não era "o GET devolve
 /// array vazio": era "o formulário interno lê o GET, devolve o MESMO corpo por PUT, e o PUT apaga
 /// as variantes reais via <c>Erro.SubstituirVariantes</c>" — <c>AtualizarErroDto.Variantes</c> tem

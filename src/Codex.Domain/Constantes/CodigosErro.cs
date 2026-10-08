@@ -46,7 +46,7 @@ public static class CodigosErro
 
     /// <summary>
     /// I8b trocando <c>VersaoLayoutId</c> para um layout inexistente ou desativado
-    /// (demanda 008-campos-emissor-nacional, 422). Distinto de <see cref="VersaoLayoutDespublicada"/>
+    /// (422). Distinto de <see cref="VersaoLayoutDespublicada"/>
     /// (410, layout existe mas não publicado) — aqui o layout não é um destino válido de jeito
     /// nenhum.
     /// </summary>
@@ -54,7 +54,7 @@ public static class CodigosErro
 
     /// <summary>
     /// I8b trocando <c>VersaoLayoutId</c> de uma versão de provedor que já tem
-    /// <c>CampoVersao</c> cadastrado (demanda 008-campos-emissor-nacional, 422). Cada campo da
+    /// <c>CampoVersao</c> cadastrado (422). Cada campo da
     /// versão só existe porque o campo canônico tem origem EXATAMENTE no layout atual
     /// (<c>CampoVersaoRepositorioInterno.CampoLayoutEstaAtivoNaVersaoDoProvedorAsync</c>) — trocar
     /// o layout com campos já cadastrados quebraria esse vínculo em silêncio.
@@ -62,7 +62,7 @@ public static class CodigosErro
     public const string VersaoComCampos = "VERSAO_COM_CAMPOS";
 
     /// <summary>
-    /// S-01 (auditoria de segurança da demanda 008, 422): criação de campo de versão revalidada
+    /// 422: criação de campo de versão revalidada
     /// SOB LOCK da versão descobre que o layout de origem mudou entre a validação (FluentValidation,
     /// antes do service) e a escrita — a troca de layout (PUT da versão) comitou no meio da janela.
     /// Código próprio, não <see cref="VersaoLayoutInvalida"/>: aqui o layout de DESTINO da troca é

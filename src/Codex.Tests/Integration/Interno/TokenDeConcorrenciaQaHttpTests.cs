@@ -10,7 +10,7 @@ using Npgsql;
 namespace Codex.Tests.Integration.Interno;
 
 /// <summary>
-/// QA da demanda 008 (R6, reteste do QA-R6-01) — complementa <c>PutSoDeFilhosMoveOTokenHttpTests</c>:
+/// Complementa <c>PutSoDeFilhosMoveOTokenHttpTests</c>:
 /// (1) a conferência acontece NO BANCO (<c>UPDATE ... WHERE xmin</c>), não só na checagem prévia do
 /// service — provado com uma corrida real; (2) o que um PUT idêntico ao estado atual faz com o
 /// token; (3) o token não anda onde não deve (leitura, criação, publicação repetida).

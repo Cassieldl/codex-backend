@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Codex.Tests.Integration.Interno;
 
 /// <summary>
-/// R6 (demanda 008) — aliases do provedor pela HTTP real. Dois defeitos juntos:
+/// Aliases do provedor pela HTTP real. Dois defeitos juntos:
 /// <c>GET /interno/provedores/{id}</c> devolvia <c>aliases: []</c> com aliases no banco (o
 /// <c>ObterPorIdAsync</c> nunca os incluía), e o PUT inseria os novos sem apagar os antigos
 /// (<c>SubstituirAliases</c> operava sobre uma coleção não carregada). Incluir só na leitura teria

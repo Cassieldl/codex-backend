@@ -39,7 +39,7 @@ public sealed class AtualizarProvedorDtoValidator : AbstractValidator<AtualizarP
 
 /// <summary>
 /// Regras de alias compartilhadas por criar e atualizar provedor — cada uma recusa com 422 o que o
-/// banco recusaria com 500 (R6, demanda 008).
+/// banco recusaria com 500.
 /// </summary>
 internal static class RegrasDeAliasProvedor
 {

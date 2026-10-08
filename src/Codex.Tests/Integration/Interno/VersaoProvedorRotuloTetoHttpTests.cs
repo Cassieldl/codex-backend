@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Codex.Tests.Integration.Interno;
 
 /// <summary>
-/// O-4 (auditoria de segurança da demanda 008): <c>versoesprovedor.rotulo</c> é <c>varchar(80)</c>
+/// <c>versoesprovedor.rotulo</c> é <c>varchar(80)</c>
 /// (<c>VersaoProvedorConfiguration.cs</c>), mas os validators aceitavam até 160 — um rótulo de
 /// 81 a 160 caracteres passava na validação e morria em <c>22001</c> no banco (<c>500 ERRO_INTERNO</c>
 /// genérico em vez de <c>422</c>). O teste de fronteira usa o LITERAL (80/81), nunca a constante

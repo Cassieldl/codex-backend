@@ -75,7 +75,7 @@ public sealed class ErroServicoInterno : IErroServicoInterno
 
         await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
         {
-            // QA-01 (demanda 008): remove as VarianteMensagem antigas ANTES de
+            // Remove as VarianteMensagem antigas ANTES de
             // SubstituirVariantes mutar a coleção de navegação — senão o EF tenta "severar" filhos
             // de FK obrigatória com OnDelete(Restrict) e o SaveChanges lança.
             await _repositorio.RemoverVariantesAsync(erro.Id, ctInterno);

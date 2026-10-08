@@ -7,7 +7,7 @@ using FluentAssertions;
 namespace Codex.Tests.Integration.Interno;
 
 /// <summary>
-/// QA da demanda 008-campos-emissor-nacional (D3), ponto 3 do despacho de reteste: o truncamento de
+/// O truncamento de
 /// <c>itensbusca.subtitulo</c> (<see cref="Codex.Infrastructure.Busca.TruncamentoExibicao"/>) é só de
 /// EXIBIÇÃO — o texto indexado para busca (<c>pesoC</c>, derivado do <c>Significado</c> inteiro em
 /// <c>PesosBusca.DoCampoLayout</c>) nunca é tocado. Este teste prova isso ponta a ponta: cria um campo

@@ -33,7 +33,7 @@ public static class TruncamentoExibicao
     }
 
     /// <summary>
-    /// S-02 (auditoria de segurança da demanda 008, D3): um corte por posição (índice UTF-16) pode
+    /// Um corte por posição (índice UTF-16) pode
     /// terminar bem no meio de um par substituto — emoji e boa parte do plano suplementar Unicode
     /// exigem dois <c>char</c> (dois code units para representar um único emoji, ex. 😀), e a
     /// metade ALTA sozinha não é um caractere Unicode válido. O Npgsql grava UTF-8 estrito
