@@ -4,58 +4,51 @@ using FluentAssertions;
 namespace Codex.Tests.Unit.Api;
 
 /// <summary>
-/// O ETag de leitura pública precisa mudar quando muda o FORMATO da resposta, não só o dado.
-///
-/// <para>
-/// O defeito que motivou isto não se reproduz numa execução só: ele vive entre duas builds. O
-/// servidor ganhou um campo no DTO, nenhuma linha do banco mudou, o <c>xmin</c> continuou igual —
-/// e todo cliente com a resposta anterior em cache revalidou, levou <c>304</c> e seguiu servindo o
-/// corpo velho. A página de versão quebrou inteira lendo o campo que o corpo em cache não tinha.
-/// Por isso o caso compara duas versões de binário explicitamente, em vez de conferir o valor de
-/// uma só.
-/// </para>
+/// A ETag de leitura pública precisa mudar quando muda o que o cliente recebe — o dado de qualquer
+/// tabela que a página reúna, ou o formato da resposta depois de um deploy — e só então.
 /// </summary>
 public sealed class ETagDeConteudoTests
 {
+    private sealed record Pagina(string Titulo, IReadOnlyCollection<string> Erros);
+
     [Fact]
-    public void MesmoDado_EmBuildsDiferentes_GeraETagsDiferentes()
+    public void MesmoCorpo_EmBuildsDiferentes_GeraETagsDiferentes()
     {
-        const uint mesmoDado = 1066;
+        var corpo = new Pagina("0.20", ["E0595"]);
 
-        var antes = ETagDeConteudo.Montar("aaaaaaaa", mesmoDado);
-        var depois = ETagDeConteudo.Montar("bbbbbbbb", mesmoDado);
-
-        antes.Should().NotBe(depois,
-            because: "o formato da resposta pode ter mudado no deploy, e o dado não denuncia isso");
+        ETagDeConteudo.MontarDoCorpo("aaaaaaaa", corpo).Should().NotBe(ETagDeConteudo.MontarDoCorpo("bbbbbbbb", corpo),
+            because: "o formato da resposta pode ter mudado no deploy");
     }
 
     [Fact]
-    public void DadosDiferentes_NaMesmaBuild_GeramETagsDiferentes()
+    public void CorpoComUmErroAMais_NaMesmaBuild_GeraETagDiferente()
     {
-        var antes = ETagDeConteudo.Montar("aaaaaaaa", 1066);
-        var depois = ETagDeConteudo.Montar("aaaaaaaa", 1067);
+        // O caso que motivou o hash: a linha da versão é a mesma, e o que mudou foi um filho.
+        var antes = ETagDeConteudo.MontarDoCorpo("aaaaaaaa", new Pagina("0.20", []));
+        var depois = ETagDeConteudo.MontarDoCorpo("aaaaaaaa", new Pagina("0.20", ["E0595"]));
 
-        antes.Should().NotBe(depois, because: "é o que o ETag já fazia, e não pode ter se perdido");
+        antes.Should().NotBe(depois);
     }
 
     [Fact]
-    public void MesmoDado_NaMesmaBuild_GeraOMesmoETag()
+    public void CorposIguais_EmInstanciasDiferentes_GeramAMesmaETag()
     {
-        // O controle positivo: sem ele, um ETag aleatório passaria nos dois casos acima e
-        // destruiria o cache por completo.
-        ETagDeConteudo.Montar("aaaaaaaa", 1066).Should().Be(ETagDeConteudo.Montar("aaaaaaaa", 1066));
+        // O controle positivo: sem ele, uma ETag aleatória passaria nos casos acima e destruiria o
+        // cache por completo.
+        ETagDeConteudo.MontarDoCorpo("aaaaaaaa", new Pagina("0.20", ["E0595"]))
+            .Should().Be(ETagDeConteudo.MontarDoCorpo("aaaaaaaa", new Pagina("0.20", ["E0595"])));
     }
 
     [Fact]
     public void ETag_EhFraca_NoFormatoQueOClienteDevolveEmIfNoneMatch()
     {
-        ETagDeConteudo.Montar("aaaaaaaa", 1066).Should().Be("W/\"aaaaaaaa-1066\"");
+        ETagDeConteudo.MontarDoCorpo("aaaaaaaa", new Pagina("0.20", []))
+            .Should().MatchRegex("^W/\"aaaaaaaa-[0-9a-f]{16}\"$");
     }
 
     [Fact]
     public void VersaoDoBinario_NaoEhVazia()
     {
-        // Vazia, a combinação degeneraria para o comportamento antigo sem nada acusar.
         ETagDeConteudo.VersaoDoBinario.Should().NotBeNullOrWhiteSpace();
     }
 }

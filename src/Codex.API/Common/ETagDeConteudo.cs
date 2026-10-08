@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace Codex.API.Common;
 
@@ -27,13 +29,21 @@ public static class ETagDeConteudo
     public static readonly string VersaoDoBinario =
         typeof(ETagDeConteudo).Assembly.ManifestModule.ModuleVersionId.ToString("N")[..8];
 
-    /// <summary>ETag fraca para um recurso cuja versão de dado é <paramref name="versaoDoDado"/>.</summary>
-    public static string Montar(uint versaoDoDado) => Montar(VersaoDoBinario, versaoDoDado);
-
     /// <summary>
-    /// A composição, com a versão de binário explícita. Só o defeito que este tipo fecha vive
-    /// <b>entre</b> duas builds, e é esta sobrecarga que torna as duas observáveis de uma vez.
+    /// ETag fraca tirada do <b>corpo</b> da resposta, para página que reúne o que não é linha dela.
+    /// A página da versão mostra avisos, campos e erros: com a ETag do <c>xmin</c> da versão, publicar
+    /// um erro ou ligá-lo a um campo não mudava nada, e o cliente seguia com 304 e o corpo antigo.
+    /// O hash cobre toda mudança visível, venha de que tabela vier. A página já é montada inteira
+    /// antes da comparação, então o hash não acrescenta consulta — só a serialização.
     /// </summary>
-    public static string Montar(string versaoDoBinario, uint versaoDoDado) =>
-        $"W/\"{versaoDoBinario}-{versaoDoDado}\"";
+    public static string MontarDoCorpo<T>(T corpo) =>
+        MontarDoCorpo(VersaoDoBinario, corpo);
+
+    /// <summary>A composição com a versão de binário explícita, pelo mesmo motivo de da versão de binário: o defeito que ela fecha vive <b>entre</b> duas builds, e é esta sobrecarga que torna as duas observáveis de uma vez.</summary>
+    public static string MontarDoCorpo<T>(string versaoDoBinario, T corpo)
+    {
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(corpo, JsonSerializerOptions.Web);
+        var resumo = Convert.ToHexString(SHA256.HashData(bytes))[..16].ToLowerInvariant();
+        return $"W/\"{versaoDoBinario}-{resumo}\"";
+    }
 }
