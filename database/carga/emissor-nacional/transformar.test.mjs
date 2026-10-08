@@ -7,8 +7,10 @@ import {
   caminhoParaLeitor,
   codigosSomenteRtc,
   derivarTitulo,
+  indexarCamposPorCaminhoDps,
   montarErros,
   origemDoCodigo,
+  planejarAtualizacaoDeErro,
   rejeicoesSomenteAnexoI,
 } from './transformar.mjs'
 
@@ -135,4 +137,113 @@ test('rejeição só do Anexo I vira erro com a mensagem e o caminho, sem invent
   assert.equal(erro.origem, 'Prefeitura')
   assert.deepEqual(erro.variantes, ['Dedução não permitida com regime especial.'])
   assert.equal(erro.causaProvavel, 'Onde: DPS/infDPS/valores/vDedRed')
+})
+
+const VOCABULARIO = [
+  {
+    caminhoCompleto: 'Envio/RPS/Servico/Valores/ValAliqISS',
+    nome: 'ValAliqISS',
+    caminhoXml: '//Servico/Valores/ValAliqISS',
+  },
+]
+const TAGS = [
+  {
+    caminho: 'DPS/infDPS/valores/trib/tribMun/pAliq',
+    caminhoInvoicy: 'Envio/RPS/Servico/Valores/ValAliqISS',
+  },
+  // Tag cujo campo não está no vocabulário (em confirmação com o InvoiCy): não tem para onde apontar.
+  { caminho: 'DPS/infDPS/subst/chSubstda', caminhoInvoicy: 'Envio/RPS/tpOper/SubsChave' },
+]
+const INDICE = indexarCamposPorCaminhoDps(TAGS, VOCABULARIO)
+
+test('o caminho da DPS que o mapeamento conhece aponta o campo do InvoiCy, antes do caminho', () => {
+  const [erro] = montarErros(
+    [rejeicao({ xpath: 'NFSe/infNFSe/DPS/infDPS/valores/trib/tribMun/pAliq', regra: null })],
+    { camposPorCaminhoDps: INDICE },
+  )
+  assert.equal(
+    erro.causaProvavel,
+    'No InvoiCy: ValAliqISS (//Servico/Valores/ValAliqISS)\nOnde: DPS/infDPS/valores/trib/tribMun/pAliq',
+  )
+  assert.deepEqual(erro.camposRelacionados, ['Envio/RPS/Servico/Valores/ValAliqISS'])
+})
+
+test('caminho da Sefin sem infDPS casa com o mapeamento, que sempre o traz', () => {
+  const [erro] = montarErros([rejeicao({ xpath: 'DPS/valores/trib/tribMun/pAliq' })], {
+    camposPorCaminhoDps: INDICE,
+  })
+  assert.deepEqual(erro.camposRelacionados, ['Envio/RPS/Servico/Valores/ValAliqISS'])
+})
+
+test('campo em confirmação com o InvoiCy não vira vínculo', () => {
+  const [erro] = montarErros([rejeicao({ xpath: 'NFSe/infNFSe/DPS/infDPS/subst/chSubstda' })], {
+    camposPorCaminhoDps: INDICE,
+  })
+  assert.deepEqual(erro.camposRelacionados, [])
+  assert.doesNotMatch(erro.causaProvavel, /No InvoiCy/)
+})
+
+test('valor da NFS-e gerada explica que é calculado pela Sefin, não preenchido no InvoiCy', () => {
+  const [erro] = montarErros([rejeicao({ xpath: 'NFSe/infNFSe/cLocIncid', regra: null })], {
+    camposPorCaminhoDps: INDICE,
+  })
+  assert.match(erro.causaProvavel, /^Onde: NFSe\/infNFSe\/cLocIncid\nValor calculado pela Sefin/)
+})
+
+test('a causa anterior ao vínculo é a de sempre, para a carga reconhecer o que ela mesma gravou', () => {
+  const rejeicoes = [
+    rejeicao({ xpath: 'NFSe/infNFSe/DPS/infDPS/valores/trib/tribMun/pAliq' }),
+    rejeicao({ xpath: 'NFSe/infNFSe/cLocIncid', mensagem: 'Outra mensagem.' }),
+  ]
+  const [semIndice] = montarErros(rejeicoes)
+  const [comIndice] = montarErros(rejeicoes, { camposPorCaminhoDps: INDICE })
+
+  assert.equal(comIndice.causaProvavelAnterior, semIndice.causaProvavel)
+  assert.notEqual(comIndice.causaProvavel, semIndice.causaProvavel)
+})
+
+const DETALHE = {
+  origem: 'Prefeitura',
+  titulo: 'Alíquota acima de 5%.',
+  causaProvavel: 'Onde: DPS/infDPS/valores/trib/tribMun/pAliq',
+  solucaoSugerida: 'Escrita na área interna.',
+  variantes: ['Não é permitido informar alíquota superior a 5%.'],
+  versoesProvedorIds: [8, 9],
+  camposLayoutIds: [3],
+}
+const DESEJADO = {
+  causaProvavel:
+    'No InvoiCy: ValAliqISS (//Servico/Valores/ValAliqISS)\nOnde: DPS/infDPS/valores/trib/tribMun/pAliq',
+  causaProvavelAnterior: 'Onde: DPS/infDPS/valores/trib/tribMun/pAliq',
+}
+
+test('causa ainda da carga é reescrita, e o resto do erro volta como está', () => {
+  const { corpo, causaPreservada } = planejarAtualizacaoDeErro(DETALHE, DESEJADO, [7])
+
+  assert.equal(causaPreservada, false)
+  assert.deepEqual(corpo, {
+    origem: 'Prefeitura',
+    titulo: 'Alíquota acima de 5%.',
+    causaProvavel: DESEJADO.causaProvavel,
+    solucaoSugerida: 'Escrita na área interna.',
+    variantes: ['Não é permitido informar alíquota superior a 5%.'],
+    versoesProvedorIds: [8, 9],
+    camposLayoutIds: [3, 7],
+  })
+})
+
+test('causa editada na área interna não é tocada', () => {
+  const editado = { ...DETALHE, causaProvavel: 'Texto melhor, escrito pelo suporte.' }
+  const { corpo, causaPreservada } = planejarAtualizacaoDeErro(editado, DESEJADO, [7])
+
+  assert.equal(causaPreservada, true)
+  assert.equal(corpo.causaProvavel, 'Texto melhor, escrito pelo suporte.')
+  assert.deepEqual(corpo.camposLayoutIds, [3, 7])
+})
+
+test('vínculo feito à mão fica, e erro já em dia não gera escrita', () => {
+  const emDia = { ...DETALHE, causaProvavel: DESEJADO.causaProvavel, camposLayoutIds: [3, 7] }
+
+  assert.equal(planejarAtualizacaoDeErro(emDia, DESEJADO, [7]).corpo, null)
+  assert.deepEqual(planejarAtualizacaoDeErro(emDia, DESEJADO, []).corpo, null)
 })

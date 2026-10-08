@@ -55,15 +55,59 @@ export function caminhoParaLeitor(xpath) {
     : xpath
 }
 
-function descreverOcorrencia(rejeicao) {
+/** O material da Sefin às vezes omite o `infDPS` (`DPS/valores/...`); o mapeamento sempre o traz. */
+export function normalizarCaminhoDps(caminho) {
+  return caminho.replace(/^DPS\/(?!infDPS\/)/, 'DPS/infDPS/')
+}
+
+/**
+ * Caminho da DPS → campos canônicos do InvoiCy que o alimentam, pelo mapeamento das telas do
+ * provedor. Só entra campo que está no vocabulário: o que espera confirmação do InvoiCy não tem
+ * campo para apontar.
+ */
+export function indexarCamposPorCaminhoDps(tags, vocabulario) {
+  const porCaminhoCompleto = new Map(vocabulario.map((campo) => [campo.caminhoCompleto, campo]))
+  const indice = new Map()
+  for (const tag of tags) {
+    const campo = tag.caminhoInvoicy && porCaminhoCompleto.get(tag.caminhoInvoicy)
+    if (!campo || !tag.caminho) continue
+
+    const chave = normalizarCaminhoDps(tag.caminho)
+    const campos = indice.get(chave) ?? []
+    if (!campos.includes(campo)) campos.push(campo)
+    indice.set(chave, campos)
+  }
+  return indice
+}
+
+const NOTA_VALOR_CALCULADO =
+  'Valor calculado pela Sefin ao gerar a NFS-e, não preenchido no InvoiCy: a rejeição vem dos ' +
+  'dados enviados que entram nesse cálculo.'
+
+/**
+ * Uma ocorrência da rejeição em texto. O caminho da DPS é o que a Sefin cita e o que o suporte usa
+ * com ela; quem integra precisa do campo do InvoiCy, que vem antes quando o mapeamento o conhece.
+ * Sem índice, sai o formato anterior ao vínculo — é com ele que a sincronização reconhece a causa
+ * que ainda é da carga.
+ */
+function descreverOcorrencia(rejeicao, camposPorCaminhoDps) {
   const caminho = caminhoParaLeitor(rejeicao.xpath)
   const regra = rejeicao.regra?.trim()
+  const campos = caminho ? (camposPorCaminhoDps.get(normalizarCaminhoDps(caminho)) ?? []) : []
   const linhas = []
   if (regra) linhas.push(`Regra da Sefin: ${regra}`)
+  for (const campo of campos) linhas.push(`No InvoiCy: ${campo.nome} (${campo.caminhoXml})`)
   if (caminho) linhas.push(`Onde: ${caminho}`)
+  if (camposPorCaminhoDps.size > 0 && caminho?.startsWith(PREFIXO_NFSE_ATE_DPS))
+    linhas.push(NOTA_VALOR_CALCULADO)
   if (rejeicao.contexto === 'Evento do emitente')
     linhas.push('Ocorre no envio de evento, não na emissão da DPS.')
-  return linhas.join('\n')
+  return { texto: linhas.join('\n'), campos }
+}
+
+function juntarCausas(textos) {
+  const distintos = [...new Set(textos.filter(Boolean))]
+  return distintos.length ? distintos.join('\n\n') : null
 }
 
 function exigirLimite(valor, limite, descricao) {
@@ -103,7 +147,10 @@ export function rejeicoesSomenteAnexoI(diferencas) {
  * `codigosForaDaVersao` remove as rejeições que o leiaute da versão não tem — as que só existem
  * no RTC não se aplicam a uma versão que envia o leiaute vigente.
  */
-export function montarErros(rejeicoes, { codigosForaDaVersao = [] } = {}) {
+export function montarErros(
+  rejeicoes,
+  { codigosForaDaVersao = [], camposPorCaminhoDps = new Map() } = {},
+) {
   const excluidos = new Set(codigosForaDaVersao)
   const porCodigo = new Map()
   for (const rejeicao of rejeicoes) {
@@ -116,7 +163,15 @@ export function montarErros(rejeicoes, { codigosForaDaVersao = [] } = {}) {
 
   return [...porCodigo.entries()].map(([codigo, ocorrencias]) => {
     const variantes = [...new Set(ocorrencias.map((ocorrencia) => ocorrencia.mensagem.trim()))]
-    const causas = [...new Set(ocorrencias.map(descreverOcorrencia).filter(Boolean))]
+    const descricoes = ocorrencias.map((ocorrencia) =>
+      descreverOcorrencia(ocorrencia, camposPorCaminhoDps),
+    )
+    const causa = juntarCausas(descricoes.map((descricao) => descricao.texto))
+    const camposRelacionados = [
+      ...new Set(
+        descricoes.flatMap((descricao) => descricao.campos.map((campo) => campo.caminhoCompleto)),
+      ),
+    ]
 
     return {
       codigo,
@@ -125,9 +180,11 @@ export function montarErros(rejeicoes, { codigosForaDaVersao = [] } = {}) {
       variantes: variantes.map((texto) =>
         exigirLimite(texto, LIMITE_VARIANTE, `Variante de ${codigo}`),
       ),
-      causaProvavel: causas.length
-        ? exigirLimite(causas.join('\n\n'), LIMITE_CAUSA, `Causa provável de ${codigo}`)
-        : null,
+      causaProvavel: causa && exigirLimite(causa, LIMITE_CAUSA, `Causa provável de ${codigo}`),
+      causaProvavelAnterior: juntarCausas(
+        ocorrencias.map((ocorrencia) => descreverOcorrencia(ocorrencia, new Map()).texto),
+      ),
+      camposRelacionados,
     }
   })
 }
@@ -215,4 +272,39 @@ export function montarAvisos() {
   for (const aviso of avisos)
     exigirLimite(aviso.corpo, LIMITE_CORPO_AVISO, `Corpo do aviso "${aviso.titulo}"`)
   return avisos
+}
+
+/**
+ * O que a carga muda num erro que já existe. A causa só é reescrita se ainda for texto da carga —
+ * no formato atual ou no anterior ao vínculo com o InvoiCy —: causa editada na área interna fica.
+ * Campos relacionados só são acrescentados, nunca retirados: vínculo feito à mão também fica. O
+ * resto do erro volta como está, porque o PUT substitui o registro inteiro.
+ */
+export function planejarAtualizacaoDeErro(detalhe, desejado, camposLayoutIdsDesejados) {
+  const causaDaCarga =
+    detalhe.causaProvavel === desejado.causaProvavel ||
+    detalhe.causaProvavel === desejado.causaProvavelAnterior
+  const causaProvavel = causaDaCarga ? desejado.causaProvavel : detalhe.causaProvavel
+  const camposLayoutIds = [
+    ...new Set([...detalhe.camposLayoutIds, ...camposLayoutIdsDesejados]),
+  ].sort((a, b) => a - b)
+
+  const mudou =
+    causaProvavel !== detalhe.causaProvavel ||
+    camposLayoutIds.length !== detalhe.camposLayoutIds.length
+
+  return {
+    causaPreservada: !causaDaCarga,
+    corpo: mudou
+      ? {
+          origem: detalhe.origem,
+          titulo: detalhe.titulo,
+          causaProvavel,
+          solucaoSugerida: detalhe.solucaoSugerida,
+          variantes: detalhe.variantes,
+          versoesProvedorIds: detalhe.versoesProvedorIds,
+          camposLayoutIds,
+        }
+      : null,
+  }
 }

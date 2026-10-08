@@ -5,8 +5,8 @@
  *   CODEX_DEV_USUARIO=... CODEX_DEV_SENHA=... node database/carga/emissor-nacional/importar.mjs <pasta-do-material>
  *
  * Sincroniza, em vez de só criar: cria o que falta, corrige o texto do que mudou e remove o que
- * deixou de valer para a versão — pode rodar de novo a qualquer momento. Nada é publicado: o
- * provedor fica oculto até o InvoiCy responder pelos campos pendentes (relatório da demanda 008).
+ * deixou de valer para a versão — pode rodar de novo a qualquer momento. Nada é publicado aqui:
+ * publicar é decisão editorial, feita por publicar.mjs.
  *
  * A versão 0.20 envia o leiaute vigente (Anexo I v1.01), não o RTC: os erros são os do material
  * menos os exclusivos do RTC, mais os exclusivos do Anexo I. Os campos vêm do mapeamento do
@@ -29,8 +29,10 @@ import { sincronizarCamposDaVersao, sincronizarVocabulario } from './sincronizar
 import {
   INTRODUCAO_VERSAO,
   codigosSomenteRtc,
+  indexarCamposPorCaminhoDps,
   montarAvisos,
   montarErros,
+  planejarAtualizacaoDeErro,
   rejeicoesSomenteAnexoI,
 } from './transformar.mjs'
 import {
@@ -186,22 +188,58 @@ async function sincronizarAvisos(api, versaoId, avisos) {
  * Só considera os erros já vinculados a este provedor: código de erro não é único entre
  * provedores, e o mesmo código registrado para outro provedor não pode impedir a criação deste.
  */
-async function sincronizarErros(api, provedorSlug, versaoId, erros) {
+async function sincronizarErros(api, provedorSlug, versaoId, erros, idPorCaminho) {
   const existentes = await api.listarTudo(
     `/interno/erros?provedor=${encodeURIComponent(provedorSlug)}`,
   )
-  const codigosExistentes = new Set(existentes.map((erro) => erro.codigo))
+  const idPorCodigo = new Map(existentes.map((erro) => [erro.codigo, erro.id]))
+  const codigosExistentes = new Set(idPorCodigo.keys())
   const codigosDesejados = new Set(erros.map((erro) => erro.codigo))
+
+  const idsDosCampos = (erro) =>
+    erro.camposRelacionados.map((caminho) => {
+      const id = idPorCaminho.get(caminho)
+      if (!id)
+        throw new Error(`${erro.codigo} aponta para ${caminho}, que não está no vocabulário.`)
+      return id
+    })
 
   const novos = erros.filter((erro) => !codigosExistentes.has(erro.codigo))
   for (const [indice, erro] of novos.entries()) {
     await api.chamar('POST', '/interno/erros', {
-      ...erro,
+      codigo: erro.codigo,
+      origem: erro.origem,
+      titulo: erro.titulo,
+      causaProvavel: erro.causaProvavel,
+      variantes: erro.variantes,
       versoesProvedorIds: [versaoId],
-      camposLayoutIds: [],
+      camposLayoutIds: idsDosCampos(erro),
     })
     if ((indice + 1) % 50 === 0) console.log(`  erros: ${indice + 1}/${novos.length}`)
   }
+
+  let atualizados = 0
+  const causasPreservadas = []
+  for (const erro of erros.filter((desejado) => codigosExistentes.has(desejado.codigo))) {
+    const { dados: detalhe } = await api.chamar(
+      'GET',
+      `/interno/erros/${idPorCodigo.get(erro.codigo)}`,
+    )
+    const { corpo, causaPreservada } = planejarAtualizacaoDeErro(detalhe, erro, idsDosCampos(erro))
+    if (causaPreservada && detalhe.causaProvavel !== erro.causaProvavel)
+      causasPreservadas.push(erro.codigo)
+    if (!corpo) continue
+
+    await api.chamar(
+      'PUT',
+      `/interno/erros/${detalhe.id}`,
+      corpo,
+      String(detalhe.versaoConcorrencia),
+    )
+    atualizados++
+  }
+  if (causasPreservadas.length)
+    console.warn(`  causa editada na área interna, mantida: ${causasPreservadas.join(', ')}`)
 
   let removidos = 0
   for (const erro of existentes.filter((existente) => !codigosDesejados.has(existente.codigo))) {
@@ -226,7 +264,7 @@ async function sincronizarErros(api, provedorSlug, versaoId, erros) {
   }
 
   console.log(
-    `erros: ${novos.length} criados, ${removidos} removidos, ${codigosExistentes.size - removidos} mantidos`,
+    `erros: ${novos.length} criados, ${atualizados} atualizados, ${removidos} removidos, ${codigosExistentes.size - removidos} mantidos`,
   )
 }
 
@@ -250,9 +288,6 @@ const [xsd, planilha, mapeamento] = await Promise.all([
 
 // Transformar tudo antes de tocar a API: um conteúdo fora do limite, ou um campo sem caminho
 // resolvido, interrompe a carga sem deixá-la pela metade.
-const erros = montarErros([...rejeicoes.rejeicoes, ...rejeicoesSomenteAnexoI(diferencas)], {
-  codigosForaDaVersao: codigosSomenteRtc(diferencas),
-})
 const avisos = montarAvisos()
 
 const elementosXsd = lerXsd(xsd)
@@ -272,15 +307,20 @@ const definicoes = indexarDefinicoes(
   obrigatoriosNaNotaRegular(regras.regras),
 )
 const campos = montarCampos(tags, definicoes, notasDeComposicao(tags))
+const erros = montarErros([...rejeicoes.rejeicoes, ...rejeicoesSomenteAnexoI(diferencas)], {
+  codigosForaDaVersao: codigosSomenteRtc(diferencas),
+  camposPorCaminhoDps: indexarCamposPorCaminhoDps(tags, vocabulario),
+})
 
 const api = await criarClienteApi()
 const versaoLayoutId = await garantirLayoutInvoicy(api)
 const provedor = await garantirProvedor(api)
 const versaoId = await garantirVersao(api, provedor.id, versaoLayoutId)
 await sincronizarAvisos(api, versaoId, avisos)
-await sincronizarErros(api, provedor.slug, versaoId, erros)
 const idPorCaminho = await sincronizarVocabulario(api, versaoLayoutId, vocabulario)
 await sincronizarCamposDaVersao(api, versaoId, campos, idPorCaminho)
+// Depois do vocabulário: o vínculo do erro com o campo precisa do id do campo canônico.
+await sincronizarErros(api, provedor.slug, versaoId, erros, idPorCaminho)
 
 const errosDoProvedor = await api.listarTudo(
   `/interno/erros?provedor=${encodeURIComponent(provedor.slug)}`,
