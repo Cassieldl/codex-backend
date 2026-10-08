@@ -10,6 +10,12 @@ public sealed record ErroListaItemDto
     public required string Origem { get; init; }
 
     public required string Titulo { get; init; }
+
+    /// <summary>
+    /// Provedor público a que o erro se aplica; <c>null</c> no erro geral. É o que diferencia os
+    /// itens quando o mesmo código existe em mais de um provedor.
+    /// </summary>
+    public string? ProvedorNome { get; init; }
 }
 
 /// <summary>
@@ -91,8 +97,7 @@ public sealed record VersaoAplicavelBrutaDto
 
 /// <summary>
 /// Campo canônico relacionado ao erro (M10). Sem contexto de provedor/versão aplicável e pública,
-/// <see cref="Ancoras"/> vem vazio e o frontend renderiza texto simples — nunca link para uma
-/// página pública de Layout InvoiCy (que é da demanda 002).
+/// <see cref="Ancoras"/> vem vazio e o frontend renderiza texto simples.
 /// </summary>
 public sealed record CampoRelacionadoPublicoDto
 {

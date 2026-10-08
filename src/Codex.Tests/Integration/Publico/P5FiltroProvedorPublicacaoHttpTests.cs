@@ -46,7 +46,7 @@ public sealed class P5FiltroProvedorPublicacaoHttpTests : IAsyncLifetime
 
     private static string NovoSufixo() => Guid.NewGuid().ToString("N")[..10];
 
-    private sealed record Cenario(string ProvedorSlug, string ErroCodigo);
+    private sealed record Cenario(string ProvedorSlug, string ErroCodigo, string ProvedorNome);
 
     private async Task<Cenario> MontarAsync(bool provedorPublicado, bool versaoPublicada)
     {
@@ -81,7 +81,7 @@ public sealed class P5FiltroProvedorPublicacaoHttpTests : IAsyncLifetime
         contexto.ErrosVersoes.Add(ErroVersao.Criar(erro.Id, versao.Id));
         await contexto.SaveChangesAsync();
 
-        return new Cenario(provedor.Slug, erro.Codigo);
+        return new Cenario(provedor.Slug, erro.Codigo, provedor.Nome);
     }
 
     private async Task<int> ContarSobOFiltroAsync(string provedorSlug)
@@ -129,5 +129,39 @@ public sealed class P5FiltroProvedorPublicacaoHttpTests : IAsyncLifetime
 
         JsonDocument.Parse(await resposta.Content.ReadAsStringAsync()).RootElement
             .GetProperty("items").GetArrayLength().Should().Be(1);
+    }
+
+    private async Task<JsonElement> ItemPeloCodigoAsync(string codigo)
+    {
+        using var resposta = await _cliente.GetAsync($"/api/v1/erros?codigo={codigo}");
+        resposta.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        return JsonDocument.Parse(await resposta.Content.ReadAsStringAsync()).RootElement
+            .GetProperty("items").EnumerateArray().Single().Clone();
+    }
+
+    /// <summary>
+    /// Quando o mesmo código existe em mais de um provedor, a tela de escolha só diferencia os itens
+    /// pelo provedor — sem ele, cada item aparecia como "Geral".
+    /// </summary>
+    [Fact]
+    public async Task ItemDaListagem_TrazONomeDoProvedorPublicoAQueOErroSeAplica()
+    {
+        var cenario = await MontarAsync(provedorPublicado: true, versaoPublicada: true);
+
+        var item = await ItemPeloCodigoAsync(cenario.ErroCodigo);
+
+        item.GetProperty("provedorNome").GetString().Should().Be(cenario.ProvedorNome);
+    }
+
+    [Fact]
+    public async Task ItemDaListagem_NaoRevelaProvedorEmRascunho()
+    {
+        var cenario = await MontarAsync(provedorPublicado: false, versaoPublicada: true);
+
+        var item = await ItemPeloCodigoAsync(cenario.ErroCodigo);
+
+        item.GetProperty("provedorNome").ValueKind.Should().Be(JsonValueKind.Null,
+            because: "o mesmo predicado do filtro: vínculo com provedor que não é público não aparece");
     }
 }

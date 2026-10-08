@@ -65,6 +65,18 @@ public sealed class ErroRepositorioPublico : RepositorioBase<CodexDbContext>, IE
                 Codigo = e.Codigo,
                 Origem = e.Origem.ToString(),
                 Titulo = e.Titulo,
+                // Mesmo predicado do filtro por provedor acima: vínculo com versão ou provedor que
+                // não é público não revela o provedor. Erro de mais de um provedor fica com o
+                // primeiro em ordem alfabética.
+                ProvedorNome = (
+                    from ev in Contexto.ErrosVersoes
+                    join vp in Contexto.VersoesProvedor on ev.VersaoProvedorId equals vp.Id
+                    join p in Contexto.Provedores on vp.ProvedorId equals p.Id
+                    where ev.ErroId == e.Id
+                        && vp.Publicado && vp.DesativadoEm == null
+                        && p.Publicado && p.DesativadoEm == null
+                    orderby p.Nome
+                    select p.Nome).FirstOrDefault(),
             })
             .ToListAsync(ct);
 
@@ -99,8 +111,8 @@ public sealed class ErroRepositorioPublico : RepositorioBase<CodexDbContext>, IE
         int erroId, IReadOnlyCollection<VersaoAplicavelBrutaDto> versoesAplicaveisPublicas, CancellationToken ct)
     {
         // "Campo relacionado" é texto descritivo do vocabulário canônico — não depende de
-        // CampoLayout.Publicado (essa coluna só rege a página/índice standalone do campo,
-        // que é da demanda 002, M23). Só filtra DesativadoEm, para não citar campo removido.
+        // CampoLayout.Publicado (essa coluna só rege a página e o índice próprios do campo).
+        // Só filtra DesativadoEm, para não citar campo removido.
         var camposRelacionados = await (
             from ec in Contexto.ErrosCampos.AsNoTracking()
             join cl in Contexto.CamposLayout.AsNoTracking() on ec.CampoLayoutId equals cl.Id
@@ -129,8 +141,7 @@ public sealed class ErroRepositorioPublico : RepositorioBase<CodexDbContext>, IE
             Nome = campo.Nome,
             CaminhoXml = campo.CaminhoXml,
             // M10 — só populado quando o campo existe como CampoVersao ativo numa das versões
-            // aplicáveis públicas; vazio => frontend renderiza texto simples (nunca link para a
-            // página standalone do Layout InvoiCy, que é da demanda 002).
+            // aplicáveis públicas; vazio => frontend renderiza texto simples.
             Ancoras = camposVersaoExistentes
                 .Where(cv => cv.CampoLayoutId == campo.Id)
                 .Select(cv => brutaPorVersaoProvedorId[cv.VersaoProvedorId])
