@@ -1,0 +1,1575 @@
+{
+  "fonte": "IPM NTE 122/2025 v1.7, item 5.1 Layout para Emissão",
+  "tags": [
+    {
+      "sequencial": 1,
+      "tag": "nfse",
+      "grupo": null,
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "1-1",
+      "descricao": "Dados da NFS-e. Caso o município exija que a NFS-e seja assinada digitalmente, deverá então ser utilizado o parâmetro id=”nota”. Exemplo: <nfse id=”nota”>",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 2,
+      "tag": "identificador",
+      "grupo": "nfse",
+      "dominio": "Alfa",
+      "tamanho": "80",
+      "obrigatoriedade": "0-1",
+      "descricao": "Utilizado para identificação do arquivo a ser processado. Arquivos com mesmo identificador não serão processados mais de uma vez, indiferente se o restante dos dados for correspondente a uma nova NFS-e. Observação: se a tag for informada no arquivo, deve ser informado algum valor.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 3,
+      "tag": "rps",
+      "grupo": "nfse",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "0-1",
+      "descricao": "Informações referentes ao recibo provisório de serviço. Somente poderá constar no arquivo quando o município autorizar sua utilização. Portanto, deve-se verificar legislação municipal. As tags somente deverão ser utilizadas, quando houver a real necessidade da conversão de um recibo (RPS) em NFS-e.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 4,
+      "tag": "nro_recibo_provisorio",
+      "grupo": "rps",
+      "dominio": "Numérico",
+      "tamanho": "9",
+      "obrigatoriedade": "0-1",
+      "descricao": "Informar o número do recibo provisório de serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 5,
+      "tag": "serie_recibo_provisorio",
+      "grupo": "rps",
+      "dominio": "Numérico",
+      "tamanho": "2",
+      "obrigatoriedade": "0-1",
+      "descricao": "Informar o código da série do recibo provisório de serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 6,
+      "tag": "data_emissao_recibo_provisorio",
+      "grupo": "rps",
+      "dominio": "Texto",
+      "tamanho": "10",
+      "obrigatoriedade": "0-1",
+      "descricao": "Data em que o recibo provisório de serviço foi emitido. Exemplo: 26/11/2013.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 7,
+      "tag": "hora_emissao_recibo_provisorio",
+      "grupo": "rps",
+      "dominio": "Texto",
+      "tamanho": "8",
+      "obrigatoriedade": "0-1",
+      "descricao": "Horário da emissão do recibo provisório no qual foi emitido o serviço. Exemplo: 13:30:05.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 8,
+      "tag": "nf",
+      "grupo": "nfse",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "1-1",
+      "descricao": "Informações referentes ao valor da NFS-e.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 9,
+      "tag": "valor_total",
+      "grupo": "nf",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "1-1",
+      "descricao": "Valor total da NFS-e.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 10,
+      "tag": "valor_desconto",
+      "grupo": "nf",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor do desconto. Este valor não afetará a base de cálculo do imposto, apenas assinala na nota. Observação: O valor do desconto condicionado deve ser menor que o valor do serviço (Erro - 00381).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 11,
+      "tag": "valor_ir",
+      "grupo": "nf",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor do IRRF (Imposto de Renda Retido na Fonte). Este valor não afetará a base de cálculo do imposto, apenas assinala na nota. Observação: o valor deve ser menor que o valor do serviço (Erro - 391).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 12,
+      "tag": "valor_inss",
+      "grupo": "nf",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor do INSS. Este valor não afetará a base de cálculo do imposto, apenas assinala na nota. Observação: o valor deve ser menor que o valor do serviço (Erro - 393).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 13,
+      "tag": "valor_contribuicao_social",
+      "grupo": "nf",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor da contribuição social. Este valor não afetará a base de cálculo do imposto, apenas assinala na nota. Observação: o valor deve ser menor que o valor do serviço (Erro - 392).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 14,
+      "tag": "valor_rps",
+      "grupo": "nf",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor do RPS (Retenções da Previdência Social). Este valor não afetará a base de cálculo do imposto, apenas assinala na nota.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 15,
+      "tag": "pis_cofins",
+      "grupo": "nf",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "0-1",
+      "descricao": "Informações referentes ao PIS e COFINS próprio.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 16,
+      "tag": "cst",
+      "grupo": "pis_cofins",
+      "dominio": "Numérico",
+      "tamanho": "2",
+      "obrigatoriedade": "0-1",
+      "descricao": "Código da Situação Tributária do PIS e COFINS.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 17,
+      "tag": "tipo_retencao",
+      "grupo": "pis_cofins",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 18,
+      "tag": "base_calculo",
+      "grupo": "pis_cofins",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor da Base de Cálculo de PIS e COFINS.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 19,
+      "tag": "aliquota_pis",
+      "grupo": "pis_cofins",
+      "dominio": "Real",
+      "tamanho": "2",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor da alíquota do PIS (%).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 20,
+      "tag": "aliquota_cofins",
+      "grupo": "pis_cofins",
+      "dominio": "Real",
+      "tamanho": "2",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor da alíquota do COFINS (%).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 21,
+      "tag": "valor_pis",
+      "grupo": "nf",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor do PIS retido.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 22,
+      "tag": "valor_cofins",
+      "grupo": "nf",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor do COFINS retido.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 23,
+      "tag": "observacao",
+      "grupo": "nf",
+      "dominio": "Alfa",
+      "tamanho": "2000",
+      "obrigatoriedade": "0-1",
+      "descricao": "Observações da NFS-e.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 26,
+      "tag": "IBSCBS",
+      "grupo": "nf",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "1-1",
+      "descricao": "Informações referente ao IBS e à CBS.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 27,
+      "tag": "cLocalidadeIncid",
+      "grupo": "IBSCBS",
+      "dominio": "Numérico",
+      "tamanho": "7",
+      "obrigatoriedade": "1-1",
+      "descricao": "Código IBGE do município de incidência do IBS/CBS.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 28,
+      "tag": "pRedutor",
+      "grupo": "IBSCBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 29,
+      "tag": "valores",
+      "grupo": "IBSCBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 30,
+      "tag": "vBC",
+      "grupo": "valores",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 31,
+      "tag": "uf",
+      "grupo": "valores",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 32,
+      "tag": "pIBSUF",
+      "grupo": "uf",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 33,
+      "tag": "pRedAliqUF",
+      "grupo": "uf",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 34,
+      "tag": "pAliqEfetUF",
+      "grupo": "uf",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 35,
+      "tag": "mun",
+      "grupo": "valores",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 36,
+      "tag": "pIBSMun",
+      "grupo": "mun",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 37,
+      "tag": "pRedAliqMun",
+      "grupo": "mun",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 38,
+      "tag": "pAliqEfetMun",
+      "grupo": "mun",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 39,
+      "tag": "fed",
+      "grupo": "valores",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 40,
+      "tag": "pCBS",
+      "grupo": "fed",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 41,
+      "tag": "pRedAliqCBS",
+      "grupo": "fed",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 42,
+      "tag": "pAliqEfetCBS",
+      "grupo": "fed",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 43,
+      "tag": "totCIBS",
+      "grupo": "IBSCBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 44,
+      "tag": "vTotNF",
+      "grupo": "totCIBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 45,
+      "tag": "gTribRegular",
+      "grupo": "totCIBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 46,
+      "tag": "pAliqEfeRegIBSUF",
+      "grupo": "gTribRegular",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 47,
+      "tag": "vTribRegIBSUF",
+      "grupo": "gTribRegular",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 48,
+      "tag": "pAliqEfeRegIBSMun",
+      "grupo": "gTribRegular",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 49,
+      "tag": "vTribRegIBSMun",
+      "grupo": "gTribRegular",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 50,
+      "tag": "pAliqEfeRegCBS",
+      "grupo": "gTribRegular",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 51,
+      "tag": "vTribRegCBS",
+      "grupo": "gTribRegular",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 52,
+      "tag": "gTribCompraGov",
+      "grupo": "totCIBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 53,
+      "tag": "pIBSUF",
+      "grupo": "gTribCompraGov",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 54,
+      "tag": "vIBSUF",
+      "grupo": "gTribCompraGov",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 55,
+      "tag": "pIBSMun",
+      "grupo": "gTribCompraGov",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 56,
+      "tag": "vIBSMun",
+      "grupo": "gTribCompraGov",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 57,
+      "tag": "pCBS",
+      "grupo": "gTribCompraGov",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 58,
+      "tag": "vCBS",
+      "grupo": "gTribCompraGov",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 59,
+      "tag": "gIBS",
+      "grupo": "totCIBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 60,
+      "tag": "vIBSTot",
+      "grupo": "gIBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 61,
+      "tag": "gIBSCredPres",
+      "grupo": "gIBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 62,
+      "tag": "pCredPresIBS",
+      "grupo": "gIBSCredPres",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 63,
+      "tag": "vCredPresIBS",
+      "grupo": "gIBSCredPres",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 64,
+      "tag": "gIBSUFTot",
+      "grupo": "gIBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 65,
+      "tag": "vDifUF",
+      "grupo": "gIBSUFTot",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 66,
+      "tag": "vIBSUF",
+      "grupo": "gIBSUFTot",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 67,
+      "tag": "gIBSMunTot",
+      "grupo": "gIBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 68,
+      "tag": "vDifMun",
+      "grupo": "gIBSMunTot",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 69,
+      "tag": "vIBSMun",
+      "grupo": "gIBSMunTot",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 70,
+      "tag": "gCBS",
+      "grupo": "totCIBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 71,
+      "tag": "gCBSCredPres",
+      "grupo": "gCBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 72,
+      "tag": "pCredPresCBS",
+      "grupo": "gCBSCredPres",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 73,
+      "tag": "vCredPresCBS",
+      "grupo": "gCBSCredPres",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 74,
+      "tag": "vDifCBS",
+      "grupo": "gCBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 75,
+      "tag": "vCBS",
+      "grupo": "gCBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 76,
+      "tag": "IBSCBS",
+      "grupo": "nfse",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "1-1",
+      "descricao": "Grupo de informações geradas pelo sistema referente ao IBS e à CBS",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 77,
+      "tag": "finNFSe",
+      "grupo": "IBSCBS",
+      "dominio": "Numérico",
+      "tamanho": "1",
+      "obrigatoriedade": "1-1",
+      "descricao": "Indicador da finalidade da emissão de NFS-e Utilizar regra existente na Nota Técnica Nº 004 da Nota Nacional.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 78,
+      "tag": "indFinal",
+      "grupo": "IBSCBS",
+      "dominio": "Numérico",
+      "tamanho": "1",
+      "obrigatoriedade": "1-1",
+      "descricao": "Indica operação de uso ou consumo pessoal. Utilizar regra existente na Nota Técnica Nº 004 da Nota Nacional.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 79,
+      "tag": "cIndOp",
+      "grupo": "IBSCBS",
+      "dominio": "Numérico",
+      "tamanho": "6",
+      "obrigatoriedade": "1-1",
+      "descricao": "Código indicador da operação de fornecimento, conforme tabela “código indicador de operação”. Utilizar regra existente no Anexo VII_V1.02.00 da Nota Nacional.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 80,
+      "tag": "tpEnteGov",
+      "grupo": "IBSCBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 81,
+      "tag": "xTpEnteGov",
+      "grupo": "IBSCBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 82,
+      "tag": "imovel",
+      "grupo": "IBSCBS",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "0-1",
+      "descricao": "Grupo de informações de operações relacionadas a bens imóveis, exceto obras. Observação: obrigatório quando a tag “cIndOp” for igual a 020101, 020201, 020301 (Erro - 388).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 83,
+      "tag": "insclmobFisc",
+      "grupo": "imovel",
+      "dominio": "Alfa",
+      "tamanho": "30",
+      "obrigatoriedade": "0-1",
+      "descricao": "Inscrição imobiliária fiscal (código fornecido pela prefeitura para a identificação da obra ou para fins de recolhimento do IPTU)",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 84,
+      "tag": "CCIB",
+      "grupo": "imovel",
+      "dominio": "Alfa",
+      "tamanho": "8",
+      "obrigatoriedade": "0-1",
+      "descricao": "Código do Cadastro Imobiliário Brasileiro - CIB. Deverá ser informado um CIB válido, pois é feita a validação do dígito verificador. Observação: obrigatório quando a tag “cIndOp” for igual a 020101, 020201, 020301 e não for preenchido a tag “end”.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 85,
+      "tag": "end",
+      "grupo": "imovel",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "0-1",
+      "descricao": "Grupo de informações do endereço do imóvel. Observação: obrigatório quando a tag “cIndOp” for igual a 020101, 020201, 020301 e não for preenchido a tag “cCIB”.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 86,
+      "tag": "CEP",
+      "grupo": "end",
+      "dominio": "Numérico",
+      "tamanho": "8",
+      "obrigatoriedade": "0-1",
+      "descricao": "Código de Endereçamento Postal numérico do endereço nacional do imóvel.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 87,
+      "tag": "endExt",
+      "grupo": "end",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "0-1",
+      "descricao": "Grupo de informações descritivas do endereço no exterior do imóvel.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 88,
+      "tag": "cEndPost",
+      "grupo": "endExt",
+      "dominio": "Alfa",
+      "tamanho": "11",
+      "obrigatoriedade": "0-1",
+      "descricao": "Código de Endereçamento Postal alfanumérico do endereço no exterior do imóvel.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 89,
+      "tag": "xCidade",
+      "grupo": "endExt",
+      "dominio": "Alfa",
+      "tamanho": "60",
+      "obrigatoriedade": "0-1",
+      "descricao": "Nome da cidade no exterior, local do imóvel.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 90,
+      "tag": "xEstProvReg",
+      "grupo": "endExt",
+      "dominio": "Alfa",
+      "tamanho": "60",
+      "obrigatoriedade": "0-1",
+      "descricao": "Estado, província ou região da cidade no exterior, local do imóvel.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 91,
+      "tag": "xLgr",
+      "grupo": "end",
+      "dominio": "Alfa",
+      "tamanho": "255",
+      "obrigatoriedade": "0-1",
+      "descricao": "Tipo e nome do logradouro do endereço do imóvel.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 92,
+      "tag": "nro",
+      "grupo": "end",
+      "dominio": "Alfa",
+      "tamanho": "60",
+      "obrigatoriedade": "0-1",
+      "descricao": "Número no logradouro do endereço do imóvel.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 93,
+      "tag": "xCpl",
+      "grupo": "end",
+      "dominio": "Alfa",
+      "tamanho": "255",
+      "obrigatoriedade": "0-1",
+      "descricao": "Complemento do endereço do imóvel.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 94,
+      "tag": "xBairro",
+      "grupo": "end",
+      "dominio": "Alfa",
+      "tamanho": "60",
+      "obrigatoriedade": "0-1",
+      "descricao": "Bairro do endereço do imóvel.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 95,
+      "tag": "valores",
+      "grupo": "IBSCBS",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "1-1",
+      "descricao": "Grupo de informações relativas aos valores do serviço prestado para IBS e CBS",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 96,
+      "tag": "trib",
+      "grupo": "valores",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "1-1",
+      "descricao": "Grupo de informações relacionados aos tributos IBS e CBS",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 97,
+      "tag": "gIBSCBS",
+      "grupo": "trib",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "1-1",
+      "descricao": "Grupo de informações relacionadas ao IBS e à CBS",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 98,
+      "tag": "CST",
+      "grupo": "gIBSCBS",
+      "dominio": "Numérico",
+      "tamanho": "3",
+      "obrigatoriedade": "1-1",
+      "descricao": "Código de Situação Tributária do IBS e da CBS. Utilizar regra existente na Nota Técnica Nº 004 da Nota Nacional.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 99,
+      "tag": "cClassTrib",
+      "grupo": "gIBSCBS",
+      "dominio": "Numérico",
+      "tamanho": "6",
+      "obrigatoriedade": "1-1",
+      "descricao": "Código de Classificação Tributária do IBS e da CBS. Utilizar código existente no Anexo VIII_V1.01.00 da Nota Nacional.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 100,
+      "tag": "cCredPres",
+      "grupo": "gIBSCBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 101,
+      "tag": "gTribRegular",
+      "grupo": "gIBSCBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 102,
+      "tag": "CSTReg",
+      "grupo": "gTribRegular",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 103,
+      "tag": "cClassTribReg",
+      "grupo": "gTribRegular",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 104,
+      "tag": "gDif",
+      "grupo": "gIBSCBS",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 105,
+      "tag": "pDifUF",
+      "grupo": "gDif",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 106,
+      "tag": "pDifMun",
+      "grupo": "gDif",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 107,
+      "tag": "pDifCBS",
+      "grupo": "gDif",
+      "dominio": null,
+      "tamanho": null,
+      "obrigatoriedade": null,
+      "descricao": null,
+      "encontradaNoPdf": false
+    },
+    {
+      "sequencial": 108,
+      "tag": "prestador",
+      "grupo": "nfse",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "1-1",
+      "descricao": "Dados do Prestador (emissor da nota).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 109,
+      "tag": "cpfcnpj",
+      "grupo": "prestador",
+      "dominio": "Alfanumérico",
+      "tamanho": "14",
+      "obrigatoriedade": "1-1",
+      "descricao": "CPF/CNPJ do emissor da nota. Observação: a partir de julho/2026, o CNPJ poderá ser informado no formato alfanumérico (letras e números).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 110,
+      "tag": "cidade",
+      "grupo": "prestador",
+      "dominio": "Numérico",
+      "tamanho": "9",
+      "obrigatoriedade": "1-1",
+      "descricao": "Código da cidade onde o emissor está estabelecido, junto à Receita Federal (chamado de código TOM). Exemplo: Brusque 8055",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 111,
+      "tag": "tomador",
+      "grupo": "nfse",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "1-1",
+      "descricao": "Dados do tomador dos serviços, recebedor da nota.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 112,
+      "tag": "endereco_informado",
+      "grupo": "tomador",
+      "dominio": "Alfa",
+      "tamanho": "1",
+      "obrigatoriedade": "0-1",
+      "descricao": "Quando for do interesse que o endereço do tomador do serviço seja o informado no arquivo XML, utilizar esta tag. Sujeito à disponibilidade pelo município, podendo ser preenchida com: • “0” ou “N” para “Não”; • “1” ou “S” para “SIM”.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 113,
+      "tag": "tipo",
+      "grupo": "tomador",
+      "dominio": "Caractere",
+      "tamanho": "1",
+      "obrigatoriedade": "1-1",
+      "descricao": "Tipo da pessoa, informar: • J para Pessoa Jurídica; • F para Pessoa Física; • E para Estrangeiro.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 114,
+      "tag": "cpfcnpj",
+      "grupo": "tomador",
+      "dominio": "Alfanumérico",
+      "tamanho": "14",
+      "obrigatoriedade": "0-1",
+      "descricao": "CPF/CNPJ do tomador do serviço. Observação: a partir de julho/2026, o CNPJ poderá ser informado no formato alfanumérico (letras e números).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 115,
+      "tag": "ie",
+      "grupo": "tomador",
+      "dominio": "Alfa",
+      "tamanho": "16",
+      "obrigatoriedade": "0-1",
+      "descricao": "Inscrição Estadual do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 116,
+      "tag": "nome_razao_social",
+      "grupo": "tomador",
+      "dominio": "Alfa",
+      "tamanho": "150",
+      "obrigatoriedade": "0-1",
+      "descricao": "Nome do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 117,
+      "tag": "sobrenome_nome_fantasia",
+      "grupo": "tomador",
+      "dominio": "Alfa",
+      "tamanho": "150",
+      "obrigatoriedade": "0-1",
+      "descricao": "Sobrenome ou Nome Fantasia do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 118,
+      "tag": "logradouro",
+      "grupo": "tomador",
+      "dominio": "Alfa",
+      "tamanho": "70",
+      "obrigatoriedade": "0-1",
+      "descricao": "Logradouro do endereço do estabelecimento ou residência do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 119,
+      "tag": "email",
+      "grupo": "tomador",
+      "dominio": "Alfa",
+      "tamanho": "100",
+      "obrigatoriedade": "0-1",
+      "descricao": "Quando necessário informar mais de um e-mail para o tomador do(s) serviço(s) os mesmos deverão ser separados por (;) ou (,).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 120,
+      "tag": "numero_residencia",
+      "grupo": "tomador",
+      "dominio": "Alfa",
+      "tamanho": "8",
+      "obrigatoriedade": "0-1",
+      "descricao": "Número do endereço do estabelecimento ou residência do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 121,
+      "tag": "complemento",
+      "grupo": "tomador",
+      "dominio": "Alfa",
+      "tamanho": "50",
+      "obrigatoriedade": "0-1",
+      "descricao": "Complemento do endereço do estabelecimento ou residência do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 122,
+      "tag": "ponto_referencia",
+      "grupo": "tomador",
+      "dominio": "Alfa",
+      "tamanho": "100",
+      "obrigatoriedade": "0-1",
+      "descricao": "Ponto de referência do endereço do estabelecimento ou residência do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 123,
+      "tag": "bairro",
+      "grupo": "tomador",
+      "dominio": "Alfa",
+      "tamanho": "30",
+      "obrigatoriedade": "0-1",
+      "descricao": "Bairro do endereço do estabelecimento ou residência do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 124,
+      "tag": "cidade",
+      "grupo": "tomador",
+      "dominio": "Numérico",
+      "tamanho": "9",
+      "obrigatoriedade": "0-1",
+      "descricao": "Código da cidade do endereço do estabelecimento ou residência do tomador do serviço, junto à Receita Federal (chamado de código TOM). Exemplo: Brusque 8055. Observação: quando o tipo do tomador for Estrangeiro, o campo cidade deve ser preenchido com o nome da cidade (máximo 100 caracteres).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 125,
+      "tag": "cep",
+      "grupo": "tomador",
+      "dominio": "Alfa",
+      "tamanho": "8",
+      "obrigatoriedade": "0-1",
+      "descricao": "CEP do endereço do estabelecimento ou residência do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 126,
+      "tag": "ddd_fone_comercial",
+      "grupo": "tomador",
+      "dominio": "Numérico",
+      "tamanho": "3",
+      "obrigatoriedade": "0-1",
+      "descricao": "Código de área do telefone do estabelecimento do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 127,
+      "tag": "fone_comercial",
+      "grupo": "tomador",
+      "dominio": "Numérico",
+      "tamanho": "9",
+      "obrigatoriedade": "0-1",
+      "descricao": "Telefone do estabelecimento do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 128,
+      "tag": "ddd_fone_residencial",
+      "grupo": "tomador",
+      "dominio": "Numérico",
+      "tamanho": "3",
+      "obrigatoriedade": "0-1",
+      "descricao": "Código de área do telefone residencial do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 129,
+      "tag": "fone_residencial",
+      "grupo": "tomador",
+      "dominio": "Numérico",
+      "tamanho": "9",
+      "obrigatoriedade": "0-1",
+      "descricao": "Telefone residencial do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 130,
+      "tag": "ddd_fax",
+      "grupo": "tomador",
+      "dominio": "Numérico",
+      "tamanho": "3",
+      "obrigatoriedade": "0-1",
+      "descricao": "Código de área do fax do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 131,
+      "tag": "fone_fax",
+      "grupo": "tomador",
+      "dominio": "Numérico",
+      "tamanho": "9",
+      "obrigatoriedade": "0-1",
+      "descricao": "Número do fax do tomador do serviço.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 132,
+      "tag": "itens",
+      "grupo": "nfse",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "1-1",
+      "descricao": "Item da Nota Fiscal.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 133,
+      "tag": "lista",
+      "grupo": "itens",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "1-1",
+      "descricao": "Item da Nota Fiscal - permite apenas um por NFS-e.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 134,
+      "tag": "codigo_local_prestacao_servico",
+      "grupo": "lista",
+      "dominio": "Numérico",
+      "tamanho": "9",
+      "obrigatoriedade": "1-1",
+      "descricao": "Código da cidade onde o serviço foi prestado, junto à Receita Federal (código TOM ou IBGE). Exemplo: Brusque TOM: 8055/IBGE: 4202909.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 135,
+      "tag": "codigo_item_lista_servico",
+      "grupo": "lista",
+      "dominio": "Numérico",
+      "tamanho": "9",
+      "obrigatoriedade": "1-1",
+      "descricao": "Código do subitem da lista de serviços, em conformidade com a Lei Complementar 116/2003 e seus desdobramentos, conforme documentação definida pelo CGNFS-e",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 136,
+      "tag": "codigo_nbs",
+      "grupo": "lista",
+      "dominio": "Caractere",
+      "tamanho": "9",
+      "obrigatoriedade": "1-1",
+      "descricao": "Código da NBS (Nomenclatura Brasileira de Serviços)",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 137,
+      "tag": "descritivo",
+      "grupo": "lista",
+      "dominio": "Alfa",
+      "tamanho": "2000",
+      "obrigatoriedade": "1-1",
+      "descricao": "Descritivo coloquial do serviço prestado.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 138,
+      "tag": "aliquota_item_lista_servico",
+      "grupo": "lista",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "1-1",
+      "descricao": "Alíquota que incidirá sobre a base de cálculo. Esta alíquota será consistida em acordo com a legislação do município. ATENÇÃO: caso seja informada incorretamente, o software rejeitará a nota.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 139,
+      "tag": "situacao_tributaria",
+      "grupo": "lista",
+      "dominio": "Numérico",
+      "tamanho": "4",
+      "obrigatoriedade": "1-1",
+      "descricao": "Código da situação tributária. Este código caracterizará a forma de cobrança do ISS. Aqui, podem ocorrer as codificações conforme descrito neste manual, no item Situações Tributárias.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 140,
+      "tag": "valor_tributavel",
+      "grupo": "lista",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "1-1",
+      "descricao": "Valor do serviço prestado, sem a dedução aplicada. Caso haja dedução e a situação tributária permitir, o valor da dedução deverá ser informado na tag <valor_deducao>.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 141,
+      "tag": "valor_deducao",
+      "grupo": "lista",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor da dedução, quando houver e se a situação tributária permitir.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 142,
+      "tag": "valor_issrf",
+      "grupo": "lista",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor do ISS Retido na Fonte, quando houver e se a situação tributária permitir.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 143,
+      "tag": "cno",
+      "grupo": "lista",
+      "dominio": "Numérico",
+      "tamanho": "-",
+      "obrigatoriedade": "0-1",
+      "descricao": "Deverá ser o número do Cadastro Nacional de Obras.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 144,
+      "tag": "tributa_municipio_prestador",
+      "grupo": "lista",
+      "dominio": "Alfa",
+      "tamanho": "1",
+      "obrigatoriedade": "1-1",
+      "descricao": "Esta tag serve para informar onde será recolhido o imposto e deve ser preenchida com: • “0” ou “N” quando a tributação ocorre no local da prestação do serviço; • “1” ou “S” quando a tributação ocorre no município do prestador.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 145,
+      "tag": "unidade_codigo",
+      "grupo": "lista",
+      "dominio": "Numérico",
+      "tamanho": "9",
+      "obrigatoriedade": "0-1",
+      "descricao": "Código das unidades de serviços pré-cadastradas. Observações: 1 - Código sobre variações de Prefeitura para Prefeitura. 2 - Campo torna-se obrigatório a partir do momento em que o Município utiliza esta configuração.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 146,
+      "tag": "unidade_quantidade",
+      "grupo": "lista",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "0-1",
+      "descricao": "Quantidade dos serviços prestados, relativo à unidade informada. Observação: campo torna-se obrigatório a partir do momento em que o Município utiliza esta configuração.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 147,
+      "tag": "unidade_valor_unitario",
+      "grupo": "lista",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor unitário do serviço, referente a unidade informada. Observação: campo torna-se obrigatório a partir do momento em que o Município utiliza esta configuração.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 148,
+      "tag": "genericos",
+      "grupo": "nfse",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "0-1",
+      "descricao": "Item para livre manuseio. Coloca-se o que desejar que saia na nota. Acontecerá tantas vezes quantas forem as subtags relacionadas, logicamente limitado pelo espaço físico.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 149,
+      "tag": "produtos",
+      "grupo": "nfse",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "0-1",
+      "descricao": "Produtos relacionados na NFS-e.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 150,
+      "tag": "identificador",
+      "grupo": "tomador",
+      "dominio": "Numérico",
+      "tamanho": "20",
+      "obrigatoriedade": "0-1",
+      "descricao": "Número do cartão de identificação estrangeira ou passaporte. Observação: somente informar quando o tipo do tomador for E (estrangeiro) (Erro - 00164).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 151,
+      "tag": "estado",
+      "grupo": "tomador",
+      "dominio": "Alfa",
+      "tamanho": "100",
+      "obrigatoriedade": "0-1",
+      "descricao": "Informar o estado de origem do tomador. Observação: somente informar quando o tipo do tomador for E (Estrangeiro).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 152,
+      "tag": "pais",
+      "grupo": "tomador",
+      "dominio": "Alfa",
+      "tamanho": "100",
+      "obrigatoriedade": "0-1",
+      "descricao": "Informar o país de origem do tomador. Observação: somente informar quando o tipo do tomador for E (Estrangeiro).",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 153,
+      "tag": "forma_pagamento",
+      "grupo": "nfse",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "0-1",
+      "descricao": "Informações complementares referentes a forma de pagamento e parcelas.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 154,
+      "tag": "tipo_pagamento",
+      "grupo": "forma_pagamento",
+      "dominio": "Numérico",
+      "tamanho": "1",
+      "obrigatoriedade": "0-1",
+      "descricao": "Respectivo código referente ao tipo da forma de pagamento: 1 - À vista; 2 - A prazo; 3 - Depósito; 4 - Na apresentação; 5 - Cartão de débito; 6 - Cartão de crédito; 7 - Cheque; 8 - PIX; 9 - Boleto.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 155,
+      "tag": "parcelas",
+      "grupo": "forma_pagamento",
+      "dominio": "Agrupador",
+      "tamanho": "-",
+      "obrigatoriedade": "0-1",
+      "descricao": null,
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 156,
+      "tag": "parcela",
+      "grupo": "parcelas",
+      "dominio": "Agrup. Parcela",
+      "tamanho": null,
+      "obrigatoriedade": "0-1",
+      "descricao": null,
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 157,
+      "tag": "numero",
+      "grupo": "parcela",
+      "dominio": "Numérico",
+      "tamanho": "2",
+      "obrigatoriedade": "0-1",
+      "descricao": "Número da parcela. Será permitido utilizar valores entre 1 e 24.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 158,
+      "tag": "valor",
+      "grupo": "parcela",
+      "dominio": "Real",
+      "tamanho": "15",
+      "obrigatoriedade": "0-1",
+      "descricao": "Valor da parcela. A soma do valor das parcelas deve ser igual ao da tag <valor_tributavel> descontados os valores das tags <valor_deducao> e <valor_issrf> quando a situação tributária permitir.",
+      "encontradaNoPdf": true
+    },
+    {
+      "sequencial": 159,
+      "tag": "data_vencimento",
+      "grupo": "parcela",
+      "dominio": "Texto",
+      "tamanho": "10",
+      "obrigatoriedade": "0-1",
+      "descricao": "Data de vencimento da parcela. Deve ser informada uma data válida no formato dd/mm/aaaaa. Exemplo: 24/07/2019.",
+      "encontradaNoPdf": true
+    }
+  ]
+}

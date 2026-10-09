@@ -1,0 +1,238 @@
+{
+  "fonte": "IPM — NTE 122/2025 v1.7 (12/08/2026), item 5.3 \"Novos Retornos de Erros/Regras de Validação da Reforma Tributária\"",
+  "observacao": "Transcrição do PDF. O ponto e vírgula que encerra cada item da lista virou ponto final; o resto é literal, inclusive os marcadores %s que o IPM substitui pelo valor no retorno.",
+  "erros": [
+    {
+      "codigo": "00336",
+      "mensagem": "Ao informar as alíquotas do IBS/CBS na tag “/nfse/nf/IBSCBS”, as informações dos tributos também devem ser preenchidas na tag “/nfse/IBSCBS”."
+    },
+    {
+      "codigo": "00337",
+      "mensagem": "Ao preencher os tributos do IBS/CBS na tag “/nfse/IBSCBS”, as alíquotas também devem ser preenchidas na tag “/nfse/nf/IBSCBS”."
+    },
+    {
+      "codigo": "00338",
+      "mensagem": "Valor da base de cálculo (vBC) não está preenchido corretamente."
+    },
+    {
+      "codigo": "00339",
+      "mensagem": "A alíquota efetiva do IBS estadual (pAliqEfetUF) não foi preenchida corretamente."
+    },
+    {
+      "codigo": "00340",
+      "mensagem": "Valor do tributo do IBS estadual (%s) não foi preenchido corretamente."
+    },
+    {
+      "codigo": "00341",
+      "mensagem": "A alíquota efetiva do IBS municipal (pAliqEfetMun) não foi preenchida corretamente."
+    },
+    {
+      "codigo": "00342",
+      "mensagem": "Valor do tributo do IBS municipal (%s) não foi preenchido corretamente."
+    },
+    {
+      "codigo": "00343",
+      "mensagem": "A alíquota efetiva do CBS (pAliqEfetCBS) não foi preenchida corretamente."
+    },
+    {
+      "codigo": "00344",
+      "mensagem": "Valor do tributo da CBS (%s) não foi preenchido corretamente."
+    },
+    {
+      "codigo": "00345",
+      "mensagem": "A alíquota do IBS (%s) não foi preenchida corretamente."
+    },
+    {
+      "codigo": "00346",
+      "mensagem": "A situação e classificação tributárias do IBS/CBS (%s e %s) não foram preenchidas corretamente."
+    },
+    {
+      "codigo": "00347",
+      "mensagem": "O valor total da nota (vTotNF) não foi preenchido corretamente."
+    },
+    {
+      "codigo": "00348",
+      "mensagem": "O valor do crédito presumido (%s) não foi preenchido corretamente."
+    },
+    {
+      "codigo": "00349",
+      "mensagem": "O valor do diferimento (%s) não foi preenchido corretamente."
+    },
+    {
+      "codigo": "00350",
+      "mensagem": "A alíquota do CBS (pCBS) não foi preenchida corretamente."
+    },
+    {
+      "codigo": "00351",
+      "mensagem": "A Classificação de Crédito Presumido do IBS (cCredPresIBS) não foi preenchida corretamente."
+    },
+    {
+      "codigo": "00352",
+      "mensagem": "A Classificação Tributária informada (%s) não pode ser usada com tributação regular."
+    },
+    {
+      "codigo": "00354",
+      "mensagem": "O CST utilizado obriga que sejam informados os percentuais de diferimento (gDif)."
+    },
+    {
+      "codigo": "00355",
+      "mensagem": "O percentual de redução (%nomeDaTag) não foi preenchido de acordo com a Classificação Tributária."
+    },
+    {
+      "codigo": "00361",
+      "mensagem": "O grupo de documentos referenciados (gRefNFSe) não pode ser informado quando tpOper não foi informado ou igual a 1, 4 ou 5."
+    },
+    {
+      "codigo": "00362",
+      "mensagem": "O grupo de documentos referenciados (gRefNFSe) deve ser informado quando tpOper = 2 ou 3."
+    },
+    {
+      "codigo": "00363",
+      "mensagem": "O grupo de documentos referenciados não pode ter chaves de acesso repetidas (refNFSe)."
+    },
+    {
+      "codigo": "00364",
+      "mensagem": "O tipo de operação (tpOper) não pode ser informado para este serviço sem que seja indicada Compra Governamental."
+    },
+    {
+      "codigo": "00365",
+      "mensagem": "O tipo de operação (tpOper) deve ser informado para este serviço (Obrigatório para Compra Governamental ou Lista de Serviço utilizada)."
+    },
+    {
+      "codigo": "00366",
+      "mensagem": "A Nomenclatura Brasileira de Serviço (NBS) é obrigatória e não foi informada."
+    },
+    {
+      "codigo": "00367",
+      "mensagem": "A Nomenclatura Brasileira de Serviço (NBS) informada não existe."
+    },
+    {
+      "codigo": "00368",
+      "mensagem": "O vínculo entre Lista de Serviço X Nomenclatura Brasileira de Serviço (NBS) X Indicador de Operação X Classificação Tributária não existe."
+    },
+    {
+      "codigo": "00388",
+      "mensagem": "Para o indicador de operação informado deve ser informado o endereço do imóvel."
+    },
+    {
+      "codigo": "00389",
+      "mensagem": "Não é possível informar a incidência para o estabelecimento do prestador e para o estabelecimento do tomador."
+    },
+    {
+      "codigo": "00390",
+      "mensagem": "Não é possível informar a incidência para o estabelecimento do tomador quando este não foi informado."
+    },
+    {
+      "codigo": "00391",
+      "mensagem": "O valor do Tributo Federal - IR deve ser menor que o valor do serviço."
+    },
+    {
+      "codigo": "00392",
+      "mensagem": "O valor do Tributo Federal - Contribuição Social deve ser menor que o valor do serviço."
+    },
+    {
+      "codigo": "00393",
+      "mensagem": "O valor do Tributo Federal - INSS deve ser menor que o valor do serviço."
+    },
+    {
+      "codigo": "00394",
+      "mensagem": "O dígito verificador informado para o CIB é inválido."
+    },
+    {
+      "codigo": "00395",
+      "mensagem": "O endereço cadastrado para o tomador no município, não está em conformidade com a base de dados do DNE."
+    },
+    {
+      "codigo": "00396",
+      "mensagem": "O valor da tag base_calculo do grupo de tag pis_cofins deve ser maior que zero e menor que o valor do serviço."
+    },
+    {
+      "codigo": "00397",
+      "mensagem": "Quando informado o IBS/CBS com a utilização deste indicador de operação, o preenchimento das informações do imóvel não pode ocorrer."
+    },
+    {
+      "codigo": "00400",
+      "mensagem": "A Classificação Tributária do IBS/CBS informada está indisponível para este município. Informe uma Classificação Tributária que esteja disponível conforme regra da Nota Fiscal Nacional."
+    },
+    {
+      "codigo": "00401",
+      "mensagem": "O valor da tag aliquota_pis e/ou aliquota_cofins foi informado, portanto este deve ser maior ou igual a zero e menor ou igual a 10%."
+    },
+    {
+      "codigo": "00402",
+      "mensagem": "O Indicador de Operação do IBS/CBS informado está indisponível para este município. Informe um Indicador de Operação que esteja disponível conforme regra da Nota Fiscal Nacional."
+    },
+    {
+      "codigo": "00403",
+      "mensagem": "O domicílio fiscal do prestador informado não pertence a este município ou apresenta inconsistência em seu cadastro."
+    },
+    {
+      "codigo": "00407",
+      "mensagem": "Para retenções de serviço, é necessário que o Tomador seja uma Pessoa do Tipo Física/Jurídica e seu País seja \"BR\"."
+    },
+    {
+      "codigo": "00410",
+      "mensagem": "Para Incidências Estrangeiras ou Lista de Serviço 99.01.01 é necessário informar Situação Tributária de \"Não Incidência\" - NTRIB."
+    },
+    {
+      "codigo": "00411",
+      "mensagem": "Para Incidências Estrangeiras ou Prestação de Serviço fora do Brasil é necessário informar Nomenclatura Brasileira de Serviço (NBS)"
+    },
+    {
+      "codigo": "00412",
+      "mensagem": "Para tomadores com endereço fora do Brasil é necessário informar Nomenclatura Brasileira de Serviço (NBS)"
+    },
+    {
+      "codigo": "00413",
+      "mensagem": "A Chave de Acesso informada na Nota Referenciada está inválida. Verifique se o dígito verificador está correto."
+    },
+    {
+      "codigo": "00414",
+      "mensagem": "Não existe correlação entre o NBS e a Classificação Tributária informada ou não está ativo."
+    },
+    {
+      "codigo": "00415",
+      "mensagem": "Foi informado CEP nacional, mas o País do Local de Prestação é diferente de 'BR'."
+    },
+    {
+      "codigo": "00416",
+      "mensagem": "Foi informado Código Postal Internacional, mas o País do Local de Prestação é 'BR'."
+    },
+    {
+      "codigo": "00417",
+      "mensagem": "Obrigatório informar um Local de Incidência válido para o IBS/CBS."
+    },
+    {
+      "codigo": "00418",
+      "mensagem": "Local de Incidência de ISS inválido!"
+    },
+    {
+      "codigo": "00419",
+      "mensagem": "Código do IBGE inválido para o local de incidência do IBS/CBS."
+    },
+    {
+      "codigo": "00420",
+      "mensagem": "Classificação Tributária de CST de difermento temporariamente indisponível."
+    },
+    {
+      "codigo": "00421",
+      "mensagem": "Classificação Tributária de tributação regular temporariamente indisponível."
+    },
+    {
+      "codigo": "00422",
+      "mensagem": "A Lista de Serviço informada não permite um Indicador de Operação que obrigue informar imóvel."
+    },
+    {
+      "codigo": "00423",
+      "mensagem": "Para o indicador de operação informado o local de incidência do IBS/CBS deve ser igual ao local de estabelecimento do Prestador."
+    },
+    {
+      "codigo": "00424",
+      "mensagem": "Para o indicador de operação informado o local de incidência do IBS/CBS deve ser igual ao local de estabelecimento do Tomador."
+    },
+    {
+      "codigo": "00425",
+      "mensagem": "Para o indicador de operação informado o local de incidência do IBS/CBS deve ser igual ao local de prestação."
+    }
+  ]
+}

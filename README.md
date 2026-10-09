@@ -115,8 +115,30 @@ CODEX_DEV_USUARIO=codex.dev CODEX_DEV_SENHA=codex.dev \
 | `CODEX_TOKEN` | Token pronto, no lugar do login — para ambiente que não seja o local |
 | `CODEX_API_URL` / `CODEX_KEYCLOAK_URL` | Endereços, se diferentes dos locais |
 
+### Outros provedores
+
+`database/carga/provedores/importar.mjs` carrega os provedores do catálogo
+(`database/carga/provedores/catalogo.mjs`): E&L, Elotech, GISS, IPM e ISS.NET. Todo o material fica
+versionado em `database/carga/provedores/material/<id>/`:
+
+- `mapeamento.md`: o De/Para da configuração do provedor no InvoiCy. Liga cada tag do XML do
+  provedor ao campo do layout InvoiCy, pelo nome do campo.
+- XSD do provedor, ou a tabela do manual transcrita para `layout.json` quando não há XSD (IPM): é
+  daí que vêm tipo, tamanho, valores aceitos e obrigatoriedade.
+- `erros.json`: códigos e mensagens transcritos do manual, quando o material traz a lista (IPM).
+
+```bash
+CODEX_DEV_USUARIO=codex.dev CODEX_DEV_SENHA=codex.dev \
+  node database/carga/provedores/importar.mjs --todos   # ou: importar.mjs ipm elotech
+```
+
+Para um provedor novo: crie a pasta em `material/`, acrescente a entrada no catálogo e rode a
+carga. Campo do mapeamento que não existe no XSD do InvoiCy interrompe a carga até a decisão ser
+registrada em `resolver-campos.mjs` (grafia confirmada, pendência ou campo interno).
+
 Testes da carga (Node, sem dependência): `node --test <arquivo>.test.mjs` em
-`database/carga/emissor-nacional/`. Passar o diretório falha nesta versão do Node — passe o arquivo.
+`database/carga/emissor-nacional/` e `database/carga/provedores/`. Passar o diretório falha nesta
+versão do Node — passe os arquivos.
 
 O que ainda depende de resposta do time do InvoiCy está no relatório de completude da demanda 008
 (`.dev-team/demandas/008-campos-emissor-nacional/relatorio-completude.md`, fora deste repositório).
