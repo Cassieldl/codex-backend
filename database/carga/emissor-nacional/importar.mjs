@@ -20,10 +20,14 @@ import { fileURLToPath } from 'node:url'
 
 import { criarClienteApi } from '../cliente-api.mjs'
 import {
-  CAMINHOS_EM_DUVIDA,
-  notasDeComposicao,
-  resolverMapeamento,
-} from './resolver-mapeamento.mjs'
+  garantirLayoutInvoicy,
+  garantirProvedor,
+  garantirVersao,
+  sincronizarAvisos,
+  sincronizarErros,
+} from '../sincronizar-provedor.mjs'
+import { exigirGruposConhecidos, lerVocabularioInvoicy } from '../vocabulario-invoicy.mjs'
+import { notasDeComposicao, resolverMapeamento } from './resolver-mapeamento.mjs'
 import { resolverReferencias, sincronizarArtigo } from './sincronizar-artigos.mjs'
 import { sincronizarCamposDaVersao, sincronizarVocabulario } from './sincronizar-campos.mjs'
 import {
@@ -32,7 +36,6 @@ import {
   indexarCamposPorCaminhoDps,
   montarAvisos,
   montarErros,
-  planejarAtualizacaoDeErro,
   rejeicoesSomenteAnexoI,
 } from './transformar.mjs'
 import {
@@ -48,7 +51,6 @@ import {
   PROVEDOR,
   ROTULO_VERSAO,
 } from './identificacao.mjs'
-import { lerXsd, montarVocabulario } from './transformar-layout.mjs'
 
 const PASTA_DA_CARGA = dirname(fileURLToPath(import.meta.url))
 
@@ -58,214 +60,6 @@ async function lerJson(pasta, arquivo) {
 
 async function lerTexto(arquivo) {
   return readFile(join(PASTA_DA_CARGA, arquivo), 'utf8')
-}
-
-function itensDe(dados) {
-  return dados.items ?? dados
-}
-
-async function garantirLayoutInvoicy(api) {
-  const { dados } = await api.chamar('GET', '/interno/layout/versoes')
-  let versao = itensDe(dados).find((item) => item.rotulo === LAYOUT_INVOICY.rotulo)
-
-  if (!versao) {
-    ;({ dados: versao } = await api.chamar('POST', '/interno/layout/versoes', LAYOUT_INVOICY))
-    console.log(`versão ${LAYOUT_INVOICY.rotulo} do Layout InvoiCy criada (id ${versao.id})`)
-  }
-
-  if (versao.estado !== ESTADO_LAYOUT_INVOICY) {
-    await api.chamar(
-      'PUT',
-      `/interno/layout/versoes/${versao.id}`,
-      { estado: ESTADO_LAYOUT_INVOICY },
-      String(versao.versaoConcorrencia),
-    )
-    console.log(
-      `versão ${LAYOUT_INVOICY.rotulo} do Layout InvoiCy: ${versao.estado} → ${ESTADO_LAYOUT_INVOICY}`,
-    )
-  }
-
-  return versao.id
-}
-
-async function garantirProvedor(api) {
-  const provedores = await api.listarTudo(
-    `/interno/provedores?q=${encodeURIComponent(PROVEDOR.nome)}`,
-  )
-  const existente = provedores.find((provedor) => provedor.nome === PROVEDOR.nome)
-  if (existente) return existente
-
-  const { dados: criado } = await api.chamar('POST', '/interno/provedores', PROVEDOR)
-  console.log(`provedor ${PROVEDOR.nome} criado (id ${criado.id})`)
-  return criado
-}
-
-/**
- * Alinha introdução e layout de origem da versão existente. Trocar o layout só é aceito pela API
- * enquanto a versão não tem campos — por isso esta etapa roda antes da carga dos campos.
- */
-async function sincronizarVersao(api, versaoId, versaoLayoutId) {
-  const { dados: versao } = await api.chamar('GET', `/interno/versoes/${versaoId}`)
-  if (versao.introducao === INTRODUCAO_VERSAO && versao.versaoLayoutId === versaoLayoutId) return
-
-  await api.chamar(
-    'PUT',
-    `/interno/versoes/${versaoId}`,
-    { rotulo: versao.rotulo, introducao: INTRODUCAO_VERSAO, versaoLayoutId },
-    String(versao.versaoConcorrencia),
-  )
-  console.log('versão alinhada: introdução e layout de origem')
-}
-
-async function garantirVersao(api, provedorId, versaoLayoutId) {
-  const { dados } = await api.chamar('GET', `/interno/provedores/${provedorId}/versoes`)
-  const existente = itensDe(dados).find((versao) => versao.rotulo === ROTULO_VERSAO)
-  if (existente) {
-    await sincronizarVersao(api, existente.id, versaoLayoutId)
-    return existente.id
-  }
-
-  const { dados: criada } = await api.chamar('POST', `/interno/provedores/${provedorId}/versoes`, {
-    versaoLayoutId,
-    rotulo: ROTULO_VERSAO,
-    introducao: INTRODUCAO_VERSAO,
-  })
-  console.log(`versão ${ROTULO_VERSAO} criada (id ${criada.id})`)
-  return criada.id
-}
-
-function avisoMudou(existente, desejado) {
-  return (
-    existente.severidade !== desejado.severidade ||
-    existente.corpo !== desejado.corpo ||
-    (desejado.vigenciaInicio !== undefined && existente.vigenciaInicio !== desejado.vigenciaInicio)
-  )
-}
-
-/** O título é a identidade do aviso para a sincronização: título novo = aviso novo. */
-async function sincronizarAvisos(api, versaoId, avisos) {
-  const { dados: versao } = await api.chamar('GET', `/interno/versoes/${versaoId}`)
-  const existentes = new Map((versao.avisos ?? []).map((aviso) => [aviso.titulo, aviso]))
-  const titulosDesejados = new Set(avisos.map((aviso) => aviso.titulo))
-  const contagem = { criados: 0, atualizados: 0, removidos: 0 }
-
-  for (const aviso of avisos) {
-    const existente = existentes.get(aviso.titulo)
-    if (!existente) {
-      await api.chamar('POST', `/interno/versoes/${versaoId}/avisos`, {
-        ...aviso,
-        campoVersaoIds: [],
-      })
-      contagem.criados++
-    } else if (avisoMudou(existente, aviso)) {
-      await api.chamar(
-        'PUT',
-        `/interno/avisos/${existente.id}`,
-        aviso,
-        String(existente.versaoConcorrencia),
-      )
-      contagem.atualizados++
-    }
-  }
-
-  for (const [titulo, existente] of existentes) {
-    if (titulosDesejados.has(titulo)) continue
-    await api.chamar(
-      'DELETE',
-      `/interno/avisos/${existente.id}`,
-      undefined,
-      String(existente.versaoConcorrencia),
-    )
-    contagem.removidos++
-  }
-
-  console.log(
-    `avisos: ${contagem.criados} criados, ${contagem.atualizados} atualizados, ${contagem.removidos} removidos`,
-  )
-}
-
-/**
- * Só considera os erros já vinculados a este provedor: código de erro não é único entre
- * provedores, e o mesmo código registrado para outro provedor não pode impedir a criação deste.
- */
-async function sincronizarErros(api, provedorSlug, versaoId, erros, idPorCaminho) {
-  const existentes = await api.listarTudo(
-    `/interno/erros?provedor=${encodeURIComponent(provedorSlug)}`,
-  )
-  const idPorCodigo = new Map(existentes.map((erro) => [erro.codigo, erro.id]))
-  const codigosExistentes = new Set(idPorCodigo.keys())
-  const codigosDesejados = new Set(erros.map((erro) => erro.codigo))
-
-  const idsDosCampos = (erro) =>
-    erro.camposRelacionados.map((caminho) => {
-      const id = idPorCaminho.get(caminho)
-      if (!id)
-        throw new Error(`${erro.codigo} aponta para ${caminho}, que não está no vocabulário.`)
-      return id
-    })
-
-  const novos = erros.filter((erro) => !codigosExistentes.has(erro.codigo))
-  for (const [indice, erro] of novos.entries()) {
-    await api.chamar('POST', '/interno/erros', {
-      codigo: erro.codigo,
-      origem: erro.origem,
-      titulo: erro.titulo,
-      causaProvavel: erro.causaProvavel,
-      variantes: erro.variantes,
-      versoesProvedorIds: [versaoId],
-      camposLayoutIds: idsDosCampos(erro),
-    })
-    if ((indice + 1) % 50 === 0) console.log(`  erros: ${indice + 1}/${novos.length}`)
-  }
-
-  let atualizados = 0
-  const causasPreservadas = []
-  for (const erro of erros.filter((desejado) => codigosExistentes.has(desejado.codigo))) {
-    const { dados: detalhe } = await api.chamar(
-      'GET',
-      `/interno/erros/${idPorCodigo.get(erro.codigo)}`,
-    )
-    const { corpo, causaPreservada } = planejarAtualizacaoDeErro(detalhe, erro, idsDosCampos(erro))
-    if (causaPreservada && detalhe.causaProvavel !== erro.causaProvavel)
-      causasPreservadas.push(erro.codigo)
-    if (!corpo) continue
-
-    await api.chamar(
-      'PUT',
-      `/interno/erros/${detalhe.id}`,
-      corpo,
-      String(detalhe.versaoConcorrencia),
-    )
-    atualizados++
-  }
-  if (causasPreservadas.length)
-    console.warn(`  causa editada na área interna, mantida: ${causasPreservadas.join(', ')}`)
-
-  let removidos = 0
-  for (const erro of existentes.filter((existente) => !codigosDesejados.has(existente.codigo))) {
-    const { dados: detalhe } = await api.chamar('GET', `/interno/erros/${erro.id}`)
-    const somenteDestaVersao =
-      detalhe.versoesProvedorIds.length === 1 && detalhe.versoesProvedorIds[0] === versaoId
-
-    // Erro que também vale para outra versão não é removido: tirar só este vínculo é decisão
-    // editorial sobre o outro provedor, feita na área interna, não efeito de rodar a carga.
-    if (!somenteDestaVersao) {
-      console.warn(`  ${erro.codigo} também vale para outra versão — desvincule manualmente.`)
-      continue
-    }
-
-    await api.chamar(
-      'DELETE',
-      `/interno/erros/${erro.id}`,
-      undefined,
-      String(detalhe.versaoConcorrencia),
-    )
-    removidos++
-  }
-
-  console.log(
-    `erros: ${novos.length} criados, ${atualizados} atualizados, ${removidos} removidos, ${codigosExistentes.size - removidos} mantidos`,
-  )
 }
 
 const pastaMaterial = process.argv[2]
@@ -280,27 +74,15 @@ const [rejeicoes, diferencas, leiaute, regras] = await Promise.all([
   lerJson(pastaMaterial, 'dps-leiaute.json'),
   lerJson(pastaMaterial, 'dps-regras.json'),
 ])
-const [xsd, planilha, mapeamento] = await Promise.all([
-  lerTexto('layout-invoicy-v8.xsd'),
-  lerTexto('layout-invoicy-v8-planilha.json'),
-  lerTexto('mapeamento-invoicy.csv'),
-])
+const mapeamento = await lerTexto('mapeamento-invoicy.csv')
+const { elementos: elementosXsd, vocabulario } = await lerVocabularioInvoicy()
 
 // Transformar tudo antes de tocar a API: um conteúdo fora do limite, ou um campo sem caminho
 // resolvido, interrompe a carga sem deixá-la pela metade.
 const avisos = montarAvisos()
 
-const elementosXsd = lerXsd(xsd)
 const { tags, pendentes } = resolverMapeamento(lerMapeamento(mapeamento), elementosXsd)
-const gruposUsados = new Set(
-  tags.filter((tag) => tag.caminhoInvoicy).map((tag) => tag.caminhoInvoicy),
-)
-const vocabulario = montarVocabulario(
-  elementosXsd,
-  JSON.parse(planilha),
-  gruposUsados,
-  CAMINHOS_EM_DUVIDA,
-)
+exigirGruposConhecidos(tags.map((tag) => tag.caminhoInvoicy).filter(Boolean), elementosXsd)
 const definicoes = indexarDefinicoes(
   leiaute.campos,
   diferencas,
@@ -313,9 +95,12 @@ const erros = montarErros([...rejeicoes.rejeicoes, ...rejeicoesSomenteAnexoI(dif
 })
 
 const api = await criarClienteApi()
-const versaoLayoutId = await garantirLayoutInvoicy(api)
-const provedor = await garantirProvedor(api)
-const versaoId = await garantirVersao(api, provedor.id, versaoLayoutId)
+const versaoLayoutId = await garantirLayoutInvoicy(api, LAYOUT_INVOICY, ESTADO_LAYOUT_INVOICY)
+const provedor = await garantirProvedor(api, PROVEDOR)
+const versaoId = await garantirVersao(api, provedor.id, versaoLayoutId, {
+  rotulo: ROTULO_VERSAO,
+  introducao: INTRODUCAO_VERSAO,
+})
 await sincronizarAvisos(api, versaoId, avisos)
 const idPorCaminho = await sincronizarVocabulario(api, versaoLayoutId, vocabulario)
 await sincronizarCamposDaVersao(api, versaoId, campos, idPorCaminho)
