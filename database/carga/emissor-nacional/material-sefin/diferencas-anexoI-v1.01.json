@@ -1,0 +1,759 @@
+{
+ "descricao": "Comparação entre o leiaute vigente (Anexo I v1.01, alinhado ao XSD 1.01) e o leiaute RTC (Anexo VI v1.04 NT009) usado como base deste codex.",
+ "campos_somente_anexo_I": [
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/finNFSe",
+   "descricao": "Indicador da finalidade da emissão de NFS-e\n\n0 = NFS-e regular;",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/cCIB",
+   "descricao": "Código do Cadastro Imobiliário Brasileiro - CIB",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/end",
+   "descricao": "Grupo de informações do endereço do imóvel.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/end/CEP",
+   "descricao": "Código numérico do Endereçamento Postal nacional (CEP) do endereço do imóvel.\n(Informar os zeros não significativos)",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/end/endExt",
+   "descricao": "Grupo de informações descritivas do endereço do imóvel no exterior.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/end/endExt/cEndPost",
+   "descricao": "Código de Endereçamento Postal alfanumérico do endereço do imóvel no exterior.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/end/endExt/xCidade",
+   "descricao": "Nome da cidade no exterior, local do imóvel.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/end/endExt/xEstProvReg",
+   "descricao": "Estado, província ou região da cidade no exterior, local do imóvel.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/end/nro",
+   "descricao": "Número no logradouro do endereço do imóvel.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/end/xBairro",
+   "descricao": "Bairro do endereço do imóvel.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/end/xCpl",
+   "descricao": "Complemento do endereço do imóvel.",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/end/xLgr",
+   "descricao": "Tipo e nome do logradouro do endereço do imóvel.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/inscImobFisc",
+   "descricao": "Inscrição imobiliária fiscal\n (código fornecido pela prefeitura para a identificação da obra ou para fins de recolhimento do IPTU)",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes",
+   "descricao": "Grupo de informações relativas a valores incluídos neste documento e recebidos por motivo de estarem relacionadas a operações de terceiros, objeto de reembolso, repasse ou ressarcimento pelo recebedor, já tributados e aqui referenciados",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos",
+   "descricao": "Grupo relativo aos documentos referenciados nos casos de reembolso, repasse e ressarcimento que serão considerados na base de cálculo do ISSQN, do IBS e da CBS.",
+   "ocorrencia": "1-1000"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/dFeNacional",
+   "descricao": "Grupo de informações de documentos fiscais eletrônicos que se encontram no repositório nacional.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/dFeNacional/chaveDFe",
+   "descricao": "Chave do Documento Fiscal eletrônico do repositório nacional referenciado para os casos de operações já tributadas.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/dFeNacional/tipoChaveDFe",
+   "descricao": "Documento fiscal a que se refere a chaveDfe que seja um dos documentos do Repositório Nacional:\n1 = NFS-e;\n2 = NF-e;\n3 = CT-e;\n9 = Outro;",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/dFeNacional/xTipoChaveDFe",
+   "descricao": "Descrição da DF-e a que se refere a chaveDfe que seja um dos documentos do Repositório Nacional. Deve ser preenchido apenas quando tipoChaveDFe = 9 (Outro).",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/docFiscalOutro",
+   "descricao": "Grupo de informações de documento fiscais, eletrônicos ou não, que não se encontram no repositório nacional.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/docFiscalOutro/cMunDocFiscal",
+   "descricao": "Código do município emissor do documento fiscal que não se encontra no repositório nacional",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/docFiscalOutro/nDocFiscal",
+   "descricao": "Número do documento fiscal que não se encontra no repositório nacional",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/docFiscalOutro/xDocFiscal",
+   "descricao": "Descrição do documento fiscal",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/docOutro",
+   "descricao": "Grupo de informações de documento não fiscal.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/docOutro/nDoc",
+   "descricao": "Número do documento não fiscal.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/docOutro/xDoc",
+   "descricao": "Descrição do documento não fiscal.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/dtCompDoc",
+   "descricao": "Data da competência do documento dedutível.\nAno, mês e dia (AAAA-MM-DD)",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/dtEmiDoc",
+   "descricao": "Data da emissão do documento dedutível.\nAno, mês e dia (AAAA-MM-DD)",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/fornec",
+   "descricao": "Grupo de informações do fornecedor do documento referenciado",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/fornec/CNPJ",
+   "descricao": "Número da inscrição federal (CNPJ) do fornecedor.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/fornec/CPF",
+   "descricao": "Número da inscrição federal (CPF) do fornecedor.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/fornec/NIF",
+   "descricao": "Este elemento só deverá ser preenchido para fornecedores não residentes no Brasil.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/fornec/cNaoNIF",
+   "descricao": "Motivo para não informação do NIF:\n\n0 - Não informado na nota de origem;\n1 - Dispensado do NIF;\n2 - Não exigência do NIF;",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/fornec/xNome",
+   "descricao": "Nome / Razão Social do fornecedor.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/tpReeRepRes",
+   "descricao": "Tipo de valor incluído neste documento, recebido por motivo de estarem relacionadas a operações de terceiros, objeto de reembolso, repasse ou ressarcimento pelo recebedor, já tributados e aqui referenciados\n\n 01 = Repasse de remuneração por intermediação de imóveis a demais corretores\n envolvidos na operação\n 02 = Repasse de valores a fornecedor relativo a fornecimento intermediado por\n agência de turismo\n 03 = Reembolso ou ressarcimento recebido por agência de propaganda e\n publicidade por valores pagos relativos a serviços de produção externa por conta\n e ordem de terceiro\n 04 = Reembolso ou ressarcimento recebido por agência de propaganda e\n publicidade por valores pagos relativos a serviços de mídia por conta\n e ordem de terceiro\n 99 = Outros reembolsos ou ressarcimentos recebidos por valores pagos relativos a\n operações por conta e ordem de terceiro",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/vlrReeRepRes",
+   "descricao": "Valor monetário (total ou parcial, conforme documento informado) utilizado para não inclusão na base de cálculo do ISS e do IBS e da CBS da NFS-e que está sendo emitida (R$).",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/xTpReeRepRes",
+   "descricao": "Descrição do reembolso ou ressarcimento quando a opção é \"99 – Outros reembolsos ou ressarcimentos recebidos por valores pagos relativos a operações por conta e ordem de terceiro\".",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed",
+   "descricao": "Grupo de informações relativas ao valores para dedução/redução do valor da base de cálculo (valor do serviço)",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos",
+   "descricao": "Grupo de informações de documento utilizado para dedução/redução do valor da base de cálculo (valor do serviço)",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed",
+   "descricao": "Grupo de informações de documento utilizado para dedução/redução do valor da base de cálculo (valor do serviço)",
+   "ocorrencia": "1-1000"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/NFNFS",
+   "descricao": "Grupo de informações de NF ou NFS\n(Modelo não eletrônico)",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/NFNFS/modNFS",
+   "descricao": "Modelo da Nota Fiscal NF ou NFS.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/NFNFS/nNFS",
+   "descricao": "Número da Nota Fiscal NF ou NFS.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/NFNFS/serieNFS",
+   "descricao": "Série Nota Fiscal NF ou NFS.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/NFSeMun",
+   "descricao": "Grupo de informações para outras notas eletrônicas municipais\n(Nota eletrônica municipal emitida fora do padrão nacional)",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/NFSeMun/cMunNFSeMun",
+   "descricao": "Código Município emissor da nota eletrônica municipal.\n(Tabela do IBGE)",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/NFSeMun/cVerifNFSeMun",
+   "descricao": "Código de Verificação da nota eletrônica municipal.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/NFSeMun/nNFSeMun",
+   "descricao": "Número da nota eletrônica municipal.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/chNFSe",
+   "descricao": "Chave de acesso da NFS-e (padrão nacional).",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/chNFe",
+   "descricao": "Chave de acesso da NF-e.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/dtEmiDoc",
+   "descricao": "Data da emissão do documento dedutível.\nAno, mês e dia (AAAA-MM-DD)",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec",
+   "descricao": "Grupo de informações do fornecedor do serviço prestado",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/CAEPF",
+   "descricao": "Número do Cadastro de Atividade Econômica da Pessoa Física (CAEPF).",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/CNPJ",
+   "descricao": "Número da inscrição federal (CNPJ) do fornecedor de serviço.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/CPF",
+   "descricao": "Número da inscrição federal (CPF) do fornecedor do serviço.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/IM",
+   "descricao": "Número do indicador municipal do fornecedor.",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/NIF",
+   "descricao": "Este elemento só deverá ser preenchido para fornecedores não residentes no Brasil.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/cNaoNIF",
+   "descricao": "Motivo para não informação do NIF:\n\n0 - Não informado na nota de origem;\n1 - Dispensado do NIF;\n2 - Não exigência do NIF;",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/email",
+   "descricao": "E-mail do fornecedor.",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/end",
+   "descricao": "Grupo de informações do endereço do fornecedor.",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/end/endExt",
+   "descricao": "Grupo de informações do endereço no exterior.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/end/endExt/cEndPost",
+   "descricao": "Código alfanumérico do Endereçamento Postal no exterior do fornecedor.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/end/endExt/cPais",
+   "descricao": "Código do país do endereço do prestador do fornecedor.\n (Tabela de Países ISO)",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/end/endExt/xCidade",
+   "descricao": "Nome da cidade no exterior do fornecedor.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/end/endExt/xEstProvReg",
+   "descricao": "Estado, província ou região da cidade no exterior do fornecedor.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/end/endNac",
+   "descricao": "Grupo de informações do endereço nacional.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/end/endNac/CEP",
+   "descricao": "Código numérico do Endereçamento Postal nacional (CEP)\n do endereço do fornecedor.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/end/endNac/cMun",
+   "descricao": "Código do município do endereço do fornecedor.\n (Tabela do IBGE)",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/fone",
+   "descricao": "Número do telefone do fornecedor.\n(Preencher com o Código DDD + número do telefone.\nNas operações com exterior é permitido informar o código do país + código da localidade + número do telefone)",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/nro",
+   "descricao": "Número no logradouro do endereço do fornecedor.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/xBairro",
+   "descricao": "Bairro do endereço do fornecedor.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/xCpl",
+   "descricao": "Complemento do endereço do fornecedor.",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/xLgr",
+   "descricao": "Tipo e nome do logradouro do endereço do fornecedor.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/xNome",
+   "descricao": "Nome / Razão Social do fornecedor.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/nDoc",
+   "descricao": "Identificador de documento não fiscal diferente dos demais do grupo.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/nDocFisc",
+   "descricao": "Identificador de documento fiscal diferente dos demais do grupo.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/tpDedRed",
+   "descricao": "Tipo da Dedução/Redução:\n\n01 – Alimentação e bebidas/frigobar;\n02 – Materiais;\n03 - Produção Externa;\n04 - Reembolso de despesas;\n 05 – Repasse consorciado;\n 06 – Repasse plano de saúde;\n 07 – Serviços;\n08 – Subempreitada de mão de obra;\n99 – Outras deduções;",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/vDeducaoReducao",
+   "descricao": "Valor monetário utilizado para dedução/redução do valor do serviço da NFS-e que está sendo emitida (R$).\nDeve ser menor ou igual ao valor deduzível/redutível (vDedutivelRedutivel).",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/vDedutivelRedutivel",
+   "descricao": "Valor monetário total dedutível/redutível no documento informado (R$).\nEste é o valor total no documento informado que é passível de dedução/redução.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/xDescOutDed",
+   "descricao": "Descrição da Dedução/Redução quando a opção é \"99 – Outras Deduções\".",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/pDR",
+   "descricao": "Valor percentual padrão para dedução/redução do valor do serviço.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/vDR",
+   "descricao": "Valor monetário padrão para dedução/redução do valor do serviço.",
+   "ocorrencia": "1-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/IBSCBS/valores/vCalcReeRepRes",
+   "descricao": "Valor monetário (R$) total relativo ao fornecimento próprio de bens materiais ou relacionados a operações de terceiros, objeto de reembolso, repasse ou ressarcimento pelo recebedor, já tributados e aqui referenciados e que não integram da base de cálculo (BC) do ISSQN, do IBS e da CBS.",
+   "ocorrencia": "0-1"
+  },
+  {
+   "xpath": "NFSe/infNFSe/valores/vCalcDR",
+   "descricao": "Valor monetário (R$) de dedução/redução da base de cálculo (BC) do ISSQN.",
+   "ocorrencia": "0-1"
+  }
+ ],
+ "campos_novos_anexo_VI": [
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/bensMoveis",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/bensMoveis/cNCMBemMovel",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/bensMoveis/qtdNCMBemMovel",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/bensMoveis/xNCMBemMovel",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc/pgto",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc/pgto/CNPJBasePSP",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc/pgto/CNPJReceb",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc/pgto/idTransacao",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc/pgto/nPag",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc/pgto/tpMeioPgto",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/cMun",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gLocacao",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gLocacao/dVencOrig",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gLocacao/pCopropriedade",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gLocacao/vDescCondTot",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gLocacao/vDescIncondTot",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gLocacao/vTotOper",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/cCIB",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/end",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/end/CEP",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/end/nro",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/end/xBairro",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/end/xCpl",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/end/xLgr",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/gAjusteBCLocImoveis",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/gAjusteBCLocImoveis/tpAjusteBCLocImoveis",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/gAjusteBCLocImoveis/vAjusteBCLocImoveis",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/gAjusteBCLocImoveis/xTpAjusteBCLocImoveis",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/inscImobFisc",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/indDoacao",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/indZFMALC",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBS/gEstornoCred",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBS/gEstornoCred/vCBSEstCred",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBS/gEstornoCred/vIBSEstCred",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBS/gPagAntecipado",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBS/gPagAntecipado/refNFSe",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBSAjuste",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBSAjuste/vCBS",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBSAjuste/vIBS",
+  "NFSe/infNFSe/DPS/infDPS/finNFSe",
+  "NFSe/infNFSe/DPS/infDPS/prest/regTrib/regApIBSCBSSN",
+  "NFSe/infNFSe/DPS/infDPS/serv/cServ/cAtvSN",
+  "NFSe/infNFSe/DPS/infDPS/tpNFSeCredito",
+  "NFSe/infNFSe/DPS/infDPS/tpNFSeDebito",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/dFeNacional",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/dFeNacional/chaveDFe",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/dFeNacional/tipoChaveDFe",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/dFeNacional/xTipoChaveDFe",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/docFiscalOutro",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/docFiscalOutro/cMunDocFiscal",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/docFiscalOutro/nDocFiscal",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/docFiscalOutro/xDocFiscal",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/docOutro",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/docOutro/nDoc",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/docOutro/xDoc",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/dtCompDoc",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/dtEmiDoc",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/CNPJ",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/CPF",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/NIF",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/cNaoNIF",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/email",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/end",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/end/endExt",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/end/endExt/cEndPost",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/end/endExt/cPais",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/end/endExt/xCidade",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/end/endExt/xEstProvReg",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/end/endNac",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/end/endNac/CEP",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/end/endNac/cMun",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/fone",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/nro",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/xBairro",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/xCpl",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/xLgr",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/fornec/xNome",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/tpAjusteBC",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/vAjuteAplic",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/vTotDoc",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/xTpAjusteBC",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/pAjusteBCISSQN",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/vAjusteBCISSQN",
+  "NFSe/infNFSe/IBSCBS/totCIBS/gTribSN",
+  "NFSe/infNFSe/IBSCBS/totCIBS/gTribSN/pCBSSN",
+  "NFSe/infNFSe/IBSCBS/totCIBS/gTribSN/pIBSSN",
+  "NFSe/infNFSe/IBSCBS/totCIBS/gTribSN/vCBSSN",
+  "NFSe/infNFSe/IBSCBS/totCIBS/gTribSN/vIBSSN",
+  "NFSe/infNFSe/IBSCBS/valores/vCalcAjusteBCIBSCBS",
+  "NFSe/infNFSe/IBSCBS/valores/vCalcAjusteBCLocImoveis",
+  "NFSe/infNFSe/IBSCBS/valores/vReceitaBrutaSN",
+  "NFSe/infNFSe/valores/vCalcAjusteBCISSQN"
+ ],
+ "campos_VI_ausentes_xsd_1_01": [
+  "NFSe/infNFSe/id",
+  "NFSe/infNFSe/valores/vCalcAjusteBCISSQN",
+  "NFSe/infNFSe/IBSCBS/valores/vCalcAjusteBCIBSCBS",
+  "NFSe/infNFSe/IBSCBS/valores/vCalcAjusteBCLocImoveis",
+  "NFSe/infNFSe/IBSCBS/valores/vReceitaBrutaSN",
+  "NFSe/infNFSe/IBSCBS/totCIBS/gTribSN",
+  "NFSe/infNFSe/IBSCBS/totCIBS/gTribSN/pIBSSN",
+  "NFSe/infNFSe/IBSCBS/totCIBS/gTribSN/vIBSSN",
+  "NFSe/infNFSe/IBSCBS/totCIBS/gTribSN/pCBSSN",
+  "NFSe/infNFSe/IBSCBS/totCIBS/gTribSN/vCBSSN",
+  "NFSe/infNFSe/DPS/infDPS/id",
+  "NFSe/infNFSe/DPS/infDPS/tpNFSeDebito",
+  "NFSe/infNFSe/DPS/infDPS/tpNFSeCredito",
+  "NFSe/infNFSe/DPS/infDPS/prest/regTrib/regApIBSCBSSN",
+  "NFSe/infNFSe/DPS/infDPS/serv/cServ/cAtvSN",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/pAjusteBCISSQN",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/vAjusteBCISSQN",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/tpAjusteBC",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/xTpAjusteBC",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/vTotDoc",
+  "NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/documentos/docAjusteBC/vAjuteAplic",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/indZFMALC",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/indDoacao",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gLocacao",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gLocacao/pCopropriedade",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gLocacao/vTotOper",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gLocacao/vDescIncondTot",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gLocacao/vDescCondTot",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gLocacao/dVencOrig",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/gAjusteBCLocImoveis",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/gAjusteBCLocImoveis/tpAjusteBCLocImoveis",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/gAjusteBCLocImoveis/xTpAjusteBCLocImoveis",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/gUnidImob/gAjusteBCLocImoveis/vAjusteBCLocImoveis",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/bensMoveis",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/bensMoveis/cNCMBemMovel",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/bensMoveis/xNCMBemMovel",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/bensMoveis/qtdNCMBemMovel",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBSAjuste",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBSAjuste/vIBS",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBS/gEstornoCred",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBS/gEstornoCred/vIBSEstCred",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBS/gEstornoCred/vCBSEstCred",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBS/gPagAntecipado",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc/pgto",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc/pgto/nPag",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc/pgto/idTransacao",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc/pgto/tpMeioPgto",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc/pgto/CNPJReceb",
+  "NFSe/infNFSe/DPS/infDPS/IBSCBS/gPgtoVinc/pgto/CNPJBasePSP",
+  "NFSe/infNFSe/DPS/infDPS/Signature",
+  "NFSe/Signature"
+ ],
+ "codigos_erro_somente_anexo_I": [
+  {
+   "codigo": "E0438",
+   "mensagem": "Não é permitido o preenchimento dos campos do grupo de informações relativas à Dedução/Redução do ISSQN, quando o prestador de serviço tiver algum regime especial de tributação.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed"
+  },
+  {
+   "codigo": "E0439",
+   "mensagem": "Não é permitido o preenchimento dos campos do grupo de informações relativas à Dedução/Redução do ISSQN, quando o benefício municipal informado na DPS for do tipo \"Isenção\".",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed"
+  },
+  {
+   "codigo": "E0440",
+   "mensagem": "O tipo de dedução/redução informado na DPS não é permitida pelo município de incidência do ISSQN, conforme parametrizações do código de serviço do município de incidência.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed"
+  },
+  {
+   "codigo": "E0441",
+   "mensagem": "Não é permitido o preenchimento de informações relativas à Dedução/Redução para o prestador de serviço ME/EPP, apurando pelo SN conforme parametrização do código de serviço admnistrado pelo municipio de incidência do ISSQN.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed"
+  },
+  {
+   "codigo": "E0442",
+   "mensagem": "O tipo de dedução/redução informado na DPS não é permitida para o prestador de serviço ME/EPP, apurando pelo SN.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed"
+  },
+  {
+   "codigo": "E0453",
+   "mensagem": "O valor percentual para dedução/redução deve ser maior que 0 e menor ou igual a 100%.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/pDR"
+  },
+  {
+   "codigo": "E0455",
+   "mensagem": "Informe uma chave de NFS-e válida.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/chNFSe"
+  },
+  {
+   "codigo": "E0456",
+   "mensagem": "NFS-e não existe na base de dados do autorizador de NFS-e nacional. Informe uma chave de NFS-e existente.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/chNFSe"
+  },
+  {
+   "codigo": "E0458",
+   "mensagem": "Uma NFS-e cancelada não pode ser informada para dedução/redução.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/chNFSe"
+  },
+  {
+   "codigo": "E0460",
+   "mensagem": "Informe uma chave de NF-e válida.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/chNFe"
+  },
+  {
+   "codigo": "E0462",
+   "mensagem": "NF-e não existe na base de dados do autorizador de NF-e nacional. Informe uma chave de NF-e existente.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/chNFe"
+  },
+  {
+   "codigo": "E0464",
+   "mensagem": "Uma NF-e cancelada não pode ser informada para dedução/redução.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/chNFe"
+  },
+  {
+   "codigo": "E0466",
+   "mensagem": "Informe um código de município existente para o documento de nota, conforme tabela de municípios do IBGE.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/NFSeMun/cMunNFSeMun"
+  },
+  {
+   "codigo": "E0468",
+   "mensagem": "Informar, obrigatoriamente, o campo de descrição no caso ideDedRed igual a 99 – Outras deduções.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/xDescOutDed"
+  },
+  {
+   "codigo": "E0470",
+   "mensagem": "Não informar o campo de descrição no caso ideDedRed diferente a 99 – Outras deduções.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/xDescOutDed"
+  },
+  {
+   "codigo": "E0472",
+   "mensagem": "A data de emissão do documento informado na DPS não pode ser posterior à data de competência da DPS.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/dEmiDoc"
+  },
+  {
+   "codigo": "E0474",
+   "mensagem": "O valor de dedução/redução não pode ser superior ao valor dedutível/redutível.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/vDeducaoReducao"
+  },
+  {
+   "codigo": "E0476",
+   "mensagem": "O valor de dedução/redução informado na DPS não pode ser superior ao valor do serviço.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/vDeducaoReducao"
+  },
+  {
+   "codigo": "E0477",
+   "mensagem": "O grupo de informações para o fornecedor deve ser informado obrigatoriamente para o tipo de documento de dedução/redução informado na DPS.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec"
+  },
+  {
+   "codigo": "E0478",
+   "mensagem": "CNPJ do fornecedor informado na DPS é inválido.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/CNPJ"
+  },
+  {
+   "codigo": "E0482",
+   "mensagem": "CNPJ do fornecedor informado na DPS não encontrado no cadastro CNPJ.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/CNPJ"
+  },
+  {
+   "codigo": "E0484",
+   "mensagem": "CPF do fornecedor informado na DPS é inválido.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/CPF"
+  },
+  {
+   "codigo": "E0488",
+   "mensagem": "CPF do fornecedor informado na DPS não encontrado no cadastro CPF.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/documentos/docDedRed/fornec/CPF"
+  },
+  {
+   "codigo": "E0934",
+   "mensagem": "O grupo de informações de endereço da atividade sobre bem imóvel ocorrido no exterior deve ser informado quando o país do local da prestação for informado na DPS.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/end/endExt"
+  },
+  {
+   "codigo": "E0935",
+   "mensagem": "O grupo de informações de endereço da atividade sobre bem imóvel ocorrido no exterior não deve ser informado quando o município do local da prestação for informado na DPS.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/end/endExt"
+  },
+  {
+   "codigo": "E0942",
+   "mensagem": "Outros documentos ficais fiscais não podem ser informados quando a data de competência for posterior a 31 de dezembro de 2025.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/docFiscalOutro"
+  },
+  {
+   "codigo": "E0952",
+   "mensagem": "A descrição do tipo de reembolso, repasse e ressarcimento não deve ser preenchida.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/xTpReeRepRes"
+  },
+  {
+   "codigo": "E0953",
+   "mensagem": "O valor reembolso, repasse e ressarcimento deve ser menor ou igual ao valor do serviço prestado.",
+   "xpath": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/gReeRepRes/documentos/vlrReeRepRes"
+  }
+ ],
+ "codigos_erro_novos_anexo_VI": [
+  "E0678",
+  "E0680",
+  "E0682",
+  "E0684",
+  "E0688",
+  "E0690",
+  "E0698",
+  "EXXX",
+  "EXXXX",
+  "Exxx"
+ ],
+ "valores_dominio_VI_nao_aceitos_xsd_1_01": [
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/finNFSe",
+   "valores_novos_no_anexo_VI": [
+    "1",
+    "2"
+   ],
+   "valores_xsd_1_01": [
+    "0"
+   ]
+  },
+  {
+   "xpath": "NFSe/infNFSe/DPS/infDPS/prest/regTrib/opSimpNac",
+   "valores_novos_no_anexo_VI": [
+    "4"
+   ],
+   "valores_xsd_1_01": [
+    "1",
+    "2",
+    "3"
+   ]
+  }
+ ]
+}

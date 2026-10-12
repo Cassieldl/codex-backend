@@ -2,7 +2,10 @@
  * Carga do provedor Emissor Nacional a partir do material coletado da Sefin Nacional.
  *
  * Uso, com a API no ar:
- *   CODEX_DEV_USUARIO=... CODEX_DEV_SENHA=... node database/carga/emissor-nacional/importar.mjs <pasta-do-material>
+ *   CODEX_DEV_USUARIO=... CODEX_DEV_SENHA=... node database/carga/emissor-nacional/importar.mjs [pasta-do-material]
+ *
+ * Sem a pasta, lê o material da Sefin versionado em `material-sefin/`. A pasta só serve para
+ * carregar um material mais novo antes de ele substituir o versionado.
  *
  * Sincroniza, em vez de só criar: cria o que falta, corrige o texto do que mudou e remove o que
  * deixou de valer para a versão — pode rodar de novo a qualquer momento. Nada é publicado aqui:
@@ -62,11 +65,7 @@ async function lerTexto(arquivo) {
   return readFile(join(PASTA_DA_CARGA, arquivo), 'utf8')
 }
 
-const pastaMaterial = process.argv[2]
-if (!pastaMaterial) {
-  console.error('Uso: node database/carga/emissor-nacional/importar.mjs <pasta-do-material>')
-  process.exit(1)
-}
+const pastaMaterial = process.argv[2] ?? join(PASTA_DA_CARGA, 'material-sefin')
 
 const [rejeicoes, diferencas, leiaute, regras] = await Promise.all([
   lerJson(pastaMaterial, 'rejeicoes-emissao.json'),

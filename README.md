@@ -98,15 +98,16 @@ da versão e o artigo de emissão judicial. Escreve sempre pela API — nunca po
 
 - **Sincroniza**, não só cria: rodar de novo corrige o que mudou e não duplica nada.
 - **Não publica nada.** Publicar é decisão editorial, feita na área interna.
-- Material do InvoiCy (XSD de entrada, extrato da planilha v8, mapeamento das telas do provedor) fica
-  versionado na pasta. O material da Sefin (leiaute e regras da DPS) é lido de uma pasta local,
-  passada como argumento.
+- Todo o material fica versionado na pasta: o do InvoiCy (XSD de entrada, extrato da planilha v8,
+  mapeamento das telas do provedor) e o da Sefin (leiaute, regras e rejeições da DPS, em
+  `material-sefin/`). Uma pasta passada como argumento substitui o material da Sefin — para testar
+  um material novo antes de versioná-lo.
 
 Com a API e o Keycloak no ar:
 
 ```bash
 CODEX_DEV_USUARIO=codex.dev CODEX_DEV_SENHA=codex.dev \
-  node database/carga/emissor-nacional/importar.mjs <pasta-do-material-da-sefin>
+  node database/carga/emissor-nacional/importar.mjs
 ```
 
 | Variável | Uso |
@@ -130,6 +131,13 @@ versionado em `database/carga/provedores/material/<id>/`:
 ```bash
 CODEX_DEV_USUARIO=codex.dev CODEX_DEV_SENHA=codex.dev \
   node database/carga/provedores/importar.mjs --todos   # ou: importar.mjs ipm elotech
+```
+
+Publicar é um passo separado, também idempotente. Sem `--verificado-em`, a versão vai ao ar como
+"ainda não verificada":
+
+```bash
+node database/carga/provedores/publicar.mjs --todos [--verificado-em AAAA-MM-DD]
 ```
 
 Para um provedor novo: crie a pasta em `material/`, acrescente a entrada no catálogo e rode a
