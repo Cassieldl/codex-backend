@@ -176,6 +176,21 @@ public sealed class ContratoArtigoHttpTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task P8_CampoDeLayout_TrazSignificadoELinkParaAPaginaDoCampo()
+    {
+        var cenario = await SemearAsync();
+
+        var (_, corpo) = await ObterAsync($"/api/v1/artigos/{cenario.PublicadoSlug}");
+
+        var campo = corpo.GetProperty("data").GetProperty("camposLayoutRelacionados").EnumerateArray()
+            .Single(item => item.GetProperty("slug").GetString() == cenario.CampoPublicadoSlug);
+
+        campo.GetProperty("significado").GetString().Should().Be("Campo referenciado por artigo");
+        campo.GetProperty("url").GetString().Should().Be($"/layout/campos/{cenario.CampoPublicadoSlug}",
+            because: "a página pública do campo existe; sem o link, a referência vira texto morto no artigo");
+    }
+
+    [Fact]
     public async Task P8_CampoDeLayoutNaoPublicado_NaoApareceNasReferenciasCruzadas()
     {
         var cenario = await SemearAsync();

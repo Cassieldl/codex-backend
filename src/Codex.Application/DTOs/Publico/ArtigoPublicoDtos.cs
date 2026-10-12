@@ -69,8 +69,11 @@ public sealed record ReferenciaCampoLayoutDto
 
     public required string CaminhoXml { get; init; }
 
-    /// <summary><c>null</c> sempre nesta fatia (PQ-06) — a 003 preenche o valor, o componente não muda.</summary>
-    public string? Url { get; init; }
+    /// <summary>O que o campo é — o leitor entende a referência sem sair do artigo.</summary>
+    public required string Significado { get; init; }
+
+    /// <summary>"/layout/campos/{slug}" — a página pública do campo.</summary>
+    public required string Url { get; init; }
 }
 
 /// <summary>Referência pública a um erro conhecido, a partir de um artigo (§4.3).</summary>

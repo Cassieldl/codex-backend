@@ -76,7 +76,8 @@ public sealed class ArtigoRepositorioPublico : RepositorioBase<CodexDbContext>, 
                 Slug = cl.Slug,
                 Nome = cl.Nome,
                 CaminhoXml = cl.CaminhoXml,
-                Url = null, // PQ-06 — sempre null nesta fatia.
+                Significado = cl.Significado,
+                Url = "/layout/campos/" + cl.Slug,
             }
         ).ToListAsync(ct);
 
