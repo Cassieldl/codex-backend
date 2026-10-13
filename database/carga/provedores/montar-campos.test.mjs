@@ -2,6 +2,7 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
 
+import { lerFonteDeExemplo } from '../exemplos-xml.mjs'
 import { lerMapeamento } from './ler-mapeamento.mjs'
 import { comPrefixo, definicoesPorCaminho, indexarEsquema } from './ler-xsd.mjs'
 import { TIPO_NAO_DESCRITO, montarCampos } from './montar-campos.mjs'
@@ -149,4 +150,203 @@ test('tag fora do leiaute: tipo explícito e ocorrência da configuração, com 
   assert.equal(semLeiaute.tipo, TIPO_NAO_DESCRITO)
   assert.equal(semLeiaute.estadoPreenchimento, 'Obrigatorio')
   assert.match(semLeiaute.notaPreenchimento, /não descreve esta tag/)
+})
+
+const FONTE_DO_LOTE = { id: 'lote', raiz: 'Lote', prefixoDoEnvelope: 'Lote/Decl/' }
+
+function lerFonteDoLote(xml) {
+  return lerFonteDeExemplo([xml], FONTE_DO_LOTE)
+}
+
+const XML_DO_LOTE = `<Lote>
+  <Cnpj>identificador do lote</Cnpj>
+  <Decl>
+    <Valor>150.00</Valor>
+    <Retido>2</Retido>
+    <Tipo>1</Tipo>
+    <Emissao>2026-02-03</Emissao>
+    <Prestador><Cnpj>identificador do prestador</Cnpj></Prestador>
+    <Tomador><Documento>documento do tomador</Documento></Tomador>
+    <Referencias><Chave>chave da nota</Chave></Referencias>
+    <Numero>579</Numero>
+  </Decl>
+</Lote>`
+
+function montarComFonte(xml) {
+  return montarCampos(comCampos(lerMapeamento(MAPEAMENTO)), definicoes, {
+    prefixoDestino: 'Lote/Decl/',
+    fonteLida: lerFonteDoLote(xml),
+  })
+}
+
+const camposComFonte = montarComFonte(XML_DO_LOTE)
+const itemComFonte = (nome, lista = camposComFonte) => lista.find((item) => item.nomeCampo === nome)
+
+/** Tag já resolvida, para os casos em que o mapeamento em tabela atrapalha mais do que ajuda. */
+function tagResolvida(sequencial, caminho, nomeCampo, elemento = 'E') {
+  return {
+    sequencial,
+    caminho,
+    nomeTag: caminho.slice(caminho.lastIndexOf('/') + 1),
+    elemento,
+    ocorrencia: '0-1',
+    campos: [{ nomeCampo, caminhoInvoicy: `Envio/RPS/${nomeCampo}` }],
+  }
+}
+
+test('sem fonte de exemplo a chave exemplo não existe: o campo não é gerenciado pela carga', () => {
+  assert.equal(campos.length, 9)
+  assert.ok(campos.every((item) => !('exemplo' in item.campoVersao)))
+  assert.ok(campos.every((item) => !('decisaoDeExemplo' in item)))
+})
+
+test('com fonte, todo campo tem a chave exemplo: o valor da fonte ou null', () => {
+  assert.equal(camposComFonte.length, campos.length)
+  assert.ok(camposComFonte.every((item) => 'exemplo' in item.campoVersao))
+
+  const exemplos = Object.fromEntries(
+    camposComFonte.map((item) => [item.nomeCampo, item.campoVersao.exemplo]),
+  )
+  assert.deepEqual(exemplos, {
+    CNPJ_prest: null,
+    ValServicos: '150.00',
+    ISSRetido: '2',
+    RPSTipo: '1',
+    dEmis: '2026-02-03',
+    TomaCNPJ: null,
+    TomaCPF: null,
+    DocChaveNFSe: 'chave da nota',
+    RPSNumero: '579',
+  })
+})
+
+test('a decisão do exemplo fica no item, fora do corpo que a API recebe', () => {
+  const item = itemComFonte('ValServicos')
+  assert.equal(item.decisaoDeExemplo.exemplo, '150.00')
+  assert.ok(!('decisaoDeExemplo' in item.campoVersao))
+  assert.ok(!('decisaoDeExemplo' in JSON.parse(JSON.stringify(item.campoVersao))))
+})
+
+test('campo sem valor publicável serializa exemplo null, não chave ausente', () => {
+  const corpo = JSON.parse(JSON.stringify(itemComFonte('CNPJ_prest').campoVersao))
+  assert.ok(Object.hasOwn(corpo, 'exemplo'))
+  assert.equal(corpo.exemplo, null)
+})
+
+test('o exemplo é conferido contra o tipo e o domínio do próprio campo', () => {
+  const foraDaRegra = montarComFonte(
+    XML_DO_LOTE.replace('150.00', 'cento e cinquenta').replace('<Retido>2', '<Retido>3'),
+  )
+  const valor = itemComFonte('ValServicos', foraDaRegra)
+  assert.equal(valor.campoVersao.exemplo, null)
+  assert.equal(valor.decisaoDeExemplo.motivo, 'FORA_DO_TIPO')
+
+  const retido = itemComFonte('ISSRetido', foraDaRegra)
+  assert.equal(retido.campoVersao.exemplo, null)
+  assert.equal(retido.decisaoDeExemplo.motivo, 'FORA_DO_DOMINIO')
+})
+
+test('casa pelo caminho completo da tag, nunca pelo destino exibido, mesmo truncado', () => {
+  const bloco = (numero) => `Bloco${numero}${'Longo'.repeat(20)}`
+  const blocos = [bloco(1), bloco(2), bloco(3)]
+  const tags = blocos.map((nome, indice) =>
+    tagResolvida(indice + 1, `Envelope/${nome}/Valor`, 'ValTotal'),
+  )
+  const xml = `<Envelope>${blocos.map((nome) => `<${nome}><Valor>900.00</Valor></${nome}>`).join('')}</Envelope>`
+  const fonteLida = lerFonteDeExemplo([xml], {
+    id: 'envelope',
+    raiz: 'Envelope',
+    prefixoDoEnvelope: 'Envelope/',
+  })
+
+  const [item] = montarCampos(tags, new Map(), { prefixoDestino: 'Envelope/', fonteLida })
+
+  assert.ok(item.campoVersao.destinoXml.endsWith(' | …'))
+  assert.equal(item.campoVersao.exemplo, '900.00')
+})
+
+test('destino do envelope não rouba nem empresta valor', () => {
+  const cnpj = itemComFonte('CNPJ_prest')
+  assert.equal(cnpj.campoVersao.exemplo, null)
+  assert.deepEqual(
+    cnpj.decisaoDeExemplo.destinos.map(({ caminho, motivo }) => [caminho, motivo]),
+    [
+      ['Lote/Cnpj', 'ENVELOPE'],
+      ['Lote/Decl/Prestador/Cnpj', 'IDENTIFICACAO'],
+    ],
+  )
+
+  const tags = [
+    tagResolvida(1, 'Lote/Total', 'ValTotal'),
+    tagResolvida(2, 'Lote/Decl/Total', 'ValTotal'),
+    tagResolvida(3, 'Lote/Quantidade', 'QtdTotal'),
+  ]
+  const fonteLida = lerFonteDoLote(
+    '<Lote><Total>1.00</Total><Decl><Total>900.00</Total><Quantidade>7</Quantidade></Decl></Lote>',
+  )
+  const [total, quantidade] = montarCampos(tags, new Map(), {
+    prefixoDestino: 'Lote/Decl/',
+    fonteLida,
+  })
+
+  assert.equal(total.campoVersao.exemplo, '900.00')
+  assert.equal(quantidade.campoVersao.exemplo, null)
+  assert.equal(quantidade.decisaoDeExemplo.motivo, 'ENVELOPE')
+})
+
+test('tag que recebe um campo ou outro: os dois ficam sem exemplo, mesmo com valor na fonte', () => {
+  for (const nome of ['TomaCNPJ', 'TomaCPF']) {
+    const item = itemComFonte(nome)
+    assert.equal(item.campoVersao.exemplo, null)
+    assert.equal(item.decisaoDeExemplo.motivo, 'ALTERNATIVA')
+  }
+})
+
+test('campo de dois destinos: valores iguais viram o exemplo, valores diferentes não', () => {
+  const tags = [
+    tagResolvida(1, 'Lote/Decl/Soma', 'ValTotal'),
+    tagResolvida(2, 'Lote/Decl/Subtotal', 'ValTotal'),
+  ]
+  const montarTotal = (xml) =>
+    montarCampos(tags, new Map(), {
+      prefixoDestino: 'Lote/Decl/',
+      fonteLida: lerFonteDoLote(xml),
+    })[0]
+
+  const iguais = montarTotal(
+    '<Lote><Decl><Soma>900.00</Soma><Subtotal>900.00</Subtotal></Decl></Lote>',
+  )
+  assert.equal(iguais.campoVersao.exemplo, '900.00')
+
+  const diferentes = montarTotal(
+    '<Lote><Decl><Soma>900.00</Soma><Subtotal>800.00</Subtotal></Decl></Lote>',
+  )
+  assert.equal(diferentes.campoVersao.exemplo, null)
+  assert.equal(diferentes.decisaoDeExemplo.motivo, 'DESTINOS_DIVERGEM')
+})
+
+test('a tag de composição nunca é destino de exemplo', () => {
+  const composicao = camposComFonte.filter((item) => item.nomeCampo === 'RPSNumero e RPSSerie')
+  assert.deepEqual(composicao, [])
+  assert.equal(itemComFonte('RPSNumero').decisaoDeExemplo.destinos.length, 1)
+})
+
+test('tag declarada como atributo ou grupo não vira exemplo, mesmo com valor na fonte', () => {
+  const tags = [
+    tagResolvida(1, 'Lote/Decl/Versao', 'VersaoLeiaute', 'A'),
+    tagResolvida(2, 'Lote/Decl/Itens', 'ListaItens', 'G'),
+    tagResolvida(3, 'Lote/Decl/Observacao', 'Observacao'),
+  ]
+  const fonteLida = lerFonteDoLote(
+    '<Lote><Decl><Versao>dois ponto zero</Versao><Itens>varios itens</Itens><Observacao>sem pendencia</Observacao></Decl></Lote>',
+  )
+
+  const [versao, itens, observacao] = montarCampos(tags, new Map(), {
+    prefixoDestino: 'Lote/Decl/',
+    fonteLida,
+  })
+
+  assert.equal(observacao.campoVersao.exemplo, 'sem pendencia')
+  assert.deepEqual([versao.campoVersao.exemplo, versao.decisaoDeExemplo.motivo], [null, 'ATRIBUTO'])
+  assert.deepEqual([itens.campoVersao.exemplo, itens.decisaoDeExemplo.motivo], [null, 'GRUPO'])
 })

@@ -10,6 +10,8 @@
  * Os limites espelham os formulários da área interna, mais estreitos que as colunas do banco.
  */
 
+import { escolherExemplo } from '../exemplos-xml.mjs'
+
 export const LIMITES_CAMPO = {
   tipo: 50,
   tamanho: 40,
@@ -263,8 +265,13 @@ function montarNotaPreenchimento(descricaoNaDps, notas, descricao) {
  *
  * `notasDeComposicao` (código do campo → nota) registra as tags da DPS que o InvoiCy monta a partir
  * de mais de um campo, como o Id.
+ *
+ * `fonteLida` (exemplos de XML reais, lida por exemplos-xml.mjs) liga o exemplo: o campo passa a ter
+ * `campoVersao.exemplo`, com o texto escolhido ou `null` quando nenhum valor pode ser publicado.
+ * Sem ela a chave não existe, o que significa "exemplo não gerenciado por esta carga". O motivo da
+ * decisão fica em `decisaoDeExemplo`, fora de `campoVersao` para não ir no corpo da API.
  */
-export function montarCampos(tags, definicoes, notasDeComposicao = new Map()) {
+export function montarCampos(tags, definicoes, notasDeComposicao = new Map(), fonteLida = null) {
   const tagsPorCaminho = new Map(tags.map((tag) => [tag.caminho, tag]))
   const porCampo = new Map()
   for (const tag of tags.filter((tag) => tag.codigoCampo)) {
@@ -309,42 +316,53 @@ export function montarCampos(tags, definicoes, notasDeComposicao = new Map()) {
       ...codigosCampo.map((codigo) => notasDeComposicao.get(codigo) ?? null),
     ].filter(Boolean)
 
-    return {
+    const campoVersao = {
+      tipo: tipoDe(principal, definicao),
+      tamanho: exigirLimite(
+        descreverTamanho(definicao?.tamanho),
+        LIMITES_CAMPO.tamanho,
+        `Tamanho de ${descricao}`,
+      ),
+      mascara: mascaraDe(principal, definicao),
+      dominio,
+      estadoPreenchimento: estado,
+      condicao: exigirLimite(condicao || null, LIMITES_CAMPO.condicao, `Condição de ${descricao}`),
+      notaPreenchimento: montarNotaPreenchimento(
+        significadoSemEnumeracao(definicao),
+        notas,
+        descricao,
+      ),
+      destinoXml: exigirLimite(
+        destinos.map((tag) => tag.caminho).join(' | '),
+        LIMITES_CAMPO.destinoXml,
+        `Destino de ${descricao}`,
+      ),
+      notaTransformacao: exigirLimite(
+        notasDeTransformacao.join(' ') || null,
+        LIMITES_CAMPO.notaTransformacao,
+        `Nota de transformação de ${descricao}`,
+      ),
+      ordem: principal.codigoTag,
+    }
+
+    const item = {
       codigosCampo,
       nomeCampo: principal.nomeCampo,
       caminhoInvoicy: principal.caminhoInvoicy ?? null,
-      campoVersao: {
-        tipo: tipoDe(principal, definicao),
-        tamanho: exigirLimite(
-          descreverTamanho(definicao?.tamanho),
-          LIMITES_CAMPO.tamanho,
-          `Tamanho de ${descricao}`,
-        ),
-        mascara: mascaraDe(principal, definicao),
-        dominio,
-        estadoPreenchimento: estado,
-        condicao: exigirLimite(
-          condicao || null,
-          LIMITES_CAMPO.condicao,
-          `Condição de ${descricao}`,
-        ),
-        notaPreenchimento: montarNotaPreenchimento(
-          significadoSemEnumeracao(definicao),
-          notas,
-          descricao,
-        ),
-        destinoXml: exigirLimite(
-          destinos.map((tag) => tag.caminho).join(' | '),
-          LIMITES_CAMPO.destinoXml,
-          `Destino de ${descricao}`,
-        ),
-        notaTransformacao: exigirLimite(
-          notasDeTransformacao.join(' ') || null,
-          LIMITES_CAMPO.notaTransformacao,
-          `Nota de transformação de ${descricao}`,
-        ),
-        ordem: principal.codigoTag,
-      },
+      campoVersao,
     }
+    if (!fonteLida) return item
+
+    const decisaoDeExemplo = escolherExemplo({
+      destinos: destinos.map((tag) => ({
+        caminho: tag.caminho,
+        elemento: tag.elemento,
+        alternativa: false,
+      })),
+      fonteLida,
+      campoVersao,
+    })
+    campoVersao.exemplo = decisaoDeExemplo.exemplo
+    return { ...item, decisaoDeExemplo }
   })
 }

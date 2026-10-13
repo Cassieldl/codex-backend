@@ -8,6 +8,7 @@
  */
 
 import { LIMITES_CAMPO } from '../emissor-nacional/transformar-campos.mjs'
+import { escolherExemplo } from '../exemplos-xml.mjs'
 
 const NUMERICOS = new Set([
   'decimal',
@@ -226,6 +227,20 @@ function acomodarDestinos(caminhos) {
   return { destinoXml: [...cabem, '…'].join(' | '), cortado: true }
 }
 
+/** O exemplo é decidido pelo caminho completo de cada destino, nunca pelo destino exibido. */
+function decidirExemplo(destinos, campoVersao, fonteLida, prefixoDestino) {
+  return escolherExemplo({
+    destinos: destinos.map(({ tag, campo }) => ({
+      caminho: tag.caminho,
+      elemento: tag.elemento,
+      alternativa: Boolean(campo.alternativa),
+    })),
+    fonteLida,
+    campoVersao,
+    prefixoDestino,
+  })
+}
+
 /**
  * Um registro por campo do XML de entrada do InvoiCy. Quando o mesmo campo alimenta mais de uma
  * tag do provedor (o CNPJ do prestador vai no cabeçalho do lote e na declaração), a linha é uma só,
@@ -234,8 +249,11 @@ function acomodarDestinos(caminhos) {
  * `definicoes`: caminho → definição do leiaute do provedor, com os caminhos na forma do mapeamento
  * e TODAS as tags do leiaute, não só as mapeadas (as alternativas de um choice vêm daqui).
  * `prefixoDestino`: começo comum dos caminhos (o envelope do lote) tirado do destino exibido.
+ * `fonteLida`: fonte de exemplos do provedor. Com ela, `campoVersao.exemplo` é sempre definido
+ * (texto, ou `null` quando o valor não pode ser publicado) e o item traz `decisaoDeExemplo`, que só
+ * o relatório lê. Sem ela, a chave `exemplo` não existe: a carga não gerencia o exemplo.
  */
-export function montarCampos(tags, definicoes, { prefixoDestino = '' } = {}) {
+export function montarCampos(tags, definicoes, { prefixoDestino = '', fonteLida = null } = {}) {
   const tagsPorSequencial = new Map(tags.map((tag) => [tag.sequencial, tag]))
   const contexto = { definicoes, tagsPorSequencial, escolhasPorPai: indexarEscolhas(definicoes) }
 
@@ -311,37 +329,35 @@ export function montarCampos(tags, definicoes, { prefixoDestino = '' } = {}) {
       notasDeComposicao.get(campo.nomeCampo) ?? null,
     ].filter(Boolean)
 
-    return {
-      nomeCampo: campo.nomeCampo,
-      caminhoInvoicy: campo.caminhoInvoicy,
-      campoVersao: {
-        tipo: descreverTipo(definicao, principal.elemento === 'G'),
-        tamanho: exigirLimite(
-          descreverTamanho(definicao),
-          LIMITES_CAMPO.tamanho,
-          `Tamanho de ${descricao}`,
-        ),
-        mascara: descreverMascara(definicao),
-        dominio,
-        estadoPreenchimento: estado,
-        condicao: exigirLimite(
-          condicao || null,
-          LIMITES_CAMPO.condicao,
-          `Condição de ${descricao}`,
-        ),
-        notaPreenchimento: montarNotaPreenchimento(
-          normalizar(definicao?.documentacao),
-          notas,
-          descricao,
-        ),
-        destinoXml,
-        notaTransformacao: exigirLimite(
-          notasDeTransformacao.join(' ') || null,
-          LIMITES_CAMPO.notaTransformacao,
-          `Nota de transformação de ${descricao}`,
-        ),
-        ordem: Math.min(...destinos.map(({ tag }) => tag.sequencial)),
-      },
+    const campoVersao = {
+      tipo: descreverTipo(definicao, principal.elemento === 'G'),
+      tamanho: exigirLimite(
+        descreverTamanho(definicao),
+        LIMITES_CAMPO.tamanho,
+        `Tamanho de ${descricao}`,
+      ),
+      mascara: descreverMascara(definicao),
+      dominio,
+      estadoPreenchimento: estado,
+      condicao: exigirLimite(condicao || null, LIMITES_CAMPO.condicao, `Condição de ${descricao}`),
+      notaPreenchimento: montarNotaPreenchimento(
+        normalizar(definicao?.documentacao),
+        notas,
+        descricao,
+      ),
+      destinoXml,
+      notaTransformacao: exigirLimite(
+        notasDeTransformacao.join(' ') || null,
+        LIMITES_CAMPO.notaTransformacao,
+        `Nota de transformação de ${descricao}`,
+      ),
+      ordem: Math.min(...destinos.map(({ tag }) => tag.sequencial)),
     }
+    const item = { nomeCampo: campo.nomeCampo, caminhoInvoicy: campo.caminhoInvoicy, campoVersao }
+    if (!fonteLida) return item
+
+    const decisaoDeExemplo = decidirExemplo(destinos, campoVersao, fonteLida, prefixoDestino)
+    campoVersao.exemplo = decisaoDeExemplo.exemplo
+    return { ...item, decisaoDeExemplo }
   })
 }

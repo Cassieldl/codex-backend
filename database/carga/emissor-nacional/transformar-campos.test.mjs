@@ -2,6 +2,7 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
 
+import { FONTES_DE_EXEMPLO, lerFonteDeExemplo } from '../exemplos-xml.mjs'
 import {
   acomodarDominio,
   avaliarPreenchimento,
@@ -210,4 +211,142 @@ test('destino maior que o formulário interrompe a montagem', () => {
   const nomeLongo = 'x'.repeat(301)
   const tags = lerMapeamento(csv(`1;${nomeLongo};E;C;0;10;Campo;Sim`))
   assert.throws(() => montarCampos(tags, indexar([])), /Destino de Campo 10/)
+})
+
+const FONTE_DPS = FONTES_DE_EXEMPLO['dps-nacional']
+
+function lerFonte(xml) {
+  return lerFonteDeExemplo([xml], FONTE_DPS)
+}
+
+function cenarioDeExemplos() {
+  const tags = lerMapeamento(
+    csv(
+      '1;DPS;G;C;0;0;;Sim',
+      '2;infDPS;G;C;1;0;;Sim',
+      '3;Id;A;C;2;305;RPSNumero e RPSSerie;Sim',
+      '4;tpAmb;E;N;2;330;tpAmb;Sim',
+      '5;valores;G;C;2;0;;Sim',
+      '6;vServPrest;G;C;5;0;;Sim',
+      '7;vServ;E;N;6;400;ValServicos;Sim',
+      '8;serv;G;C;2;0;;Sim',
+      '9;xDescServ;E;C;8;401;DescServico;Sim',
+      '10;cPaisPrestacao;E;C;2;205;PaiPreServico;Sim',
+      '11;cPaisResult;E;C;2;205;PaiPreServico;Sim',
+      '12;cMunA;E;C;2;206;MunA;Sim',
+      '13;cMunB;E;C;2;206;MunA;Sim',
+      '14;ref;A;C;2;207;AtributoDestino;Sim',
+      '15;docs;G;C;2;208;ListaDocumentos;Sim',
+    ),
+  ).map((tag) => (tag.codigoCampo === 305 ? { ...tag, codigoCampo: 0, compoeDe: [2, 3] } : tag))
+  return { tags, definicoes: indexar([]) }
+}
+
+const XML_COM_VALORES = `<DPS><infDPS Id="DPS1">
+  <tpAmb>2</tpAmb>
+  <valores><vServPrest><vServ>29155.75</vServ></vServPrest></valores>
+  <cPaisPrestacao>1058</cPaisPrestacao><cPaisResult>1058</cPaisResult>
+  <cMunA>3301207</cMunA><cMunB>4127908</cMunB>
+</infDPS></DPS>`
+
+function campoPorNome(campos, nomeCampo) {
+  return campos.find((campo) => campo.nomeCampo === nomeCampo)
+}
+
+test('sem fonte de exemplo, nenhum campo traz a chave exemplo nem a decisão', () => {
+  const { tags, definicoes } = cenarioDeExemplos()
+  const campos = montarCampos(tags, definicoes)
+
+  assert.equal(campos.length, 7)
+  for (const campo of campos) {
+    assert.equal('exemplo' in campo.campoVersao, false, campo.nomeCampo)
+    assert.equal('decisaoDeExemplo' in campo, false, campo.nomeCampo)
+  }
+})
+
+test('com fonte, o campo com valor leva o texto e o sem valor leva null explícito', () => {
+  const { tags, definicoes } = cenarioDeExemplos()
+  const campos = montarCampos(tags, definicoes, new Map(), lerFonte(XML_COM_VALORES))
+
+  assert.equal(campos.length, 7)
+  assert.equal(campoPorNome(campos, 'ValServicos').campoVersao.exemplo, '29155.75')
+  assert.equal(campoPorNome(campos, 'tpAmb').campoVersao.exemplo, '2')
+
+  const semValor = campoPorNome(campos, 'DescServico')
+  assert.equal('exemplo' in semValor.campoVersao, true)
+  assert.equal(semValor.campoVersao.exemplo, null)
+  assert.equal(semValor.decisaoDeExemplo.motivo, 'NAO_ESTA_NA_FONTE')
+})
+
+test('todos os destinos do campo entram na decisão, não só o primeiro', () => {
+  const { tags, definicoes } = cenarioDeExemplos()
+  const campos = montarCampos(tags, definicoes, new Map(), lerFonte(XML_COM_VALORES))
+
+  const iguais = campoPorNome(campos, 'PaiPreServico')
+  assert.equal(iguais.campoVersao.exemplo, '1058')
+  assert.deepEqual(
+    iguais.decisaoDeExemplo.destinos.map((destino) => destino.caminho),
+    ['DPS/infDPS/cPaisPrestacao', 'DPS/infDPS/cPaisResult'],
+  )
+
+  const divergentes = campoPorNome(campos, 'MunA')
+  assert.equal(divergentes.campoVersao.exemplo, null)
+  assert.equal(divergentes.decisaoDeExemplo.motivo, 'DESTINOS_DIVERGEM')
+})
+
+test('o elemento da tag chega à decisão: atributo e grupo nunca têm exemplo', () => {
+  const { tags, definicoes } = cenarioDeExemplos()
+  const campos = montarCampos(tags, definicoes, new Map(), lerFonte(XML_COM_VALORES))
+
+  assert.equal(campoPorNome(campos, 'AtributoDestino').campoVersao.exemplo, null)
+  assert.equal(campoPorNome(campos, 'AtributoDestino').decisaoDeExemplo.motivo, 'ATRIBUTO')
+  assert.equal(campoPorNome(campos, 'ListaDocumentos').campoVersao.exemplo, null)
+  assert.equal(campoPorNome(campos, 'ListaDocumentos').decisaoDeExemplo.motivo, 'GRUPO')
+})
+
+test('o tipo e o domínio do próprio campo conferem o valor da fonte', () => {
+  const { tags } = cenarioDeExemplos()
+  const definicoes = indexar([
+    {
+      xpath_no_envio: 'DPS/infDPS/tpAmb',
+      dominio: [
+        { valor: '1', descricao: 'Produção' },
+        { valor: '2', descricao: 'Homologação' },
+      ],
+    },
+  ])
+  const fonte = lerFonte(`<DPS><infDPS>
+    <tpAmb>3</tpAmb>
+    <valores><vServPrest><vServ>abc</vServ></vServPrest></valores>
+  </infDPS></DPS>`)
+  const campos = montarCampos(tags, definicoes, new Map(), fonte)
+
+  assert.equal(campoPorNome(campos, 'tpAmb').campoVersao.exemplo, null)
+  assert.equal(campoPorNome(campos, 'tpAmb').decisaoDeExemplo.motivo, 'FORA_DO_DOMINIO')
+  assert.equal(campoPorNome(campos, 'ValServicos').campoVersao.exemplo, null)
+  assert.equal(campoPorNome(campos, 'ValServicos').decisaoDeExemplo.motivo, 'FORA_DO_TIPO')
+})
+
+test('a tag de composição e o atributo Id nunca são destino de campo', () => {
+  const { tags, definicoes } = cenarioDeExemplos()
+  const campos = montarCampos(tags, definicoes, new Map(), lerFonte(XML_COM_VALORES))
+
+  assert.equal(campos.length, 7)
+  const caminhosDeDestino = campos.flatMap((campo) =>
+    campo.decisaoDeExemplo.destinos.map((destino) => destino.caminho),
+  )
+  assert.equal(caminhosDeDestino.includes('DPS/infDPS/tpAmb'), true)
+  assert.equal(caminhosDeDestino.includes('DPS/infDPS/Id'), false)
+  assert.equal(campoPorNome(campos, 'RPSNumero e RPSSerie'), undefined)
+})
+
+test('a decisão do exemplo fica no item e não vai no corpo da API', () => {
+  const { tags, definicoes } = cenarioDeExemplos()
+  const campos = montarCampos(tags, definicoes, new Map(), lerFonte(XML_COM_VALORES))
+  const campo = campoPorNome(campos, 'ValServicos')
+
+  assert.equal(campo.decisaoDeExemplo.exemplo, '29155.75')
+  assert.equal('decisaoDeExemplo' in campo.campoVersao, false)
+  assert.equal(JSON.stringify(campo.campoVersao).includes('decisaoDeExemplo'), false)
+  assert.equal(JSON.parse(JSON.stringify(campo.campoVersao)).exemplo, '29155.75')
 })

@@ -2,6 +2,10 @@
  * Identificação de cada provedor que esta carga cria, e de onde vem o comportamento dos campos. Uma
  * fonte só para a importação e a publicação. O material citado fica em `material/<id>/`.
  *
+ * `fonteDeExemplo` (id em `exemplos-xml.mjs`) diz que a carga é dona do exemplo dos campos do
+ * provedor: grava o valor da fonte ou `null`. Provedor sem a chave não tem fonte, e a carga nunca
+ * decide o exemplo dele.
+ *
  * O rótulo da versão é a versão do leiaute do provedor, porque o mapeamento exportado não traz o
  * rótulo que o InvoiCy usa; e o identificador InvoiCy é provisório. Os dois se ajustam na área
  * interna quando o InvoiCy confirmar.
@@ -28,6 +32,7 @@ export const PROVEDORES = {
         'município processa a DPS, gera a NFS-e municipal e a transmite ao Ambiente Nacional.',
     },
     familia: 'dps',
+    fonteDeExemplo: 'dps-nacional',
     mapeamento: 'e-l/mapeamento.md',
     esquema: { arquivos: ESQUEMA_DPS_NACIONAL, raiz: 'DPS' },
     avisos: [
@@ -71,6 +76,7 @@ export const PROVEDORES = {
         '31/12/2025).',
     },
     familia: 'abrasf',
+    fonteDeExemplo: 'elotech',
     mapeamento: 'elotech/mapeamento.md',
     esquema: { arquivos: ['elotech/nfse_v2_03.xsd'], raiz: 'EnviarLoteRpsSincronoEnvio' },
     prefixoDestino: 'EnviarLoteRpsSincronoEnvio/LoteRps/ListaRps/Rps/',

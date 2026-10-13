@@ -77,21 +77,56 @@ export async function sincronizarVocabulario(api, versaoLayoutId, vocabulario) {
   )
 }
 
-function comportamentoMudou(existente, desejado) {
-  return CAMPOS_DE_COMPORTAMENTO.some(
+/**
+ * O exemplo só entra na comparação quando o campo o traz (texto, ou `null` explícito): campo sem a
+ * chave `exemplo` pertence a um provedor sem fonte, e o que existe na API não é da carga.
+ */
+function chavesComparadas(desejado) {
+  return desejado.exemplo === undefined
+    ? CAMPOS_DE_COMPORTAMENTO
+    : [...CAMPOS_DE_COMPORTAMENTO, 'exemplo']
+}
+
+export function chavesAlteradas(existente, desejado) {
+  return chavesComparadas(desejado).filter(
     (chave) => (existente[chave] ?? null) !== (desejado[chave] ?? null),
   )
 }
 
 /**
+ * O PUT substitui o recurso inteiro: chave ausente no JSON vira `null` na API. Sem exemplo
+ * gerenciado, o corpo reenvia o valor existente — e o `null` explícito, porque `JSON.stringify`
+ * descarta `undefined`.
+ */
+function corpoDoPut(existente, desejado) {
+  return desejado.exemplo === undefined
+    ? { ...desejado, exemplo: existente.exemplo ?? null }
+    : desejado
+}
+
+function classificarMudancaDeExemplo(de, para) {
+  if (de === null) return 'definido'
+  return para === null ? 'apagado' : 'alterado'
+}
+
+/**
  * Um campo da versão por campo canônico (a API não aceita o mesmo duas vezes). Cria o que falta e
  * atualiza o comportamento do que mudou; não remove — campo a mais na versão é decisão editorial,
- * não efeito de rodar a carga de novo.
+ * não efeito de rodar a carga de novo. Em campo com exemplo gerenciado, a carga é dona do valor:
+ * descartado vira `null` e apaga o que existia.
  */
 export async function sincronizarCamposDaVersao(api, versaoId, campos, idPorCaminho) {
   const { dados } = await api.chamar('GET', `/interno/versoes/${versaoId}/campos`)
   const existentes = new Map(dados.campos.map((campo) => [campo.campoLayoutId, campo]))
-  const contagem = { criados: 0, atualizados: 0 }
+  const contagem = {
+    criados: 0,
+    atualizados: 0,
+    atualizadosSoExemplo: 0,
+    exemplosDefinidos: 0,
+    exemplosAlterados: 0,
+    exemplosApagados: 0,
+  }
+  const mudancasDeExemplo = []
 
   for (const campo of campos) {
     const campoLayoutId = idPorCaminho.get(campo.caminhoInvoicy)
@@ -108,16 +143,53 @@ export async function sincronizarCamposDaVersao(api, versaoId, campos, idPorCami
         ...campo.campoVersao,
       })
       contagem.criados++
-    } else if (comportamentoMudou(existente, campo.campoVersao)) {
-      await api.chamar(
-        'PUT',
-        `/interno/campos-versao/${existente.id}`,
-        campo.campoVersao,
-        String(existente.versaoConcorrencia),
-      )
-      contagem.atualizados++
+      continue
     }
+
+    const alteradas = chavesAlteradas(existente, campo.campoVersao)
+    if (!alteradas.length) continue
+
+    await api.chamar(
+      'PUT',
+      `/interno/campos-versao/${existente.id}`,
+      corpoDoPut(existente, campo.campoVersao),
+      String(existente.versaoConcorrencia),
+    )
+    contagem.atualizados++
+
+    if (!alteradas.includes('exemplo')) continue
+    if (alteradas.length === 1) contagem.atualizadosSoExemplo++
+
+    const de = existente.exemplo ?? null
+    const para = campo.campoVersao.exemplo
+    const mudanca = classificarMudancaDeExemplo(de, para)
+    if (mudanca === 'definido') contagem.exemplosDefinidos++
+    if (mudanca === 'alterado') contagem.exemplosAlterados++
+    if (mudanca === 'apagado') contagem.exemplosApagados++
+    mudancasDeExemplo.push({ nomeCampo: campo.nomeCampo, de, para })
   }
 
-  console.log(`campos da versão: ${contagem.criados} criados, ${contagem.atualizados} atualizados`)
+  console.log(
+    `campos da versão ${versaoId}: ${contagem.criados} criados, ${contagem.atualizados} atualizados ` +
+      `(${contagem.atualizadosSoExemplo} só de exemplo, ` +
+      `${contagem.atualizados - contagem.atualizadosSoExemplo} com outro atributo) · exemplos: ` +
+      `${contagem.exemplosDefinidos} definidos, ${contagem.exemplosAlterados} alterados, ` +
+      `${contagem.exemplosApagados} apagados`,
+  )
+  if (api.simulando) {
+    for (const { nomeCampo, de, para } of mudancasDeExemplo)
+      console.log(`  exemplo ${nomeCampo}: ${imprimirExemplo(de)} → ${imprimirExemplo(para)}`)
+  }
+  const apagados = mudancasDeExemplo.filter(({ para }) => para === null)
+  if (apagados.length) {
+    console.warn(
+      `  exemplo apagado (a carga é dona do valor): ${apagados.map(({ nomeCampo }) => nomeCampo).join(', ')}`,
+    )
+  }
+
+  return contagem
+}
+
+function imprimirExemplo(valor) {
+  return valor === null ? '∅' : `"${valor}"`
 }

@@ -180,3 +180,145 @@ test('material real: os cinco provedores preparam sem erro e com os números con
   assert.equal(cMun('elotech'), 'Envio/RPS/Servico/cMun')
   assert.equal(cMun('e-l'), 'Envio/RPS/Prestador/enderPrest/cMun')
 })
+
+const PROVEDORES_COM_FONTE = ['e-l', 'elotech']
+const PROVEDORES_SEM_FONTE = ['giss', 'ipm', 'issnet']
+
+let cargasEmCache = null
+
+/** Prepara os provedores uma vez só para os testes de exemplo. */
+function prepararParaExemplos() {
+  cargasEmCache ??= (async () => {
+    const { elementos } = await lerVocabularioInvoicy()
+    const cargas = {}
+    for (const id of Object.keys(PROVEDORES)) cargas[id] = await prepararCarga(id, elementos)
+    return cargas
+  })()
+  return cargasEmCache
+}
+
+const campoDa = (carga, nomeCampo) => carga.campos.find((campo) => campo.nomeCampo === nomeCampo)
+
+test('exemplo: o catálogo declara a fonte só dos provedores que a têm', () => {
+  assert.equal(PROVEDORES['e-l'].fonteDeExemplo, 'dps-nacional')
+  assert.equal(PROVEDORES.elotech.fonteDeExemplo, 'elotech')
+  for (const id of PROVEDORES_SEM_FONTE) assert.ok(!('fonteDeExemplo' in PROVEDORES[id]), id)
+})
+
+test('exemplo: provedor com fonte gerencia todo campo; sem fonte, nenhum', async () => {
+  const cargas = await prepararParaExemplos()
+
+  for (const id of PROVEDORES_COM_FONTE) {
+    assert.ok(cargas[id].fonteLida, id)
+    assert.ok(cargas[id].campos.length > 0, id)
+    assert.ok(
+      cargas[id].campos.every(({ campoVersao }) => 'exemplo' in campoVersao),
+      id,
+    )
+  }
+  for (const id of PROVEDORES_SEM_FONTE) {
+    assert.equal(cargas[id].fonteLida, null, id)
+    assert.ok(cargas[id].campos.length > 0, id)
+    assert.ok(
+      cargas[id].campos.every(({ campoVersao }) => !('exemplo' in campoVersao)),
+      id,
+    )
+    // O corpo que vai à API não carrega a chave: quem reenvia o valor existente é a sincronização.
+    assert.ok(
+      cargas[id].campos.every(
+        ({ campoVersao }) => !('exemplo' in JSON.parse(JSON.stringify(campoVersao))),
+      ),
+      id,
+    )
+  }
+})
+
+test('exemplo: campo sem valor publicável de provedor com fonte vai com exemplo null', async () => {
+  const cargas = await prepararParaExemplos()
+  for (const id of PROVEDORES_COM_FONTE) {
+    const semValor = cargas[id].campos.filter(({ campoVersao }) => campoVersao.exemplo === null)
+    assert.ok(semValor.length > 0, id)
+    for (const { campoVersao } of semValor) {
+      const corpo = JSON.parse(JSON.stringify(campoVersao))
+      assert.ok(Object.hasOwn(corpo, 'exemplo'), id)
+      assert.equal(corpo.exemplo, null, id)
+    }
+  }
+})
+
+test('exemplo E&L: valor da DPS nacional, identificação e teste omitidos', async () => {
+  const { 'e-l': carga } = await prepararParaExemplos()
+  const exemplo = (nome) => campoDa(carga, nome).campoVersao.exemplo
+  const motivo = (nome) => campoDa(carga, nome).decisaoDeExemplo.motivo
+
+  assert.equal(exemplo('ValServicos'), '29155.75')
+  assert.equal(exemplo('dEmis'), '2026-06-02T08:06:28-03:00')
+  assert.equal(exemplo('cMun'), '3301207')
+
+  for (const nome of ['CNPJ_prest', 'IM', 'TomaCPF', 'TomaRazaoSocial', 'TomaEndereco']) {
+    assert.equal(exemplo(nome), null, nome)
+    assert.equal(motivo(nome), 'IDENTIFICACAO', nome)
+    assert.ok(!campoDa(carga, nome).decisaoDeExemplo.detalhe, nome)
+  }
+  assert.equal(exemplo('Discriminacao'), null)
+  assert.equal(motivo('Discriminacao'), 'MARCADOR_TESTE')
+  assert.equal(motivo('ListaNFSeRef'), 'GRUPO')
+})
+
+test('exemplo E&L: a mesma folha CST em contextos diferentes recebe o valor do seu contexto', async () => {
+  const { 'e-l': carga } = await prepararParaExemplos()
+  assert.equal(campoDa(carga, 'CST').campoVersao.exemplo, '01')
+  assert.equal(campoDa(carga, 'CSTIBSCBS').campoVersao.exemplo, '000')
+})
+
+test('exemplo Elotech: fonte assíncrona alimenta o catálogo síncrono pelo trecho do RPS', async () => {
+  const { elotech: carga } = await prepararParaExemplos()
+  const exemplo = (nome) => campoDa(carga, nome).campoVersao.exemplo
+  const decisao = (nome) => campoDa(carga, nome).decisaoDeExemplo
+
+  // Numero é o número do RPS aqui, e o do endereço do tomador logo abaixo.
+  assert.equal(exemplo('RPSNumero'), '579')
+  assert.equal(exemplo('TomaNumero'), null)
+  assert.equal(decisao('TomaNumero').motivo, 'IDENTIFICACAO')
+
+  assert.equal(exemplo('ValServicos'), '100.00')
+  assert.equal(exemplo('cMun'), '4119905')
+  assert.equal(exemplo('TomaUF'), 'SC')
+
+  assert.equal(decisao('DocChaveNFSe').motivo, 'IDENTIFICACAO')
+  assert.equal(decisao('Discriminacao').motivo, 'MARCADOR_TESTE')
+  assert.equal(decisao('DestEndereco').motivo, 'GRUPO')
+  assert.equal(decisao('tpAmb').motivo, 'ENVELOPE')
+})
+
+test('exemplo Elotech: grafia diferente do catálogo não casa e vira dica', async () => {
+  const { elotech: carga } = await prepararParaExemplos()
+  const destino = campoDa(carga, 'DestNome')
+
+  assert.equal(destino.campoVersao.exemplo, null)
+  assert.equal(destino.decisaoDeExemplo.motivo, 'NAO_ESTA_NA_FONTE')
+  assert.match(destino.decisaoDeExemplo.detalhe, /InfIbsCbs\/dest\/xNome/)
+})
+
+test('exemplo Elotech: os cinco valores de preenchimento de teste do IBS/CBS são descartados', async () => {
+  const { elotech: carga } = await prepararParaExemplos()
+  const descartados = ['CSTIBSCBS', 'cClassTrib', 'cCredPres', 'CSTReg', 'cClassTribReg']
+
+  for (const nome of descartados) {
+    assert.equal(campoDa(carga, nome).campoVersao.exemplo, null, nome)
+    assert.equal(campoDa(carga, nome).decisaoDeExemplo.motivo, 'DESCARTE_EDITORIAL', nome)
+  }
+  // Percentuais do mesmo grupo são válidos e ficam.
+  assert.equal(campoDa(carga, 'ValpDifUF').campoVersao.exemplo, '1.6')
+})
+
+test('exemplo: fonte declarada e desconhecida interrompe a preparação, sem carga pela metade', async () => {
+  const { elementos } = await lerVocabularioInvoicy()
+  const fonteOriginal = PROVEDORES['e-l'].fonteDeExemplo
+  PROVEDORES['e-l'].fonteDeExemplo = 'fonte-inexistente'
+  try {
+    await assert.rejects(prepararCarga('e-l', elementos), /Fonte de exemplo desconhecida/)
+  } finally {
+    PROVEDORES['e-l'].fonteDeExemplo = fonteOriginal
+  }
+})

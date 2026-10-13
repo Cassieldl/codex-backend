@@ -1,7 +1,8 @@
 /**
  * Prepara a carga de um provedor do catálogo sem tocar a API: lê o material, resolve os campos e
- * monta campos, erros e avisos. Um conteúdo fora do limite, ou um campo sem caminho resolvido,
- * interrompe aqui — a carga nunca fica pela metade.
+ * monta campos, erros e avisos. Um conteúdo fora do limite, um campo sem caminho resolvido ou uma
+ * fonte de exemplo ausente interrompe aqui — a carga nunca fica pela metade. `fonteLida` é `null`
+ * para o provedor sem fonte de exemplo.
  */
 
 import { readFile } from 'node:fs/promises'
@@ -9,6 +10,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { LIMITE_CORPO_AVISO } from '../emissor-nacional/transformar.mjs'
+import { lerFonteDeExemploDoDisco } from '../exemplos-xml.mjs'
 import { exigirGruposConhecidos } from '../vocabulario-invoicy.mjs'
 import { avisoDeCamposPendentes } from './avisos.mjs'
 import { PROVEDORES } from './catalogo.mjs'
@@ -53,8 +55,14 @@ export async function prepararCarga(id, elementosXsd) {
     elementosXsd,
   )
 
+  // Lida antes de montar: fonte declarada e ausente interrompe a carga, sem exemplo pela metade.
+  const fonteLida = config.fonteDeExemplo
+    ? await lerFonteDeExemploDoDisco(config.fonteDeExemplo)
+    : null
+
   const campos = montarCampos(tags, await definicoesDe(config, tags), {
     prefixoDestino: config.prefixoDestino,
+    fonteLida,
   })
   const erros = config.erros
     ? montarErros(JSON.parse(await lerMaterial(config.erros)).erros, tags)
@@ -67,5 +75,5 @@ export async function prepararCarga(id, elementosXsd) {
       )
   }
 
-  return { config, campos, erros, avisos, pendentes, internos }
+  return { config, campos, erros, avisos, pendentes, internos, fonteLida }
 }

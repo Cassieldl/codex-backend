@@ -6,9 +6,12 @@
  *
  * Sincroniza, em vez de só criar, e pode rodar de novo a qualquer momento. Nada é publicado aqui:
  * publicar é decisão editorial.
+ *
+ * Com CODEX_CARGA_SIMULAR=1 só lê a API: imprime o que escreveria e interrompe no primeiro POST ou
+ * DELETE (exit 1).
  */
 
-import { criarClienteApi } from '../cliente-api.mjs'
+import { criarClienteApi, executarCarga } from '../cliente-api.mjs'
 import { LAYOUT_INVOICY, ESTADO_LAYOUT_INVOICY } from '../emissor-nacional/identificacao.mjs'
 import {
   sincronizarCamposDaVersao,
@@ -40,19 +43,29 @@ const cargas = []
 for (const id of ids) cargas.push({ id, ...(await prepararCarga(id, elementos)) })
 
 const api = await criarClienteApi()
-const versaoLayoutId = await garantirLayoutInvoicy(api, LAYOUT_INVOICY, ESTADO_LAYOUT_INVOICY)
-const idPorCaminho = await sincronizarVocabulario(api, versaoLayoutId, vocabulario)
 
-for (const { id, config, campos, erros, avisos, pendentes, internos } of cargas) {
-  console.log(`\n== ${config.provedor.nome} (${id}) ==`)
-  const provedor = await garantirProvedor(api, config.provedor)
-  const versaoId = await garantirVersao(api, provedor.id, versaoLayoutId, config.versao)
-  await sincronizarAvisos(api, versaoId, avisos)
-  await sincronizarCamposDaVersao(api, versaoId, campos, idPorCaminho)
-  await sincronizarErros(api, provedor.slug, versaoId, erros, idPorCaminho)
+await executarCarga(async () => {
+  const versaoLayoutId = await garantirLayoutInvoicy(api, LAYOUT_INVOICY, ESTADO_LAYOUT_INVOICY)
+  const idPorCaminho = await sincronizarVocabulario(api, versaoLayoutId, vocabulario)
 
-  console.log(`${pendentes.size} campos esperam o InvoiCy: ${[...pendentes.keys()].join(', ')}`)
-  console.log(`campos internos do InvoiCy, fora da tabela: ${[...internos].join(', ') || 'nenhum'}`)
-}
+  for (const { id, config, campos, erros, avisos, pendentes, internos } of cargas) {
+    console.log(`\n== ${config.provedor.nome} (${id}) ==`)
+    const provedor = await garantirProvedor(api, config.provedor)
+    const versaoId = await garantirVersao(api, provedor.id, versaoLayoutId, config.versao)
+    await sincronizarAvisos(api, versaoId, avisos)
+    await sincronizarCamposDaVersao(api, versaoId, campos, idPorCaminho)
+    await sincronizarErros(api, provedor.slug, versaoId, erros, idPorCaminho)
 
-console.log('\ncarga concluída. Nada foi publicado.')
+    console.log(`${pendentes.size} campos esperam o InvoiCy: ${[...pendentes.keys()].join(', ')}`)
+    console.log(
+      `campos internos do InvoiCy, fora da tabela: ${[...internos].join(', ') || 'nenhum'}`,
+    )
+  }
+
+  api.imprimirResumoDaSimulacao()
+  console.log(
+    api.simulando
+      ? '\nsimulação concluída. Nada foi gravado.'
+      : '\ncarga concluída. Nada foi publicado.',
+  )
+})
