@@ -60,8 +60,8 @@ public sealed record GrupoCamposLayoutDto
 /// <summary>
 /// Verbete do campo dentro do dicionário de uma versão (P11). PROIBIDO conter tipo/tamanho/
 /// máscara/obrigatoriedade (R3 — vocabulário canônico puro, isso é comportamento e vive só em
-/// <c>CampoVersao</c>). SEM "onde é usado" — esse dado só existe no verbete de resolução (P12),
-/// redirect-only por A3.
+/// <c>CampoVersao</c>). SEM "onde é usado" — esse dado não faz parte do item do dicionário; é obtido
+/// sob demanda no verbete do campo (P12).
 /// </summary>
 public sealed record CampoLayoutPublicoDto
 {
@@ -110,7 +110,10 @@ public sealed record CampoLayoutVerbeteDto
     public required IReadOnlyCollection<UsoCampoLayoutDto> OndeEUsado { get; init; }
 }
 
-/// <summary>Provedor/versão PUBLICADOS que usam este <c>CampoLayout</c> (via <c>CampoVersao</c>) — só em P12 (A3).</summary>
+/// <summary>
+/// Provedor/versão PUBLICADOS que usam este <c>CampoLayout</c> (via <c>CampoVersao</c>), com o
+/// destino no XML e a obrigatoriedade DAQUELE provedor. Consumido pelo modal do layout.
+/// </summary>
 public sealed record UsoCampoLayoutDto
 {
     public required string ProvedorSlug { get; init; }
@@ -120,6 +123,15 @@ public sealed record UsoCampoLayoutDto
     public required string VersaoSlug { get; init; }
 
     public required string VersaoRotulo { get; init; }
+
+    /// <summary>
+    /// Valor cru de <c>CampoVersao.DestinoXml</c>: vários destinos separados por <c>" | "</c>,
+    /// <c>"…"</c> quando a carga os omitiu, <c>null</c> sem destino. A chave é sempre serializada.
+    /// </summary>
+    public string? DestinoXml { get; init; }
+
+    /// <summary><c>EstadoPreenchimento.ToString()</c> (<c>Obrigatorio</c>/<c>Opcional</c>/<c>Condicional</c>) — nunca o enum cru.</summary>
+    public required string EstadoPreenchimento { get; init; }
 }
 
 /// <summary>

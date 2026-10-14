@@ -29,6 +29,6 @@ public interface ILayoutRepositorioPublico
     /// <summary>Com <c>VersaoLayoutOrigem</c> carregada (Include) — necessária para a fórmula M12 e para <c>VersaoOrigem</c> do verbete (P12).</summary>
     Task<CampoLayout?> ObterCampoPorSlugAsync(string campoSlug, CancellationToken ct);
 
-    /// <summary>"Onde é usado" (P12, A3) — provedores/versões PUBLICADOS que usam este campo via <c>CampoVersao</c>.</summary>
+    /// <summary>"Onde é usado" (P12, A3) — provedores/versões PUBLICADOS que usam este campo via <c>CampoVersao</c>, com destino no XML e estado de preenchimento, em ordem estável (nome do provedor, id da versão).</summary>
     Task<IReadOnlyCollection<UsoCampoLayoutDto>> ListarUsosPublicosAsync(int campoLayoutId, CancellationToken ct);
 }

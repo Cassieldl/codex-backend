@@ -16,6 +16,6 @@ public interface ILayoutServicoPublico
     /// <summary>P11 — dicionário completo de uma versão publicada (404/410/422).</summary>
     Task<LayoutVersaoDto> ObterVersaoAsync(string versaoSlug, CancellationToken ct);
 
-    /// <summary>P12 — verbete de resolução do campo canônico, redirect-only (A3, 404/410).</summary>
+    /// <summary>P12 — verbete de resolução do campo canônico (A3, 404/410).</summary>
     Task<CampoLayoutVerbeteDto> ObterCampoAsync(string campoSlug, CancellationToken ct);
 }

@@ -245,9 +245,12 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
 
         var uso = verbete.GetProperty("ondeEUsado").EnumerateArray().Single();
         uso.EnumerateObject().Select(p => p.Name).Should().BeEquivalentTo(
-            ["provedorSlug", "provedorNome", "versaoSlug", "versaoRotulo"]);
+            ["provedorSlug", "provedorNome", "versaoSlug", "versaoRotulo", "destinoXml", "estadoPreenchimento"]);
         uso.GetProperty("provedorSlug").GetString().Should().Be(_cenario.ProvedorSlug);
         uso.GetProperty("versaoSlug").GetString().Should().Be(_cenario.VersaoProvedorSlug);
+        uso.GetProperty("destinoXml").ValueKind.Should().Be(JsonValueKind.Null);
+        uso.GetProperty("estadoPreenchimento").ValueKind.Should().Be(JsonValueKind.String);
+        uso.GetProperty("estadoPreenchimento").GetString().Should().Be("Obrigatorio");
     }
 
     [Fact]

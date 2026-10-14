@@ -64,20 +64,37 @@ public sealed class LayoutRepositorioPublico : RepositorioBase<CodexDbContext>, 
             .Where(c => c.Slug == campoSlug && c.DesativadoEm == null)
             .FirstOrDefaultAsync(ct);
 
-    public async Task<IReadOnlyCollection<UsoCampoLayoutDto>> ListarUsosPublicosAsync(int campoLayoutId, CancellationToken ct) =>
-        await (
+    public async Task<IReadOnlyCollection<UsoCampoLayoutDto>> ListarUsosPublicosAsync(int campoLayoutId, CancellationToken ct)
+    {
+        // Nome do provedor não é único e a ordem física muda a cada UPDATE: o id da versão
+        // torna a ordem total. O enum vira texto só depois de materializar.
+        var usos = await (
             from cv in Contexto.CamposVersao.AsNoTracking()
             join vp in Contexto.VersoesProvedor.AsNoTracking() on cv.VersaoProvedorId equals vp.Id
             join p in Contexto.Provedores.AsNoTracking() on vp.ProvedorId equals p.Id
             where cv.CampoLayoutId == campoLayoutId && cv.DesativadoEm == null
                 && vp.Publicado && vp.DesativadoEm == null
                 && p.Publicado && p.DesativadoEm == null
-            select new UsoCampoLayoutDto
+            orderby p.Nome, vp.Id
+            select new
             {
                 ProvedorSlug = p.Slug,
                 ProvedorNome = p.Nome,
                 VersaoSlug = vp.Slug,
                 VersaoRotulo = vp.Rotulo,
+                cv.DestinoXml,
+                cv.EstadoPreenchimento,
             }
         ).ToListAsync(ct);
+
+        return usos.Select(uso => new UsoCampoLayoutDto
+        {
+            ProvedorSlug = uso.ProvedorSlug,
+            ProvedorNome = uso.ProvedorNome,
+            VersaoSlug = uso.VersaoSlug,
+            VersaoRotulo = uso.VersaoRotulo,
+            DestinoXml = uso.DestinoXml,
+            EstadoPreenchimento = uso.EstadoPreenchimento.ToString(),
+        }).ToArray();
+    }
 }

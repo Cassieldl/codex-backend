@@ -70,7 +70,7 @@ public sealed class LayoutController : ControllerBase
         return Ok(new ApiResponse<LayoutVersaoDto> { Data = versao });
     }
 
-    /// <summary>P12 — verbete de resolução do campo canônico (redirect-only, A3).</summary>
+    /// <summary>P12 — resolução do campo canônico e provedores/versões publicados que o usam (com destino no XML e obrigatoriedade).</summary>
     /// <response code="200">Campo visível, com a versão em que o frontend deve abri-lo.</response>
     /// <response code="404">Campo nunca existiu.</response>
     /// <response code="410">Campo existe mas não está visível.</response>
