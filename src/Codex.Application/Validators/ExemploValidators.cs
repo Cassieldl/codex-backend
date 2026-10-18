@@ -1,4 +1,5 @@
 using Codex.Application.DTOs.Interno;
+using Codex.Domain.Constantes;
 using FluentValidation;
 using SlugVo = Codex.Domain.ValueObjects.Slug;
 
@@ -31,7 +32,7 @@ public sealed class CriarExemploDtoValidator : AbstractValidator<CriarExemploDto
     public CriarExemploDtoValidator()
     {
         RuleFor(x => x.Nome).NotEmpty().WithMessage("O nome do exemplo é obrigatório.")
-            .MaximumLength(160).WithMessage("O nome do exemplo deve ter no máximo 160 caracteres.")
+            .MaximumLength(LimitesExemplo.Nome).WithMessage($"O nome do exemplo deve ter no máximo {LimitesExemplo.Nome} caracteres.")
             .Must(SlugVo.PodeDerivarDe).WithMessage("O nome do exemplo precisa conter ao menos uma letra ou número.");
 
         RuleFor(x => x.Descricao)
@@ -49,7 +50,7 @@ public sealed class AtualizarExemploDtoValidator : AbstractValidator<AtualizarEx
     public AtualizarExemploDtoValidator()
     {
         RuleFor(x => x.Nome).NotEmpty().WithMessage("O nome do exemplo é obrigatório.")
-            .MaximumLength(160).WithMessage("O nome do exemplo deve ter no máximo 160 caracteres.")
+            .MaximumLength(LimitesExemplo.Nome).WithMessage($"O nome do exemplo deve ter no máximo {LimitesExemplo.Nome} caracteres.")
             .Must(SlugVo.PodeDerivarDe).WithMessage("O nome do exemplo precisa conter ao menos uma letra ou número.");
 
         RuleFor(x => x.Descricao)

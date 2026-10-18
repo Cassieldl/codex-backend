@@ -76,11 +76,36 @@ public sealed class ArtigoRepositorioInterno : RepositorioBase<CodexDbContext>, 
         return new PaginaResultado<ArtigoAdminListaItemDto>(itens, totalCount, filtro.Pagina, filtro.TamanhoPagina);
     }
 
-    public Task<IReadOnlyCollection<int>> ListarCamposLayoutRelacionadosIdsAsync(int artigoId, CancellationToken ct) =>
-        MaterializarAsync(Contexto.ArtigosCamposLayout.AsNoTracking().Where(acl => acl.ArtigoId == artigoId).Select(acl => acl.CampoLayoutId), ct);
+    public async Task<IReadOnlyList<CampoLayoutVinculadoArtigoDto>> ListarCamposLayoutVinculadosAsync(int artigoId, CancellationToken ct) =>
+        await (
+            from vinculo in Contexto.ArtigosCamposLayout.AsNoTracking()
+            join campo in Contexto.CamposLayout.AsNoTracking() on vinculo.CampoLayoutId equals campo.Id
+            join versao in Contexto.VersoesLayout.AsNoTracking() on campo.VersaoLayoutId equals versao.Id
+            where vinculo.ArtigoId == artigoId
+            orderby versao.Ordem, campo.Nome, campo.Id
+            select new CampoLayoutVinculadoArtigoDto
+            {
+                Id = campo.Id,
+                Nome = campo.Nome,
+                CaminhoXml = campo.CaminhoXml,
+                VersaoLayoutId = versao.Id,
+                VersaoLayoutRotulo = versao.Rotulo,
+                Desativado = campo.DesativadoEm != null,
+            }).ToListAsync(ct);
 
-    public Task<IReadOnlyCollection<int>> ListarErrosRelacionadosIdsAsync(int artigoId, CancellationToken ct) =>
-        MaterializarAsync(Contexto.ArtigosErros.AsNoTracking().Where(ae => ae.ArtigoId == artigoId).Select(ae => ae.ErroId), ct);
+    public async Task<IReadOnlyList<ErroVinculadoArtigoDto>> ListarErrosVinculadosAsync(int artigoId, CancellationToken ct) =>
+        await (
+            from vinculo in Contexto.ArtigosErros.AsNoTracking()
+            join erro in Contexto.Erros.AsNoTracking() on vinculo.ErroId equals erro.Id
+            where vinculo.ArtigoId == artigoId
+            orderby erro.Codigo, erro.Id
+            select new ErroVinculadoArtigoDto
+            {
+                Id = erro.Id,
+                Codigo = erro.Codigo,
+                Titulo = erro.Titulo,
+                Desativado = erro.DesativadoEm != null,
+            }).ToListAsync(ct);
 
     public async Task SubstituirCamposLayoutRelacionadosAsync(int artigoId, IReadOnlyCollection<int> campoLayoutIds, CancellationToken ct)
     {
@@ -100,7 +125,4 @@ public sealed class ArtigoRepositorioInterno : RepositorioBase<CodexDbContext>, 
         await Contexto.Artigos.AddAsync(artigo, ct);
 
     public Task SalvarAlteracoesAsync(CancellationToken ct) => SalvarAsync(ct);
-
-    private static async Task<IReadOnlyCollection<int>> MaterializarAsync(IQueryable<int> query, CancellationToken ct) =>
-        await query.ToListAsync(ct);
 }

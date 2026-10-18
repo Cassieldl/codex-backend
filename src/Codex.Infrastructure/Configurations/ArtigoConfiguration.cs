@@ -1,3 +1,4 @@
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Codex.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -19,8 +20,8 @@ public sealed class ArtigoConfiguration : IEntityTypeConfiguration<Artigo>
         builder.Property(x => x.Id).HasColumnName("artigoid").UseIdentityAlwaysColumn();
 
         builder.Property(x => x.Tipo).HasColumnName("tipo").HasMaxLength(20).HasConversion<string>().IsRequired();
-        builder.Property(x => x.Titulo).HasColumnName("titulo").HasMaxLength(200).IsRequired();
-        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(200).IsRequired();
+        builder.Property(x => x.Titulo).HasColumnName("titulo").HasMaxLength(LimitesArtigo.Titulo).IsRequired();
+        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(LimitesArtigo.Slug).IsRequired();
         builder.Property(x => x.Corpo).HasColumnName("corpo").IsRequired();
         builder.Property(x => x.Publicado).HasColumnName("publicado").HasDefaultValue(false).IsRequired();
         builder.Property(x => x.VerificadoEm).HasColumnName("verificadoem");

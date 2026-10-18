@@ -21,9 +21,11 @@ public interface IArtigoRepositorioInterno
     /// <summary>Todos os artigos ativos — usado por I22 (reconstrução total do índice de busca).</summary>
     Task<IReadOnlyCollection<Artigo>> ListarTodosAtivosAsync(CancellationToken ct);
 
-    Task<IReadOnlyCollection<int>> ListarCamposLayoutRelacionadosIdsAsync(int artigoId, CancellationToken ct);
+    /// <summary>Todo vínculo do artigo, inclusive com campo removido, ordenado por ordem da versão do layout, nome e id.</summary>
+    Task<IReadOnlyList<CampoLayoutVinculadoArtigoDto>> ListarCamposLayoutVinculadosAsync(int artigoId, CancellationToken ct);
 
-    Task<IReadOnlyCollection<int>> ListarErrosRelacionadosIdsAsync(int artigoId, CancellationToken ct);
+    /// <summary>Todo vínculo do artigo, inclusive com erro removido, ordenado por código e id.</summary>
+    Task<IReadOnlyList<ErroVinculadoArtigoDto>> ListarErrosVinculadosAsync(int artigoId, CancellationToken ct);
 
     /// <summary>Substitui a coleção inteira (PUT substitui por inteiro) — não salva sozinho, entra no mesmo <see cref="SalvarAlteracoesAsync"/> do agregado.</summary>
     Task SubstituirCamposLayoutRelacionadosAsync(int artigoId, IReadOnlyCollection<int> campoLayoutIds, CancellationToken ct);

@@ -1,3 +1,4 @@
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -14,9 +15,9 @@ public sealed class ProvedorConfiguration : IEntityTypeConfiguration<Provedor>
         builder.HasKey(x => x.Id).HasName("pk_codex_provedores");
         builder.Property(x => x.Id).HasColumnName("provedorid").UseIdentityAlwaysColumn();
 
-        builder.Property(x => x.Nome).HasColumnName("nome").HasMaxLength(160).IsRequired();
-        builder.Property(x => x.IdentificadorInvoicy).HasColumnName("identificadorinvoicy").HasMaxLength(80).IsRequired();
-        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(160).IsRequired();
+        builder.Property(x => x.Nome).HasColumnName("nome").HasMaxLength(LimitesProvedor.Nome).IsRequired();
+        builder.Property(x => x.IdentificadorInvoicy).HasColumnName("identificadorinvoicy").HasMaxLength(LimitesProvedor.IdentificadorInvoicy).IsRequired();
+        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(LimitesProvedor.Slug).IsRequired();
         builder.Property(x => x.Categoria).HasColumnName("categoria").HasMaxLength(20).HasConversion<string>().IsRequired();
         builder.Property(x => x.Publicado).HasColumnName("publicado").HasDefaultValue(false).IsRequired();
 

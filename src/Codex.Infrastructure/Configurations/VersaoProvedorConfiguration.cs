@@ -1,3 +1,4 @@
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -15,8 +16,8 @@ public sealed class VersaoProvedorConfiguration : IEntityTypeConfiguration<Versa
 
         builder.Property(x => x.ProvedorId).HasColumnName("provedorid").IsRequired();
         builder.Property(x => x.VersaoLayoutId).HasColumnName("versaolayoutid").IsRequired();
-        builder.Property(x => x.Rotulo).HasColumnName("rotulo").HasMaxLength(80).IsRequired();
-        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(160).IsRequired();
+        builder.Property(x => x.Rotulo).HasColumnName("rotulo").HasMaxLength(LimitesVersaoProvedor.Rotulo).IsRequired();
+        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(LimitesVersaoProvedor.Slug).IsRequired();
         builder.Property(x => x.Publicado).HasColumnName("publicado").HasDefaultValue(false).IsRequired();
         builder.Property(x => x.VerificadoEm).HasColumnName("verificadoem");
         builder.Property(x => x.Introducao).HasColumnName("introducao");

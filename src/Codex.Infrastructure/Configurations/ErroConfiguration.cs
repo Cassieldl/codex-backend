@@ -1,3 +1,4 @@
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -14,10 +15,10 @@ public sealed class ErroConfiguration : IEntityTypeConfiguration<Erro>
         builder.HasKey(x => x.Id).HasName("pk_codex_erros");
         builder.Property(x => x.Id).HasColumnName("erroid").UseIdentityAlwaysColumn();
 
-        builder.Property(x => x.Codigo).HasColumnName("codigo").HasMaxLength(40).IsRequired();
+        builder.Property(x => x.Codigo).HasColumnName("codigo").HasMaxLength(LimitesErro.Codigo).IsRequired();
         builder.Property(x => x.Origem).HasColumnName("origem").HasMaxLength(20).HasConversion<string>().IsRequired();
-        builder.Property(x => x.Titulo).HasColumnName("titulo").HasMaxLength(200).IsRequired();
-        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(200).IsRequired();
+        builder.Property(x => x.Titulo).HasColumnName("titulo").HasMaxLength(LimitesErro.Titulo).IsRequired();
+        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(LimitesErro.Slug).IsRequired();
         builder.Property(x => x.CausaProvavel).HasColumnName("causaprovavel");
         builder.Property(x => x.SolucaoSugerida).HasColumnName("solucaosugerida");
         builder.Property(x => x.Publicado).HasColumnName("publicado").HasDefaultValue(false).IsRequired();

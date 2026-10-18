@@ -1,4 +1,5 @@
 using Codex.Application.DTOs.Interno;
+using Codex.Domain.Constantes;
 using FluentValidation;
 using SlugVo = Codex.Domain.ValueObjects.Slug;
 
@@ -18,12 +19,10 @@ namespace Codex.Application.Validators;
 public sealed class AlterarSlugDtoValidator : AbstractValidator<AlterarSlugDto>
 {
     /// <summary>
-    /// O DTO é compartilhado pelas três entidades, cujas colunas divergem: <c>provedores.slug</c>
-    /// é <c>varchar(160)</c>, <c>erros.slug</c> e <c>artigos.slug</c> são <c>varchar(200)</c>.
-    /// Vale o MENOR — teto único sobre um DTO único, e 160 caracteres de slug já é absurdo de
-    /// URL. Um teto por entidade exigiria três DTOs para não deixar o caso de 161 virar 500.
+    /// O DTO serve provedor, erro e artigo, cujas colunas de slug divergem: vale a mais estreita,
+    /// senão o slug que cabe numa entidade e não na outra viraria 500.
     /// </summary>
-    private const int TamanhoMaximo = 160;
+    private static readonly int TamanhoMaximo = Math.Min(LimitesProvedor.Slug, Math.Min(LimitesErro.Slug, LimitesArtigo.Slug));
 
     public AlterarSlugDtoValidator()
     {

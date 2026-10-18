@@ -1,3 +1,4 @@
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -14,7 +15,7 @@ public sealed class AliasProvedorConfiguration : IEntityTypeConfiguration<AliasP
         builder.Property(x => x.Id).HasColumnName("aliasprovedorid").UseIdentityAlwaysColumn();
 
         builder.Property(x => x.ProvedorId).HasColumnName("provedorid").IsRequired();
-        builder.Property(x => x.Alias).HasColumnName("alias").HasMaxLength(160).IsRequired();
+        builder.Property(x => x.Alias).HasColumnName("alias").HasMaxLength(LimitesProvedor.Alias).IsRequired();
 
         builder.Property(x => x.CriadoEm).HasColumnName("criadoem").HasDefaultValueSql("now()").IsRequired();
         builder.Property(x => x.AtualizadoEm).HasColumnName("atualizadoem").HasDefaultValueSql("now()").IsRequired();

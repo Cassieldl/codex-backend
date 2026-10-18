@@ -1,21 +1,17 @@
 using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
+using Codex.Domain.Constantes;
 using FluentValidation;
 
 namespace Codex.Application.Validators;
-
-public static class LimitesAviso
-{
-    /// <summary>Mesmo teto de campos por versão que a página pública aceita exibir.</summary>
-    public const int MaximoCamposAfetados = 2000;
-}
 
 public sealed class CriarAvisoDeVersaoDtoValidator : AbstractValidator<CriarAvisoDeVersaoDto>
 {
     public CriarAvisoDeVersaoDtoValidator()
     {
         RuleFor(x => x.Severidade).IsInEnum().WithMessage("Severidade inválida.");
-        RuleFor(x => x.Titulo).NotEmpty().WithMessage("O título do aviso é obrigatório.").MaximumLength(200);
+        RuleFor(x => x.Titulo).NotEmpty().WithMessage("O título do aviso é obrigatório.")
+            .MaximumLength(LimitesAviso.Titulo).WithMessage($"O título do aviso tem no máximo {LimitesAviso.Titulo} caracteres.");
         RuleFor(x => x.Corpo).NotEmpty().WithMessage("O corpo do aviso é obrigatório.");
 
         RuleFor(x => x.CampoVersaoIds)
@@ -29,7 +25,8 @@ public sealed class CriarAvisoDeProvedorDtoValidator : AbstractValidator<CriarAv
     public CriarAvisoDeProvedorDtoValidator()
     {
         RuleFor(x => x.Severidade).IsInEnum().WithMessage("Severidade inválida.");
-        RuleFor(x => x.Titulo).NotEmpty().WithMessage("O título do aviso é obrigatório.").MaximumLength(200);
+        RuleFor(x => x.Titulo).NotEmpty().WithMessage("O título do aviso é obrigatório.")
+            .MaximumLength(LimitesAviso.Titulo).WithMessage($"O título do aviso tem no máximo {LimitesAviso.Titulo} caracteres.");
         RuleFor(x => x.Corpo).NotEmpty().WithMessage("O corpo do aviso é obrigatório.");
     }
 }
@@ -47,7 +44,8 @@ public sealed class AtualizarAvisoDtoValidator : AbstractValidator<AtualizarAvis
     public AtualizarAvisoDtoValidator(IAvisoRepositorioInterno repositorio, IContextoRequisicaoHttp contextoRequisicao)
     {
         RuleFor(x => x.Severidade).IsInEnum().WithMessage("Severidade inválida.");
-        RuleFor(x => x.Titulo).NotEmpty().WithMessage("O título do aviso é obrigatório.").MaximumLength(200);
+        RuleFor(x => x.Titulo).NotEmpty().WithMessage("O título do aviso é obrigatório.")
+            .MaximumLength(LimitesAviso.Titulo).WithMessage($"O título do aviso tem no máximo {LimitesAviso.Titulo} caracteres.");
         RuleFor(x => x.Corpo).NotEmpty().WithMessage("O corpo do aviso é obrigatório.");
 
         RuleFor(x => x.CampoVersaoIds)

@@ -1,3 +1,4 @@
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Codex.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -22,8 +23,8 @@ public sealed class ExemploConfiguration : IEntityTypeConfiguration<Exemplo>
         builder.Property(x => x.Id).HasColumnName("exemploid").UseIdentityAlwaysColumn();
 
         builder.Property(x => x.VersaoProvedorId).HasColumnName("versaoprovedorid").IsRequired();
-        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(180).IsRequired();
-        builder.Property(x => x.Nome).HasColumnName("nome").HasMaxLength(160).IsRequired();
+        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(LimitesExemplo.Slug).IsRequired();
+        builder.Property(x => x.Nome).HasColumnName("nome").HasMaxLength(LimitesExemplo.Nome).IsRequired();
         builder.Property(x => x.Descricao).HasColumnName("descricao");
         builder.Property(x => x.Xml).HasColumnName("xml").IsRequired();
 

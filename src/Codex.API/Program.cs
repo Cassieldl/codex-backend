@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Codex.API.Extensoes;
 using Codex.API.Middleware;
+using Codex.API.Validacao;
 using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 using Serilog.Events;
@@ -60,7 +61,8 @@ builder.Services
         // ao que o caminho de LEITURA já produz com enum.ToString(). É o que mantém entrada e
         // saída na mesma grafia — qualquer policy (camelCase etc.) divergiria da resposta e
         // quebraria o frontend em silêncio.
-        new JsonStringEnumConverter(namingPolicy: null, allowIntegerValues: true)));
+        new JsonStringEnumConverter(namingPolicy: null, allowIntegerValues: true)))
+    .AddJsonOptions(opcoes => opcoes.JsonSerializerOptions.Converters.Add(new TextoSemCaractereNuloJsonConverter()));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(); // M24 — Swashbuckle. Exposto só em Development (ver abaixo).
@@ -121,6 +123,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("PadraoFrontend");
+
+// Depois do CORS, para o 400 levar Access-Control-Allow-Origin e o navegador ler o envelope; antes
+// do rate limit e da autenticação, para negar sem gastar balde nem tocar o banco.
+app.UseMiddleware<CaractereNuloNaQueryMiddleware>();
 
 app.UseRateLimiter();
 

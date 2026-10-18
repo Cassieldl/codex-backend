@@ -43,6 +43,13 @@ public sealed record Slug
     public static bool PodeDerivarDe(string? textoOrigem) =>
         !string.IsNullOrWhiteSpace(textoOrigem) && Normalizar(textoOrigem).Length > 0;
 
+    /// <summary>
+    /// Responde se o slug derivado cabe na coluna de destino. Slug é endereço e nunca se trunca,
+    /// então o validator recusa com 422 o texto cujo slug não caberia.
+    /// </summary>
+    public static bool DerivadoCabeEm(string? textoOrigem, int comprimentoMaximo) =>
+        string.IsNullOrWhiteSpace(textoOrigem) || Normalizar(textoOrigem).Length <= comprimentoMaximo;
+
     private static string Normalizar(string textoOrigem)
     {
         var semAcento = RemoverDiacriticos(textoOrigem.Trim().ToLowerInvariant());

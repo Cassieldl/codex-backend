@@ -62,7 +62,7 @@ public sealed class ArtigoServicoInterno : IArtigoServicoInterno
             await _indiceBuscaWriter.AtualizarPesosAsync(TipoItemIndexado.artigo, artigo.Id, pesoA, pesoB, pesoC, pesoD, ctInterno);
         }, ct);
 
-        return Mapear(artigo, dto.CampoLayoutIds, dto.ErroIds);
+        return await MapearAsync(artigo, ct);
     }
 
     public async Task<ArtigoAdminDto> AtualizarAsync(int id, AtualizarArtigoDto dto, uint versaoEsperada, CancellationToken ct)
@@ -86,7 +86,7 @@ public sealed class ArtigoServicoInterno : IArtigoServicoInterno
             await _indiceBuscaWriter.AtualizarPesosAsync(TipoItemIndexado.artigo, artigo.Id, pesoA, pesoB, pesoC, pesoD, ctInterno);
         }, ct);
 
-        return Mapear(artigo, dto.CampoLayoutIds, dto.ErroIds);
+        return await MapearAsync(artigo, ct);
     }
 
     /// <summary>
@@ -215,15 +215,19 @@ public sealed class ArtigoServicoInterno : IArtigoServicoInterno
         };
     }
 
+    // Lido do banco depois de gravar: os ids saem das mesmas linhas que os rótulos, então as duas formas nunca divergem.
     private async Task<ArtigoAdminDto> MapearAsync(Artigo artigo, CancellationToken ct)
     {
-        var campoLayoutIds = await _repositorio.ListarCamposLayoutRelacionadosIdsAsync(artigo.Id, ct);
-        var erroIds = await _repositorio.ListarErrosRelacionadosIdsAsync(artigo.Id, ct);
+        var camposLayout = await _repositorio.ListarCamposLayoutVinculadosAsync(artigo.Id, ct);
+        var erros = await _repositorio.ListarErrosVinculadosAsync(artigo.Id, ct);
 
-        return Mapear(artigo, campoLayoutIds, erroIds);
+        return Mapear(artigo, camposLayout, erros);
     }
 
-    private static ArtigoAdminDto Mapear(Artigo artigo, IReadOnlyCollection<int> campoLayoutIds, IReadOnlyCollection<int> erroIds) => new()
+    private static ArtigoAdminDto Mapear(
+        Artigo artigo,
+        IReadOnlyList<CampoLayoutVinculadoArtigoDto> camposLayout,
+        IReadOnlyList<ErroVinculadoArtigoDto> erros) => new()
     {
         Id = artigo.Id,
         Slug = artigo.Slug,
@@ -233,8 +237,10 @@ public sealed class ArtigoServicoInterno : IArtigoServicoInterno
         Publicado = artigo.Publicado,
         Reservado = SlugsReservadosArtigo.EhReservado(artigo.Slug),
         VerificadoEm = artigo.VerificadoEm.HasValue ? DateOnly.FromDateTime(artigo.VerificadoEm.Value.UtcDateTime) : null,
-        CampoLayoutIds = campoLayoutIds,
-        ErroIds = erroIds,
+        CampoLayoutIds = camposLayout.Select(campo => campo.Id).ToArray(),
+        ErroIds = erros.Select(erro => erro.Id).ToArray(),
+        CamposLayout = camposLayout,
+        Erros = erros,
         VersaoConcorrencia = artigo.Versao,
     };
 }

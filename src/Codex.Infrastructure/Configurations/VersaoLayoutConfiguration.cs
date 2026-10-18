@@ -1,3 +1,4 @@
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Codex.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -15,8 +16,8 @@ public sealed class VersaoLayoutConfiguration : IEntityTypeConfiguration<VersaoL
         builder.HasKey(x => x.Id).HasName("pk_codex_versoeslayout");
         builder.Property(x => x.Id).HasColumnName("versaolayoutid").UseIdentityAlwaysColumn();
 
-        builder.Property(x => x.Rotulo).HasColumnName("rotulo").HasMaxLength(80).IsRequired();
-        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(120).IsRequired();
+        builder.Property(x => x.Rotulo).HasColumnName("rotulo").HasMaxLength(LimitesVersaoLayout.Rotulo).IsRequired();
+        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(LimitesVersaoLayout.Slug).IsRequired();
         builder.Property(x => x.Estado).HasColumnName("estado").HasMaxLength(20).HasConversion<string>().IsRequired();
         builder.Property(x => x.Ordem).HasColumnName("ordem").IsRequired();
         builder.Property(x => x.Publicado).HasColumnName("publicado").HasDefaultValue(false).IsRequired();

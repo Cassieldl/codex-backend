@@ -1,4 +1,5 @@
 using Codex.Application.DTOs.Interno;
+using Codex.Domain.Constantes;
 using FluentValidation;
 using SlugVo = Codex.Domain.ValueObjects.Slug;
 
@@ -13,7 +14,7 @@ public sealed class CriarVersaoDtoValidator : AbstractValidator<CriarVersaoDto>
         // versoesprovedor.rotulo é varchar(80)
         // (VersaoProvedorConfiguration.cs) — 160 deixava passar 81–160 e morrer em 22001 (500).
         RuleFor(x => x.Rotulo).NotEmpty().WithMessage("O rótulo da versão é obrigatório.")
-            .MaximumLength(80).WithMessage("O rótulo da versão deve ter no máximo 80 caracteres.")
+            .MaximumLength(LimitesVersaoProvedor.Rotulo).WithMessage($"O rótulo da versão deve ter no máximo {LimitesVersaoProvedor.Rotulo} caracteres.")
             // O slug nasce do rótulo (VersaoProvedor.Criar) — rótulo só de pontuação viraria 500.
             .Must(SlugVo.PodeDerivarDe).WithMessage("O rótulo da versão precisa conter ao menos uma letra ou número.");
     }
@@ -26,7 +27,7 @@ public sealed class AtualizarVersaoDtoValidator : AbstractValidator<AtualizarVer
         // Mesmo teto de 80 do validator de criação —
         // vale a coluna, não um número arbitrário duplicado.
         RuleFor(x => x.Rotulo).NotEmpty().WithMessage("O rótulo da versão é obrigatório.")
-            .MaximumLength(80).WithMessage("O rótulo da versão deve ter no máximo 80 caracteres.");
+            .MaximumLength(LimitesVersaoProvedor.Rotulo).WithMessage($"O rótulo da versão deve ter no máximo {LimitesVersaoProvedor.Rotulo} caracteres.");
 
         // null = mantém o layout atual (default do frontend hoje). Informado, precisa ser um id válido.
         RuleFor(x => x.VersaoLayoutId).GreaterThan(0)

@@ -1,4 +1,5 @@
 using Codex.Application.DTOs.Interno;
+using Codex.Domain.Constantes;
 using FluentValidation;
 using SlugVo = Codex.Domain.ValueObjects.Slug;
 
@@ -10,7 +11,7 @@ public sealed class CriarArtigoDtoValidator : AbstractValidator<CriarArtigoDto>
     public CriarArtigoDtoValidator()
     {
         RuleFor(x => x.Tipo).IsInEnum().WithMessage("Tipo de artigo inválido.");
-        RuleFor(x => x.Titulo).NotEmpty().MaximumLength(200).WithMessage("O título do artigo é obrigatório e tem no máximo 200 caracteres.")
+        RuleFor(x => x.Titulo).NotEmpty().MaximumLength(LimitesArtigo.Titulo).WithMessage($"O título do artigo é obrigatório e tem no máximo {LimitesArtigo.Titulo} caracteres.")
             // O slug nasce do título (Artigo.Criar) — título só de pontuação viraria 500.
             .Must(SlugVo.PodeDerivarDe).WithMessage("O título do artigo precisa conter ao menos uma letra ou número.");
         RuleFor(x => x.Corpo).NotEmpty().WithMessage("O corpo do artigo é obrigatório.");
@@ -31,7 +32,7 @@ public sealed class AtualizarArtigoDtoValidator : AbstractValidator<AtualizarArt
     public AtualizarArtigoDtoValidator()
     {
         RuleFor(x => x.Tipo).IsInEnum().WithMessage("Tipo de artigo inválido.");
-        RuleFor(x => x.Titulo).NotEmpty().MaximumLength(200).WithMessage("O título do artigo é obrigatório e tem no máximo 200 caracteres.");
+        RuleFor(x => x.Titulo).NotEmpty().MaximumLength(LimitesArtigo.Titulo).WithMessage($"O título do artigo é obrigatório e tem no máximo {LimitesArtigo.Titulo} caracteres.");
         RuleFor(x => x.Corpo).NotEmpty().WithMessage("O corpo do artigo é obrigatório.");
 
         RuleFor(x => x.CampoLayoutIds).Must(SemDuplicataENemIdInvalido)

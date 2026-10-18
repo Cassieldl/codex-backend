@@ -1,4 +1,5 @@
 using Codex.Application.DTOs.Interno;
+using Codex.Domain.Constantes;
 using Codex.Domain.Enums;
 using FluentValidation;
 
@@ -29,8 +30,8 @@ public sealed class CriarComunicadoDtoValidator : AbstractValidator<CriarComunic
     public CriarComunicadoDtoValidator(TimeProvider relogio)
     {
         RuleFor(x => x.Titulo)
-            .NotEmpty().MaximumLength(200)
-            .WithMessage("O título do comunicado é obrigatório e tem no máximo 200 caracteres.");
+            .NotEmpty().MaximumLength(LimitesComunicado.Titulo)
+            .WithMessage($"O título do comunicado é obrigatório e tem no máximo {LimitesComunicado.Titulo} caracteres.");
 
         RuleFor(x => x.Corpo)
             .NotEmpty().MaximumLength(LimiteCorpo)

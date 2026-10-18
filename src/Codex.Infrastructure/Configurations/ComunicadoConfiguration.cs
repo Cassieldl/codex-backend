@@ -1,3 +1,4 @@
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Codex.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,7 @@ public sealed class ComunicadoConfiguration : IEntityTypeConfiguration<Comunicad
         builder.HasKey(x => x.Id).HasName("pk_codex_comunicados");
         builder.Property(x => x.Id).HasColumnName("comunicadoid").UseIdentityAlwaysColumn();
 
-        builder.Property(x => x.Titulo).HasColumnName("titulo").HasMaxLength(200).IsRequired();
+        builder.Property(x => x.Titulo).HasColumnName("titulo").HasMaxLength(LimitesComunicado.Titulo).IsRequired();
         builder.Property(x => x.Corpo).HasColumnName("corpo").IsRequired();
         builder.Property(x => x.Severidade).HasColumnName("severidade").HasMaxLength(20).HasConversion<string>().IsRequired();
         builder.Property(x => x.Abrangencia).HasColumnName("abrangencia").HasMaxLength(20).HasConversion<string>().IsRequired();

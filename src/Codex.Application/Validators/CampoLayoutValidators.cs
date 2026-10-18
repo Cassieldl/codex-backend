@@ -1,21 +1,11 @@
 using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
+using Codex.Domain.Constantes;
 using Codex.Domain.Enums;
 using FluentValidation;
 using SlugVo = Codex.Domain.ValueObjects.Slug;
 
 namespace Codex.Application.Validators;
-
-/// <summary>
-/// Tetos das colunas de <c>camposlayout</c>. O do caminho é o do slug (<c>varchar(160)</c>), que
-/// nasce dele: a normalização só encurta, então um caminho de até 160 sempre gera slug que cabe.
-/// </summary>
-public static class LimitesCampoLayout
-{
-    public const int Nome = 120;
-    public const int CaminhoXml = 160;
-    public const int Grupo = 120;
-}
 
 public sealed class CriarCampoLayoutDtoValidator : AbstractValidator<CriarCampoLayoutDto>
 {

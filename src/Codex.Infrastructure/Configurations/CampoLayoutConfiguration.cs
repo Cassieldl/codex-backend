@@ -1,3 +1,4 @@
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -23,12 +24,12 @@ public sealed class CampoLayoutConfiguration : IEntityTypeConfiguration<CampoLay
 
         builder.Property(x => x.VersaoLayoutId).HasColumnName("versaolayoutid").IsRequired();
         builder.Property(x => x.VersaoLayoutDescontinuadoId).HasColumnName("versaolayoutdescontinuadoid").IsRequired(false);
-        builder.Property(x => x.Nome).HasColumnName("nome").HasMaxLength(120).IsRequired();
-        builder.Property(x => x.CaminhoXml).HasColumnName("caminhoxml").HasMaxLength(400).IsRequired();
+        builder.Property(x => x.Nome).HasColumnName("nome").HasMaxLength(LimitesCampoLayout.Nome).IsRequired();
+        builder.Property(x => x.CaminhoXml).HasColumnName("caminhoxml").HasMaxLength(LimitesCampoLayout.ColunaCaminhoXml).IsRequired();
         builder.Property(x => x.Significado).HasColumnName("significado").IsRequired();
-        builder.Property(x => x.Grupo).HasColumnName("grupo").HasMaxLength(120);
+        builder.Property(x => x.Grupo).HasColumnName("grupo").HasMaxLength(LimitesCampoLayout.Grupo);
         builder.Property(x => x.Ordem).HasColumnName("ordem").HasDefaultValue(0).IsRequired();
-        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(160).IsRequired();
+        builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(LimitesCampoLayout.Slug).IsRequired();
         builder.Property(x => x.Estado).HasColumnName("estado").HasMaxLength(20).HasConversion<string>().IsRequired();
         builder.Property(x => x.Publicado).HasColumnName("publicado").HasDefaultValue(false).IsRequired();
 

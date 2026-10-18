@@ -381,7 +381,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                 WHERE ib.desativadoem IS NULL
                   AND (cardinality({tiposArray}::text[]) = 0 OR ib.tipoitem = ANY({tiposArray}::text[]))
                   AND ib.documento @@ websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))
-                ORDER BY "Pontuacao" DESC
+                ORDER BY "Pontuacao" DESC, ib.itembuscaid
                 LIMIT {CapLinhas}
                 """)
             : _contexto.Database.SqlQuery<LinhaBusca>($"""
@@ -402,7 +402,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                 WHERE ib.visivelpublico
                   AND (cardinality({tiposArray}::text[]) = 0 OR ib.tipoitem = ANY({tiposArray}::text[]))
                   AND ib.documento @@ websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))
-                ORDER BY "Pontuacao" DESC
+                ORDER BY "Pontuacao" DESC, ib.itembuscaid
                 LIMIT {CapLinhas}
                 """);
 
@@ -420,13 +420,18 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
     /// a pontuação. Os dois passos precisam partir do mesmo conjunto de lexemas, senão o parcial
     /// deixa de ser o relaxamento do forte.
     /// </para>
+    ///
+    /// <para>
+    /// Cada lexema entra citado e vira <c>tsquery</c> por cast: reparsear com <c>to_tsquery</c> lia o
+    /// <c>:</c> de um token como <c>host:porta</c> como operador.
+    /// </para>
     /// </summary>
     private Task<List<LinhaBusca>> ExecutarParcialAsync(string termo, bool incluirRascunho, string[] tiposArray, CancellationToken ct)
     {
         var query = incluirRascunho
             ? _contexto.Database.SqlQuery<LinhaBusca>($"""
                 WITH lexemas AS (
-                    SELECT string_agg(DISTINCT lexema, ' | ') AS combinados
+                    SELECT string_agg(DISTINCT '''' || replace(replace(lexema, '\', '\\'), '''', '''''') || '''', ' | ')::tsquery AS consulta
                     FROM unnest(tsvector_to_array(
                         to_tsvector('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))
                     )) AS lexema
@@ -435,26 +440,26 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                        ib.titulo AS "Titulo", ib.url AS "Url", ib.publicado AS "Publicado",
                        ib.provedorid AS "ProvedorId", ib.versaoprovedorid AS "VersaoProvedorId",
                        ib.provedorids AS "ProvedorIds",
-                       ts_rank_cd(ib.documento, to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados), 32) AS "Pontuacao",
-                       ts_rank(ARRAY[0,0,0,1]::float4[], ib.documento, to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados)) > 0 AS "CasouA",
-                       ts_rank(ARRAY[0,0,1,0]::float4[], ib.documento, to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados)) > 0 AS "CasouB",
-                       ts_rank(ARRAY[0,1,0,0]::float4[], ib.documento, to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados)) > 0 AS "CasouC",
-                       ts_rank(ARRAY[1,0,0,0]::float4[], ib.documento, to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados)) > 0 AS "CasouD",
+                       ts_rank_cd(ib.documento, lexemas.consulta, 32) AS "Pontuacao",
+                       ts_rank(ARRAY[0,0,0,1]::float4[], ib.documento, lexemas.consulta) > 0 AS "CasouA",
+                       ts_rank(ARRAY[0,0,1,0]::float4[], ib.documento, lexemas.consulta) > 0 AS "CasouB",
+                       ts_rank(ARRAY[0,1,0,0]::float4[], ib.documento, lexemas.consulta) > 0 AS "CasouC",
+                       ts_rank(ARRAY[1,0,0,0]::float4[], ib.documento, lexemas.consulta) > 0 AS "CasouD",
                        ts_headline('codex.codex_pt'::regconfig,
                            replace(replace(concat_ws(' ', ib.pesoa, ib.pesob, ib.pesoc), '⟦', ''), '⟧', ''),
-                           to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados),
+                           lexemas.consulta,
                            'StartSel=⟦, StopSel=⟧, MaxFragments=1, MaxWords=35, MinWords=15') AS "FragmentoBruto"
                 FROM codex.itensbusca ib, lexemas
                 WHERE ib.desativadoem IS NULL
                   AND (cardinality({tiposArray}::text[]) = 0 OR ib.tipoitem = ANY({tiposArray}::text[]))
-                  AND lexemas.combinados IS NOT NULL
-                  AND ib.documento @@ to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados)
-                ORDER BY "Pontuacao" DESC
+                  AND lexemas.consulta IS NOT NULL
+                  AND ib.documento @@ lexemas.consulta
+                ORDER BY "Pontuacao" DESC, ib.itembuscaid
                 LIMIT {CapLinhas}
                 """)
             : _contexto.Database.SqlQuery<LinhaBusca>($"""
                 WITH lexemas AS (
-                    SELECT string_agg(DISTINCT lexema, ' | ') AS combinados
+                    SELECT string_agg(DISTINCT '''' || replace(replace(lexema, '\', '\\'), '''', '''''') || '''', ' | ')::tsquery AS consulta
                     FROM unnest(tsvector_to_array(
                         to_tsvector('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))
                     )) AS lexema
@@ -463,21 +468,21 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                        ib.titulo AS "Titulo", ib.url AS "Url", ib.publicado AS "Publicado",
                        ib.provedorid AS "ProvedorId", ib.versaoprovedorid AS "VersaoProvedorId",
                        ib.provedorids AS "ProvedorIds",
-                       ts_rank_cd(ib.documento, to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados), 32) AS "Pontuacao",
-                       ts_rank(ARRAY[0,0,0,1]::float4[], ib.documento, to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados)) > 0 AS "CasouA",
-                       ts_rank(ARRAY[0,0,1,0]::float4[], ib.documento, to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados)) > 0 AS "CasouB",
-                       ts_rank(ARRAY[0,1,0,0]::float4[], ib.documento, to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados)) > 0 AS "CasouC",
-                       ts_rank(ARRAY[1,0,0,0]::float4[], ib.documento, to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados)) > 0 AS "CasouD",
+                       ts_rank_cd(ib.documento, lexemas.consulta, 32) AS "Pontuacao",
+                       ts_rank(ARRAY[0,0,0,1]::float4[], ib.documento, lexemas.consulta) > 0 AS "CasouA",
+                       ts_rank(ARRAY[0,0,1,0]::float4[], ib.documento, lexemas.consulta) > 0 AS "CasouB",
+                       ts_rank(ARRAY[0,1,0,0]::float4[], ib.documento, lexemas.consulta) > 0 AS "CasouC",
+                       ts_rank(ARRAY[1,0,0,0]::float4[], ib.documento, lexemas.consulta) > 0 AS "CasouD",
                        ts_headline('codex.codex_pt'::regconfig,
                            replace(replace(concat_ws(' ', ib.pesoa, ib.pesob, ib.pesoc), '⟦', ''), '⟧', ''),
-                           to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados),
+                           lexemas.consulta,
                            'StartSel=⟦, StopSel=⟧, MaxFragments=1, MaxWords=35, MinWords=15') AS "FragmentoBruto"
                 FROM codex.itensbusca ib, lexemas
                 WHERE ib.visivelpublico
                   AND (cardinality({tiposArray}::text[]) = 0 OR ib.tipoitem = ANY({tiposArray}::text[]))
-                  AND lexemas.combinados IS NOT NULL
-                  AND ib.documento @@ to_tsquery('codex.codex_pt'::regconfig, lexemas.combinados)
-                ORDER BY "Pontuacao" DESC
+                  AND lexemas.consulta IS NOT NULL
+                  AND ib.documento @@ lexemas.consulta
+                ORDER BY "Pontuacao" DESC, ib.itembuscaid
                 LIMIT {CapLinhas}
                 """);
 
@@ -682,6 +687,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         var paginaEfetiva = Paginacao.NormalizarPagina(pagina, tamanhoPagina);
         var itensDaPagina = dentro
             .OrderByDescending(l => l.Pontuacao)
+            .ThenBy(l => l.ItemBuscaId)
             .Skip((paginaEfetiva - 1) * tamanhoPagina)
             .Take(tamanhoPagina)
             .ToList();
@@ -709,10 +715,12 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                 Total = dentro.Count(l => l.TipoItem == grupo.Key),
                 Pontuacao = grupo.Max(l => (double)l.Pontuacao),
                 Itens = grupo.OrderByDescending(l => l.Pontuacao)
+                    .ThenBy(l => l.ItemBuscaId)
                     .Select(linha => MapearItem(linha, rotulos, termoUsado, qualidade))
                     .ToArray(),
             })
             .OrderByDescending(g => g.Pontuacao)
+            .ThenBy(g => g.Tipo, StringComparer.Ordinal)
             .ToArray();
 
         return new ResultadoBuscaDto

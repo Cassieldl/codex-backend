@@ -1,3 +1,4 @@
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -24,7 +25,7 @@ public sealed class AvisoConfiguration : IEntityTypeConfiguration<Aviso>
         builder.Property(x => x.ProvedorId).HasColumnName("provedorid").IsRequired(false);
         builder.Property(x => x.VersaoProvedorId).HasColumnName("versaoprovedorid").IsRequired(false);
         builder.Property(x => x.Severidade).HasColumnName("severidade").HasMaxLength(20).HasConversion<string>().IsRequired();
-        builder.Property(x => x.Titulo).HasColumnName("titulo").HasMaxLength(200).IsRequired();
+        builder.Property(x => x.Titulo).HasColumnName("titulo").HasMaxLength(LimitesAviso.Titulo).IsRequired();
         builder.Property(x => x.Corpo).HasColumnName("corpo").IsRequired();
         builder.Property(x => x.VigenciaInicio).HasColumnName("vigenciainicio").HasDefaultValueSql("CURRENT_DATE").IsRequired();
         builder.Property(x => x.Publicado).HasColumnName("publicado").HasDefaultValue(false).IsRequired();

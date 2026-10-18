@@ -58,7 +58,41 @@ public sealed record ArtigoAdminDto
 
     public required IReadOnlyCollection<int> ErroIds { get; init; }
 
+    /// <summary>Os mesmos vínculos de <see cref="ErroIds"/>, rotulados e ordenados por código e id.</summary>
+    public required IReadOnlyCollection<ErroVinculadoArtigoDto> Erros { get; init; }
+
+    /// <summary>Os mesmos vínculos de <see cref="CampoLayoutIds"/>, rotulados e ordenados por ordem da versão do layout, nome e id.</summary>
+    public required IReadOnlyCollection<CampoLayoutVinculadoArtigoDto> CamposLayout { get; init; }
+
     public required uint VersaoConcorrencia { get; init; }
+}
+
+/// <summary>Erro vinculado ao artigo. <see cref="Desativado"/> marca o erro removido, que segue vinculado até o editor tirá-lo.</summary>
+public sealed record ErroVinculadoArtigoDto
+{
+    public required int Id { get; init; }
+
+    public required string Codigo { get; init; }
+
+    public required string Titulo { get; init; }
+
+    public required bool Desativado { get; init; }
+}
+
+/// <summary>Campo de layout vinculado ao artigo. <see cref="Desativado"/> marca o campo removido, que segue vinculado até o editor tirá-lo.</summary>
+public sealed record CampoLayoutVinculadoArtigoDto
+{
+    public required int Id { get; init; }
+
+    public required string Nome { get; init; }
+
+    public required string CaminhoXml { get; init; }
+
+    public required int VersaoLayoutId { get; init; }
+
+    public required string VersaoLayoutRotulo { get; init; }
+
+    public required bool Desativado { get; init; }
 }
 
 /// <summary>Criação (I25) — <c>slug</c> nunca é campo de request (mass assignment): sempre derivado de <see cref="Titulo"/>.</summary>

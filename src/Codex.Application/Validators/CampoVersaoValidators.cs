@@ -1,5 +1,6 @@
 using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
+using Codex.Domain.Constantes;
 using FluentValidation;
 
 namespace Codex.Application.Validators;
@@ -18,7 +19,15 @@ public sealed class CriarCampoVersaoDtoValidator : AbstractValidator<CriarCampoV
     {
         RuleFor(x => x.CampoLayoutId).GreaterThan(0).WithMessage("O campo canônico (campoLayoutId) é obrigatório — U4.");
 
-        RuleFor(x => x.Tipo).NotEmpty().WithMessage("O tipo do campo é obrigatório.");
+        RuleFor(x => x.Tipo).NotEmpty().WithMessage("O tipo do campo é obrigatório.")
+            .MaximumLength(LimitesCampoVersao.Tipo)
+            .WithMessage($"O tipo do campo tem no máximo {LimitesCampoVersao.Tipo} caracteres.");
+        RuleFor(x => x.Tamanho).MaximumLength(LimitesCampoVersao.Tamanho)
+            .WithMessage($"O tamanho do campo tem no máximo {LimitesCampoVersao.Tamanho} caracteres.");
+        RuleFor(x => x.Mascara).MaximumLength(LimitesCampoVersao.Mascara)
+            .WithMessage($"A máscara do campo tem no máximo {LimitesCampoVersao.Mascara} caracteres.");
+        RuleFor(x => x.DestinoXml).MaximumLength(LimitesCampoVersao.DestinoXml)
+            .WithMessage($"O destino no XML tem no máximo {LimitesCampoVersao.DestinoXml} caracteres.");
 
         RuleFor(x => x.EstadoPreenchimento).IsInEnum().WithMessage("Estado de preenchimento inválido.");
 
@@ -42,7 +51,15 @@ public sealed class AtualizarCampoVersaoDtoValidator : AbstractValidator<Atualiz
 {
     public AtualizarCampoVersaoDtoValidator()
     {
-        RuleFor(x => x.Tipo).NotEmpty().WithMessage("O tipo do campo é obrigatório.");
+        RuleFor(x => x.Tipo).NotEmpty().WithMessage("O tipo do campo é obrigatório.")
+            .MaximumLength(LimitesCampoVersao.Tipo)
+            .WithMessage($"O tipo do campo tem no máximo {LimitesCampoVersao.Tipo} caracteres.");
+        RuleFor(x => x.Tamanho).MaximumLength(LimitesCampoVersao.Tamanho)
+            .WithMessage($"O tamanho do campo tem no máximo {LimitesCampoVersao.Tamanho} caracteres.");
+        RuleFor(x => x.Mascara).MaximumLength(LimitesCampoVersao.Mascara)
+            .WithMessage($"A máscara do campo tem no máximo {LimitesCampoVersao.Mascara} caracteres.");
+        RuleFor(x => x.DestinoXml).MaximumLength(LimitesCampoVersao.DestinoXml)
+            .WithMessage($"O destino no XML tem no máximo {LimitesCampoVersao.DestinoXml} caracteres.");
 
         RuleFor(x => x.EstadoPreenchimento).IsInEnum().WithMessage("Estado de preenchimento inválido.");
 

@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Codex.Application.DTOs.Interno;
+using Codex.Domain.Constantes;
 using FluentValidation;
 using SlugVo = Codex.Domain.ValueObjects.Slug;
 
@@ -10,13 +11,13 @@ public sealed class CriarProvedorDtoValidator : AbstractValidator<CriarProvedorD
     public CriarProvedorDtoValidator()
     {
         RuleFor(x => x.Nome).NotEmpty().WithMessage("O nome do provedor é obrigatório.")
-            .MaximumLength(160).WithMessage("O nome do provedor deve ter no máximo 160 caracteres.")
+            .MaximumLength(LimitesProvedor.Nome).WithMessage($"O nome do provedor deve ter no máximo {LimitesProvedor.Nome} caracteres.")
             // O slug nasce do nome (Provedor.Criar). Nome sem letra nem dígito normaliza para
             // vazio e Slug.DeTexto lança ArgumentException — 500 no lugar do 422 que o caso é.
             .Must(SlugVo.PodeDerivarDe).WithMessage("O nome do provedor precisa conter ao menos uma letra ou número.");
 
         RuleFor(x => x.IdentificadorInvoicy).NotEmpty().WithMessage("O identificador InvoiCy é obrigatório.")
-            .MaximumLength(80).WithMessage("O identificador InvoiCy deve ter no máximo 80 caracteres.");
+            .MaximumLength(LimitesProvedor.IdentificadorInvoicy).WithMessage($"O identificador InvoiCy deve ter no máximo {LimitesProvedor.IdentificadorInvoicy} caracteres.");
 
         RuleFor(x => x.Categoria).IsInEnum().WithMessage("Categoria de provedor inválida.");
 
@@ -29,7 +30,7 @@ public sealed class AtualizarProvedorDtoValidator : AbstractValidator<AtualizarP
     public AtualizarProvedorDtoValidator()
     {
         RuleFor(x => x.Nome).NotEmpty().WithMessage("O nome do provedor é obrigatório.")
-            .MaximumLength(160).WithMessage("O nome do provedor deve ter no máximo 160 caracteres.");
+            .MaximumLength(LimitesProvedor.Nome).WithMessage($"O nome do provedor deve ter no máximo {LimitesProvedor.Nome} caracteres.");
 
         RuleFor(x => x.Categoria).IsInEnum().WithMessage("Categoria de provedor inválida.");
 
@@ -43,8 +44,7 @@ public sealed class AtualizarProvedorDtoValidator : AbstractValidator<AtualizarP
 /// </summary>
 internal static class RegrasDeAliasProvedor
 {
-    /// <summary><c>aliasesprovedor.alias</c> é <c>varchar(160)</c> (<c>AliasProvedorConfiguration</c>).</summary>
-    private const int TamanhoMaximo = 160;
+    private const int TamanhoMaximo = LimitesProvedor.Alias;
 
     public static void Aplicar<T>(AbstractValidator<T> validador, Expression<Func<T, IEnumerable<string>>> aliases)
     {
