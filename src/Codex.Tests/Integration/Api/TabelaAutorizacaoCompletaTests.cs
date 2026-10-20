@@ -68,8 +68,9 @@ public sealed class TabelaAutorizacaoCompletaTests : IClassFixture<CodexApiFacto
                 continue;
             }
 
-            if (!rota.Roles.Contains(linha.Role, StringComparer.OrdinalIgnoreCase))
-                divergencias.Add($"{linha.Chave}: tabela declara '{linha.Role}', controller exige '{string.Join("/", rota.Roles)}'.");
+            // Igualdade exata: role a mais no atributo abre a rota para quem não deveria entrar.
+            if (!rota.Roles.ToHashSet(StringComparer.OrdinalIgnoreCase).SetEquals([linha.Role]))
+                divergencias.Add($"{linha.Chave}: tabela declara '{linha.Role}', controller aceita '{string.Join("/", rota.Roles)}'.");
         }
 
         divergencias.Should().BeEmpty(because: string.Join(" | ", divergencias));

@@ -144,9 +144,14 @@ Para um provedor novo: crie a pasta em `material/`, acrescente a entrada no cat�
 carga. Campo do mapeamento que não existe no XSD do InvoiCy interrompe a carga até a decisão ser
 registrada em `resolver-campos.mjs` (grafia confirmada, pendência ou campo interno).
 
-Testes da carga (Node, sem dependência): `node --test <arquivo>.test.mjs` em
-`database/carga/emissor-nacional/` e `database/carga/provedores/`. Passar o diretório falha nesta
-versão do Node — passe os arquivos.
+Testes da carga (Node 22 ou mais novo, sem dependência), a partir da raiz do repositório:
+
+```bash
+node --test "database/carga/**/*.test.mjs"
+```
+
+As aspas são necessárias: sem elas o bash expande o padrão e deixa de fora os testes que ficam
+direto em `database/carga/`.
 
 O que ainda depende de resposta do time do InvoiCy está no relatório de completude da demanda 008
 (`.dev-team/demandas/008-campos-emissor-nacional/relatorio-completude.md`, fora deste repositório).

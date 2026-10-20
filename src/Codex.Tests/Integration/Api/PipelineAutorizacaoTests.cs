@@ -130,6 +130,84 @@ public sealed class PipelineAutorizacaoTests : IClassFixture<CodexApiFactory>
             yield return [linha.Metodo, linha.Rota, linha.Role];
     }
 
+    private const int QuantidadeMinimaDeRotasDeEscrita = 46;
+
+    private const int QuantidadeDeEscritasSemRoleDeBusca = 5;
+
+    private static readonly string[] EntidadesSemRoleDeBusca = ["avisos"];
+
+    public static IEnumerable<object[]> EscritasInternas() => EndpointsInternos()
+        .Where(linha => (HttpMethod)linha[0] != HttpMethod.Get);
+
+    public static IEnumerable<object[]> EscritasInternasComRoleDeBusca() => EscritasInternas()
+        .Where(linha => RolesDoMapa().Contains(RoleDeBuscaDaEntidade((string)linha[2])))
+        .Select(linha => new[] { linha[0], linha[1], linha[2], RoleDeBuscaDaEntidade((string)linha[2]) });
+
+    [Fact]
+    public void UniversoDeEscritas_NaoEncolhe()
+    {
+        EscritasInternas().Should().HaveCountGreaterThanOrEqualTo(QuantidadeMinimaDeRotasDeEscrita,
+            because: "uma rota de escrita que sai da tabela deixa de ser provada contra escalada de role");
+    }
+
+    [Fact]
+    public void EscritasSemRoleDeBusca_SaoSoAsDasEntidadesConhecidas()
+    {
+        var puladas = EscritasInternas()
+            .Where(linha => !RolesDoMapa().Contains(RoleDeBuscaDaEntidade((string)linha[2])))
+            .Select(linha => $"{linha[0]} {linha[1]}")
+            .ToList();
+
+        var entidadesPuladas = EscritasInternas()
+            .Select(linha => EntidadeDaRole((string)linha[2]))
+            .Where(entidade => !RolesDoMapa().Contains($"{entidade}-buscar"))
+            .Distinct()
+            .ToList();
+
+        entidadesPuladas.Should().BeEquivalentTo(EntidadesSemRoleDeBusca,
+            because: $"o caso 'só a role de busca' fica fora destas rotas: {string.Join(" | ", puladas)}");
+        puladas.Should().HaveCount(QuantidadeDeEscritasSemRoleDeBusca);
+    }
+
+    [Theory]
+    [MemberData(nameof(EscritasInternasComRoleDeBusca))]
+    public async Task Escrita_ComSoARoleDeBuscaDaEntidade_Retorna403(HttpMethod metodo, string rota, string roleExigida, string roleDeBusca)
+    {
+        using var resposta = await EnviarComRoles(metodo, rota, roleDeBusca);
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            because: $"{metodo} {rota} exige '{roleExigida}'; quem só lê ('{roleDeBusca}') não pode escrever");
+    }
+
+    [Theory]
+    [MemberData(nameof(EscritasInternas))]
+    public async Task Escrita_ComTodasAsOutrasRolesDoMapa_Retorna403(HttpMethod metodo, string rota, string roleExigida)
+    {
+        var outrasRoles = RolesDoMapa().Where(role => role != roleExigida);
+
+        using var resposta = await EnviarComRoles(metodo, rota, string.Join(',', outrasRoles));
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            because: $"{metodo} {rota} exige '{roleExigida}'; nenhuma outra role do mapa pode substituí-la");
+    }
+
+    private async Task<HttpResponseMessage> EnviarComRoles(HttpMethod metodo, string rota, string roles)
+    {
+        using var cliente = _factory.CreateClient();
+        using var requisicao = new HttpRequestMessage(metodo, rota) { Content = ConteudoParaMetodo(metodo) };
+        requisicao.Headers.Add(TestAuthHandler.HeaderRoles, roles);
+
+        return await cliente.SendAsync(requisicao);
+    }
+
+    private static HashSet<string> RolesDoMapa() => EndpointsInternos()
+        .Select(linha => (string)linha[2])
+        .ToHashSet(StringComparer.Ordinal);
+
+    private static string EntidadeDaRole(string role) => role[..role.LastIndexOf('-')];
+
+    private static string RoleDeBuscaDaEntidade(string role) => $"{EntidadeDaRole(role)}-buscar";
+
     [Theory]
     [MemberData(nameof(EndpointsInternos))]
     public async Task Endpoint_SemToken_Retorna401(HttpMethod metodo, string rota, string roleExigida)

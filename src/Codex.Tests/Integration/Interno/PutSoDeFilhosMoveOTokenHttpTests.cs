@@ -165,6 +165,7 @@ public sealed class PutSoDeFilhosMoveOTokenHttpTests : IAsyncLifetime
         status.Should().Be(HttpStatusCode.Conflict,
             because: "o token do primeiro PUT andou — o token antigo é de uma versão que já não existe");
         corpo.GetProperty("error").GetProperty("code").GetString().Should().Be("CONFLITO_CONCORRENCIA");
+        corpo.GetRawText().Should().NotContain("uq_codex_").And.NotContain("at Codex.");
     }
 
     private async Task<(int Id, string Nome, uint Token)> CriarProvedorAsync(string[] aliases)

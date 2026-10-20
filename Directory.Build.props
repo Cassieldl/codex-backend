@@ -1,0 +1,8 @@
+<Project>
+
+  <!-- Aviso novo reprova o build em todos os projetos da solution, inclusive o de testes. -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

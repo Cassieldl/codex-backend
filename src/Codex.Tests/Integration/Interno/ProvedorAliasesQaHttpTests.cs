@@ -111,6 +111,7 @@ public sealed class ProvedorAliasesQaHttpTests : IAsyncLifetime
         var (status, corpo, _) = await AtualizarAsync(provedor.Id, provedor.Nome, ["Segundo"], provedor.Versao);
 
         status.Should().Be(HttpStatusCode.Conflict, corpo.ToString());
+        corpo.GetRawText().Should().NotContain("uq_codex_").And.NotContain("at Codex.");
         (await LinhasNoBancoAsync(provedor.Id)).Select(l => l.Alias).Should().BeEquivalentTo(["Primeiro"],
             because: "a recusa por conflito é anterior a qualquer remoção de alias");
     }

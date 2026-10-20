@@ -200,7 +200,7 @@ public sealed class AllowlistRotasAnonimasTests : IClassFixture<CodexApiFactory>
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray() ?? [];
 
-    private static IEnumerable<string> ChavesDaRota(ActionDescriptor acao)
+    internal static IEnumerable<string> ChavesDaRota(ActionDescriptor acao)
     {
         var template = acao.AttributeRouteInfo?.Template ?? string.Empty;
 

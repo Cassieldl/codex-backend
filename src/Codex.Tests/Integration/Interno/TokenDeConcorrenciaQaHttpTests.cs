@@ -79,6 +79,7 @@ public sealed class TokenDeConcorrenciaQaHttpTests : IAsyncLifetime
 
         status.Should().Be(HttpStatusCode.Conflict, corpo.ToString());
         corpo.GetProperty("error").GetProperty("code").GetString().Should().Be("CONFLITO_CONCORRENCIA");
+        corpo.GetRawText().Should().NotContain("uq_codex_").And.NotContain("at Codex.");
 
         await using var contexto = _fixture.CriarContexto();
         (await contexto.AliasesProvedor.AsNoTracking().Where(a => a.ProvedorId == provedor.Id).Select(a => a.Alias).ToArrayAsync())
@@ -102,12 +103,13 @@ public sealed class TokenDeConcorrenciaQaHttpTests : IAsyncLifetime
         TokenDe(corpo).Should().NotBe(provedor.Token, because: "o UPDATE forçado sai mesmo sem diferença de conteúdo");
         (await AtualizadoEmDoProvedorAsync(provedor.Id)).Should().BeAfter(atualizadoAntes);
 
-        var (statusVelho, _) = await EnviarAsync(
+        var (statusVelho, corpoVelho) = await EnviarAsync(
             HttpMethod.Put, $"/api/v1/interno/provedores/{provedor.Id}",
             new { nome = provedor.Nome, categoria = nameof(CategoriaProvedor.Nacional), aliases = new[] { "ADN" } },
             provedor.Token);
         statusVelho.Should().Be(HttpStatusCode.Conflict,
             because: "efeito visível para quem edita: a outra aba aberta antes do 'salvar sem mudar' passa a levar 409");
+        corpoVelho.GetRawText().Should().NotContain("uq_codex_").And.NotContain("at Codex.");
 
         var (statusNovo, _) = await EnviarAsync(
             HttpMethod.Put, $"/api/v1/interno/provedores/{provedor.Id}",

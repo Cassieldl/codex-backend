@@ -96,6 +96,7 @@ public sealed class TrocarLayoutDeVersaoQaHttpTests : IAsyncLifetime
         status.Should().Be(HttpStatusCode.Conflict,
             because: "o If-Match é do estado anterior à edição concorrente — a troca de layout não pode contornar o protocolo de concorrência");
         CodigoDe(corpo).Should().Be("CONFLITO_CONCORRENCIA");
+        corpo.GetRawText().Should().NotContain("uq_codex_").And.NotContain("at Codex.");
 
         (await ObterVersaoLayoutIdAsync(versao.Id)).Should().Be(layoutOrigem,
             because: "a recusa por conflito é anterior a qualquer troca de layout");

@@ -75,6 +75,27 @@ public sealed class CorsExpoeETagTests
         resposta.Headers.Should().NotContainKey("Access-Control-Expose-Headers");
     }
 
+    [Theory]
+    [InlineData("OPTIONS")]
+    [InlineData("GET")]
+    public async Task SoAOrigemPermitida_RecebeAllowOrigin(string metodo)
+    {
+        using var fabrica = new FabricaComOrigemDeclarada();
+        using var cliente = fabrica.CreateClient();
+
+        using var requisicaoPermitida = RequisicaoCors(metodo, OrigemPermitida);
+        using var requisicaoEstranha = RequisicaoCors(metodo, OrigemEstranha);
+
+        using var respostaPermitida = await cliente.SendAsync(requisicaoPermitida);
+        using var respostaEstranha = await cliente.SendAsync(requisicaoEstranha);
+
+        respostaPermitida.Headers.GetValues("Access-Control-Allow-Origin").Should().Equal([OrigemPermitida],
+            because: "controle positivo: sem ele a ausência do header na origem estranha não prova nada");
+
+        respostaEstranha.Headers.Should().NotContainKey("Access-Control-Allow-Origin",
+            because: "origem fora da allowlist não pode ler a resposta nem passar do preflight");
+    }
+
     [Fact]
     public async Task PreflightDeEscritaInterna_JaAceitavaIfMatchNaRequisicao()
     {
@@ -93,6 +114,17 @@ public sealed class CorsExpoeETagTests
 
         resposta.Headers.GetValues("Access-Control-Allow-Origin").Should().Equal([OrigemPermitida]);
         resposta.Headers.GetValues("Access-Control-Allow-Headers").Should().Contain("If-Match");
+    }
+
+    private static HttpRequestMessage RequisicaoCors(string metodo, string origem)
+    {
+        var requisicao = new HttpRequestMessage(new HttpMethod(metodo), RotaQualquer);
+        requisicao.Headers.Add("Origin", origem);
+
+        if (metodo == "OPTIONS")
+            requisicao.Headers.Add("Access-Control-Request-Method", "GET");
+
+        return requisicao;
     }
 
     private static async Task<HttpResponseMessage> RequisitarComOrigemAsync(string origem)

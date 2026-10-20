@@ -47,8 +47,22 @@ public sealed class ETagDeConteudoTests
     }
 
     [Fact]
-    public void VersaoDoBinario_NaoEhVazia()
+    public void VersaoDoBinario_EhAIdentidadeDestaBuild()
     {
-        ETagDeConteudo.VersaoDoBinario.Should().NotBeNullOrWhiteSpace();
+        var mvidDoAssembly = typeof(ETagDeConteudo).Assembly.ManifestModule.ModuleVersionId.ToString("N")[..8];
+
+        ETagDeConteudo.VersaoDoBinario.Should().Be(mvidDoAssembly,
+            because: "uma constante faria o deploy que muda o DTO devolver 304 com o corpo velho");
+    }
+
+    [Fact]
+    public void SobrecargaUsadaPelosControllers_CompoeAVersaoDoBinario()
+    {
+        var corpo = new Pagina("0.20", ["E0595"]);
+
+        var etag = ETagDeConteudo.MontarDoCorpo(corpo);
+
+        etag.Should().Contain(ETagDeConteudo.VersaoDoBinario);
+        etag.Should().Be(ETagDeConteudo.MontarDoCorpo(ETagDeConteudo.VersaoDoBinario, corpo));
     }
 }

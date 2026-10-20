@@ -9,6 +9,7 @@ WORKDIR /origem
 # Manifestos primeiro, restore depois: enquanto nenhum .csproj mudar, a camada de restore é
 # reaproveitada e o build não baixa pacote de novo a cada alteração de código. A solution não é
 # copiada de propósito — ela inclui Codex.Tests, que não entra na imagem.
+COPY Directory.Build.props ./
 COPY src/Codex.API/Codex.API.csproj src/Codex.API/
 COPY src/Codex.Application/Codex.Application.csproj src/Codex.Application/
 COPY src/Codex.Domain/Codex.Domain.csproj src/Codex.Domain/

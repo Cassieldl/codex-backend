@@ -131,6 +131,7 @@ public sealed class AvisoCamposAfetadosHttpTests : IAsyncLifetime
 
         statusSegundo.Should().Be(HttpStatusCode.Conflict, corpoSegundo.ToString());
         corpoSegundo.GetProperty("error").GetProperty("code").GetString().Should().Be("CONFLITO_CONCORRENCIA");
+        corpoSegundo.GetRawText().Should().NotContain("uq_codex_").And.NotContain("at Codex.");
         (await LerCamposAfetadosDoAvisoAsync(cenario.VersaoId, aviso.Id))
             .Should().Equal([cenario.CampoB.CampoVersaoId], because: "o PUT recusado não pode ter tocado nos vínculos");
     }

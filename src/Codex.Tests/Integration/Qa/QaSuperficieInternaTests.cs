@@ -204,6 +204,7 @@ public sealed class QaSuperficieInternaTests : IAsyncLifetime
         {
             using var resposta = await EnviarAsync(_cliente, caso.Metodo, caso.Rota, caso.Corpo, desatualizado);
             resposta.StatusCode.Should().Be(HttpStatusCode.Conflict, because: $"{caso.Metodo} {caso.Rota} com If-Match velho");
+            (await resposta.Content.ReadAsStringAsync()).Should().NotContain("uq_codex_").And.NotContain("at Codex.");
         }
     }
 
@@ -224,6 +225,7 @@ public sealed class QaSuperficieInternaTests : IAsyncLifetime
         {
             using var resposta = await EnviarAsync(_cliente, caso.Metodo, caso.Rota, caso.Corpo, desatualizado);
             resposta.StatusCode.Should().Be(HttpStatusCode.Conflict, because: $"{caso.Metodo} {caso.Rota} com If-Match velho");
+            (await resposta.Content.ReadAsStringAsync()).Should().NotContain("uq_codex_").And.NotContain("at Codex.");
         }
     }
 

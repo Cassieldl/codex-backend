@@ -20,6 +20,7 @@ jobs:
     # Testcontainers e sobe um Postgres real. Sem Docker, dezenas de testes caem por ambiente, não
     # por defeito — e um vermelho de ambiente é pior que nenhum sinal.
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
@@ -39,6 +40,14 @@ jobs:
       - name: Testes
         run: dotnet test --configuration Release --no-build --logger "console;verbosity=normal"
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Aspas para o glob chegar ao Node: expandido pelo bash, `**` pularia os testes da raiz da carga.
+      - name: Testes da carga
+        run: node --test "database/carga/**/*.test.mjs"
+
       # O comando sai 0 mesmo quando acha vulnerabilidade: quem decide é a contagem no JSON. Um
       # pacote só aparece na lista quando tem vulnerabilidade conhecida.
       - name: Dependências sem vulnerabilidade conhecida
@@ -51,6 +60,7 @@ jobs:
     # A imagem nunca era construída fora da máquina de quem fazia o smoke. Construir aqui pega
     # Dockerfile quebrado antes do deploy, que é onde ele custaria mais.
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 

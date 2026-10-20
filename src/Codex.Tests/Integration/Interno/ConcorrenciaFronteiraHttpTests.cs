@@ -252,6 +252,7 @@ public sealed class ConcorrenciaFronteiraHttpTests : IAsyncLifetime
 
         comTokenVelho.Status.Should().Be(HttpStatusCode.Conflict);
         comTokenVelho.Corpo.GetProperty("error").GetProperty("code").GetString().Should().Be("CONFLITO_CONCORRENCIA");
+        comTokenVelho.Corpo.GetRawText().Should().NotContain("uq_codex_").And.NotContain("at Codex.");
     }
 
     /// <summary>

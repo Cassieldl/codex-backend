@@ -266,6 +266,7 @@ public sealed class ComunicadosInternoHttpTests : IAsyncLifetime
 
         status.Should().Be(HttpStatusCode.Conflict);
         corpo.GetProperty("error").GetProperty("code").GetString().Should().Be("CONFLITO_CONCORRENCIA");
+        corpo.GetRawText().Should().NotContain("uq_codex_").And.NotContain("at Codex.");
     }
 
     // ------------------------------------------------------------------ I34 (remover)

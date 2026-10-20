@@ -223,6 +223,7 @@ public sealed class FluxoInternoHttpTests : IAsyncLifetime
 
         status.Should().Be(HttpStatusCode.Conflict);
         corpo.GetProperty("error").GetProperty("code").GetString().Should().Be("CONFLITO_CONCORRENCIA");
+        corpo.GetRawText().Should().NotContain("uq_codex_").And.NotContain("at Codex.");
     }
 
     [Fact]
@@ -233,13 +234,14 @@ public sealed class FluxoInternoHttpTests : IAsyncLifetime
 
         var novaVersao = await PublicarProvedorAsync(id, versaoInicial, publicado: true);
 
-        var (statusVelho, _) = await EnviarAsync(HttpMethod.Put, $"/api/v1/interno/provedores/{id}", new
+        var (statusVelho, corpoVelho) = await EnviarAsync(HttpMethod.Put, $"/api/v1/interno/provedores/{id}", new
         {
             nome = $"editar renomeado {sufixo}",
             categoria = "Nacional",
             aliases = Array.Empty<string>(),
         }, versaoInicial);
         statusVelho.Should().Be(HttpStatusCode.Conflict);
+        corpoVelho.GetRawText().Should().NotContain("uq_codex_").And.NotContain("at Codex.");
 
         var (statusNovo, _) = await EnviarAsync(HttpMethod.Put, $"/api/v1/interno/provedores/{id}", new
         {
