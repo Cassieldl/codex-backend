@@ -17,6 +17,189 @@ const ESQUEMA_DPS_NACIONAL = [
   'dps-nacional-1.01/tiposSimples_v1.01.xsd',
 ]
 
+const informativo = (titulo) => ({ severidade: 'Informativo', titulo })
+const alerta = (titulo) => ({ severidade: 'Alerta', titulo })
+
+const INTRODUCAO_DPS =
+  'DPS no leiaute nacional v1.01. Tipo, tamanho e obrigatoriedade das tags vêm do XSD nacional.'
+
+/**
+ * Provedor de leiaute nacional cuja configuração no InvoiCy segue a DPS v1.01. `envelope` é o grupo
+ * que embrulha a DPS na mensagem do provedor, fora do XSD nacional.
+ *
+ * Os avisos vêm de `material/<id>/observacoes.md`, a seção do provedor nas observações de emissão,
+ * copiada com o travessão trocado por hífen e sem o emoji da marca de pendência (a palavra
+ * "Pendente" continua lá e tira o trecho do aviso). Cada subseção vira um aviso com o título e a
+ * severidade decididos aqui.
+ */
+function provedorDeLeiauteNacional(id, { provedor, introducao, envelope, esquema, subsecoes }) {
+  return {
+    provedor: { categoria: 'Proprio', aliases: [], ...provedor },
+    versao: { rotulo: '1.01', introducao: introducao ?? INTRODUCAO_DPS },
+    familia: 'dps',
+    mapeamento: `${id}/mapeamento.md`,
+    esquema: esquema ?? {
+      arquivos: ESQUEMA_DPS_NACIONAL,
+      raiz: 'DPS',
+      ...(envelope ? { prefixo: `${envelope}/` } : {}),
+    },
+    ...(envelope ? { prefixoDestino: `${envelope}/` } : {}),
+    observacoes: { arquivo: `${id}/observacoes.md`, subsecoes },
+    avisos: [],
+  }
+}
+
+const PROVEDORES_DE_LEIAUTE_NACIONAL = {
+  betha: provedorDeLeiauteNacional('betha', {
+    provedor: { nome: 'Betha', identificadorInvoicy: 'BETHA' },
+    subsecoes: {
+      'Visão geral': informativo('O Betha atual usa o leiaute nacional (DPS), não o ABRASF'),
+      'Autenticação e acesso': alerta(
+        'Inscrição Municipal, tipo de emissão e faixa de RPS antes da primeira emissão',
+      ),
+      'Ambiente de homologação e produção': informativo(
+        'Homologação e produção usam a mesma URL: o ambiente é escolhido no portal Betha',
+      ),
+      Processamento: alerta('Lote assíncrono, sem reenvio de RPS rejeitado'),
+      Cancelamento: alerta('Maracás/BA não cancela pelo webservice'),
+      'Regras de preenchimento': alerta(
+        'Campos exigidos, discriminação e tomador do exterior no Betha',
+      ),
+      'Reforma Tributária (IBS/CBS)': alerta(
+        'IBS/CBS depende de parametrização da prefeitura (E999)',
+      ),
+      Links: informativo('Exemplo de XML do Betha 2.0 (legado ABRASF)'),
+    },
+  }),
+  coplan: provedorDeLeiauteNacional('coplan', {
+    provedor: {
+      nome: 'Coplan',
+      identificadorInvoicy: 'COPLAN',
+      aliases: ['COPLAN - Modelo Nacional'],
+    },
+    introducao:
+      'DPS no leiaute nacional v1.01, dentro do envelope GerarNfseEnvio. Tipo, tamanho e ' +
+      'obrigatoriedade das tags da DPS vêm do XSD nacional; o envelope não está descrito nele.',
+    envelope: 'GerarNfseEnvio',
+    subsecoes: {
+      'Visão geral': informativo('O Coplan segue as regras do Emissor Nacional'),
+      'Autenticação e acesso': alerta('E138: liberação para emitir via webservice em produção'),
+      'Regras de preenchimento': alerta(
+        'Retenções federais, intermediário e alíquota de ISS no Coplan',
+      ),
+    },
+  }),
+  dsfnet: provedorDeLeiauteNacional('dsfnet', {
+    provedor: { nome: 'DSFNET', identificadorInvoicy: 'DSFNET', aliases: ['DFSNET'] },
+    subsecoes: {
+      'Autenticação e acesso': alerta('Certificado A1 e subusuário ativo na prefeitura'),
+      Processamento: alerta('Emissão sequencial: uma rejeição trava as notas seguintes'),
+      Cancelamento: informativo('RPS cancelado não reaproveita o número'),
+      'Regras de preenchimento': alerta(
+        'Série entre 10001 e 49999 em produção e outras regras do DSFNET',
+      ),
+    },
+  }),
+  dueto: provedorDeLeiauteNacional('dueto', {
+    provedor: { nome: 'Dueto', identificadorInvoicy: 'DUETO' },
+    subsecoes: {
+      'Ambiente de homologação': informativo('Homologação varia por município'),
+      Cancelamento: alerta('Cândido Mota/SP e Catanduva/SP não cancelam pelo webservice'),
+      'Regras de preenchimento': alerta(
+        'Sem quebra de linha; alíquota e responsável pela retenção só nos casos previstos',
+      ),
+      Links: informativo('Exemplo de XML do Dueto 2.0'),
+    },
+  }),
+  fiorilli: provedorDeLeiauteNacional('fiorilli', {
+    provedor: {
+      nome: 'Fiorilli',
+      identificadorInvoicy: 'FIORILLI',
+      aliases: ['ISSWEB Fiorilli', 'Fiorilli - Modelo Nacional'],
+    },
+    introducao:
+      'DPS no leiaute nacional v1.01, dentro do envelope RecepcionarDpsEnvio. Tipo, tamanho e ' +
+      'obrigatoriedade das tags da DPS vêm do XSD nacional; o envelope não está descrito nele.',
+    envelope: 'RecepcionarDpsEnvio',
+    subsecoes: {
+      'Autenticação e acesso': informativo('Usuário e senha do portal nos dados da empresa'),
+      'Ambiente de homologação': alerta('Sem homologação: os testes são feitos em produção'),
+      Processamento: informativo('Cada prefeitura usa uma versão diferente do webservice'),
+      Disponibilidade: informativo('O endereço do serviço é um IP que muda com frequência'),
+      'Regras de preenchimento': alerta('Tomador obrigatório e data não anterior à última NFS-e'),
+    },
+  }),
+  gespam: provedorDeLeiauteNacional('gespam', {
+    provedor: { nome: 'GESPAM', identificadorInvoicy: 'GESPAM' },
+    subsecoes: {
+      'Autenticação e acesso': alerta('ApiKey por ambiente: uma chave nova invalida a anterior'),
+      Processamento: informativo('Recepção síncrona e processamento assíncrono'),
+      'Limites (produção)': alerta(
+        'Limites de produção: 100 requisições por minuto, 10 MB e 50 DPS por lote',
+      ),
+      'Regras de preenchimento': alerta(
+        'Série só numérica e ApiKey de contribuinte restrita ao próprio CNPJ',
+      ),
+    },
+  }),
+  'joao-pessoa': provedorDeLeiauteNacional('joao-pessoa', {
+    provedor: { nome: 'João Pessoa', identificadorInvoicy: 'JOAOPESSOA', aliases: ['PMJP'] },
+    // A seção não tem subseções: o texto vem logo depois da identificação.
+    subsecoes: {
+      '': informativo('João Pessoa segue as regras do Emissor Nacional'),
+    },
+  }),
+  rlz: provedorDeLeiauteNacional('rlz', {
+    provedor: { nome: 'RLZ', identificadorInvoicy: 'RLZ', aliases: ['RLZ - Modelo Nacional'] },
+    subsecoes: {
+      'Autenticação e acesso': informativo('Certificado A1, usuário e senha e Token Web Service'),
+      'Ambiente de homologação': alerta(
+        'Homologação obrigatória antes da produção, criada sob demanda',
+      ),
+      Processamento: alerta('Emissão em tempo real, com risco de status em conflito'),
+      Cancelamento: alerta('Alguns municípios não têm API de cancelamento'),
+      'Regras de preenchimento': alerta('Local de prestação, tomador e intermediário na RLZ'),
+      'Reforma Tributária (IBS/CBS)': informativo(
+        'Municípios que já recebem os campos da Reforma Tributária',
+      ),
+    },
+  }),
+  sigcorp: provedorDeLeiauteNacional('sigcorp', {
+    provedor: { nome: 'Sigcorp', identificadorInvoicy: 'SIGCORP' },
+    subsecoes: {
+      'Autenticação e acesso': alerta(
+        'HTTP Basic com IM e senha, mais o CNPJ do prestador no cabeçalho',
+      ),
+      Processamento: informativo('Status do processamento assíncrono'),
+      'Regras de preenchimento': alerta('Validações próprias do Sigcorp além do padrão nacional'),
+      'Reforma Tributária (IBS/CBS)': alerta('O que o Sigcorp rejeita no grupo IBSCBS'),
+    },
+  }),
+  smarapdisil: provedorDeLeiauteNacional('smarapdisil', {
+    provedor: {
+      nome: 'SMARAPDISIL',
+      identificadorInvoicy: 'SMARAPDISIL',
+      aliases: ['SMARAPD SIL', 'SMARAPDSil'],
+    },
+    introducao:
+      'XML da NFS-e no leiaute nacional v1.01: o grupo NFSe, com a DPS dentro de infNFSe, como a ' +
+      'configuração do InvoiCy monta para a SMARAPDISIL. Tipo, tamanho e obrigatoriedade vêm dos ' +
+      'tipos do XSD nacional.',
+    // A configuração parte da NFS-e, não da DPS: a raiz é o NFSe (tipo TCNFSe do mesmo XSD).
+    esquema: { arquivos: ESQUEMA_DPS_NACIONAL, raiz: 'NFSe', tipoDaRaiz: 'TCNFSe' },
+    subsecoes: {
+      'Origem da rejeição': informativo('Rejeição do Emissor Nacional ou da prefeitura'),
+      'Versões anteriores (WS e WS2)': informativo(
+        'Regras das versões anteriores WS e WS2, que não valem para a DPS',
+      ),
+      'Artigos relacionados': {
+        ignorar: 'Só lista artigos da base de conhecimento, que têm carga própria.',
+      },
+      'Regras de preenchimento': alerta('Regras de preenchimento da SMARAPDISIL'),
+    },
+  }),
+}
+
 export const PROVEDORES = {
   'e-l': {
     provedor: {
@@ -164,4 +347,5 @@ export const PROVEDORES = {
     prefixoDestino: 'EnviarLoteDpsSincronoEnvio/LoteDps/ListaDps/',
     avisos: [],
   },
+  ...PROVEDORES_DE_LEIAUTE_NACIONAL,
 }

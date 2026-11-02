@@ -5,11 +5,13 @@
  * Formato da linha:
  *   | **seq** | tag | Grupo/Elemento/Atributo | "N - pai" | campo InvoiCy | ocorrência | descrição | Interno/Externo |
  *
+ * O sequencial vem em negrito em umas exportações e sem negrito em outras: as duas formas valem.
+ *
  * A extração original pulou alguns sequenciais (a observação ao pé de cada arquivo diz quais); por
  * isso a tag é identificada pelo sequencial, nunca pela posição na tabela.
  */
 
-const LINHA_DE_TAG = /^\|\s*\*\*(\d+)\*\*\s*\|/
+const LINHA_DE_TAG = /^\|\s*(\*\*)?\d+\1\s*\|/
 
 const ELEMENTO = { Grupo: 'G', Elemento: 'E', Atributo: 'A' }
 

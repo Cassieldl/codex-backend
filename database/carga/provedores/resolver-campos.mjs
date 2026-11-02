@@ -90,6 +90,16 @@ export const PENDENTES = new Map([
     'ValRedAliqUF',
     'Não existe no layout de entrada; o mais próximo é ValpRedAliqUF (IBS/ValpRedAliqUF), a confirmar.',
   ],
+  ...['nroDUIMP', 'nroDUE'].map((nome) => [
+    nome,
+    'Existe só no layout de entrada 9; os provedores são carregados contra o 8.',
+  ]),
+  ['SerEndXMun', 'Grafia diferente de SerEndxMun, do layout de entrada; a confirmar.'],
+  ['EmpnMun', 'EmpnMun não existe no layout de entrada.'],
+  [
+    'ListaUnidadesImobiliarias',
+    'É um grupo do layout de entrada, fora do vocabulário; a confirmar se a tag imovel vem dele.',
+  ],
 ])
 
 const SUFIXO_COMPRA_GOV = /_CompraGov$/

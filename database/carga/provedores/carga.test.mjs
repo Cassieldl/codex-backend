@@ -149,7 +149,7 @@ test('leiaute transcrito: tag trocada entre a transcrição e o mapeamento é er
   )
 })
 
-test('material real: os cinco provedores preparam sem erro e com os números conferidos', async () => {
+test('material real: todos os provedores preparam sem erro e com os números conferidos', async () => {
   const { elementos } = await lerVocabularioInvoicy()
   const numeros = {}
   const cargas = {}
@@ -173,12 +173,48 @@ test('material real: os cinco provedores preparam sem erro e com os números con
     giss: [102, 14, 0, 0],
     ipm: [109, 2, 58, 41],
     issnet: [203, 30, 0, 27],
+    betha: [194, 32, 0, 15],
+    coplan: [181, 32, 0, 5],
+    dsfnet: [190, 32, 0, 14],
+    dueto: [190, 32, 0, 15],
+    fiorilli: [165, 15, 0, 11],
+    gespam: [188, 32, 0, 14],
+    'joao-pessoa': [190, 33, 0, 14],
+    rlz: [189, 32, 0, 14],
+    sigcorp: [196, 32, 0, 14],
+    smarapdisil: [185, 17, 0, 15],
   })
 
   // ABRASF: o cMun é o município do serviço; no leiaute DPS, o do prestador.
   const cMun = (id) => cargas[id].campos.find((campo) => campo.nomeCampo === 'cMun').caminhoInvoicy
   assert.equal(cMun('elotech'), 'Envio/RPS/Servico/cMun')
   assert.equal(cMun('e-l'), 'Envio/RPS/Prestador/enderPrest/cMun')
+})
+
+test('leiaute nacional: o estado vem do XSD, não da ocorrência 0-1 da configuração', async () => {
+  const { elementos } = await lerVocabularioInvoicy()
+  const obrigatorios = async (id) =>
+    (await prepararCarga(id, elementos)).campos
+      .filter(({ campoVersao }) => campoVersao.estadoPreenchimento === 'Obrigatorio')
+      .map(({ nomeCampo }) => nomeCampo)
+      .sort()
+
+  // dEmis e RPSNumero vêm 0-1 na configuração do Betha; o XSD nacional exige os dois.
+  const betha = await obrigatorios('betha')
+  assert.deepEqual(betha, await obrigatorios('e-l'))
+  assert.ok(betha.includes('dEmis') && betha.includes('RPSNumero'))
+})
+
+test('leiaute nacional: SMARAPDISIL parte da NFS-e e o número vai na NFS-e e na DPS', async () => {
+  const { elementos } = await lerVocabularioInvoicy()
+  const carga = await prepararCarga('smarapdisil', elementos)
+  const numero = carga.campos.find(({ nomeCampo }) => nomeCampo === 'RPSNumero')
+  assert.equal(
+    numero.campoVersao.destinoXml,
+    'NFSe/infNFSe/nNFSe | NFSe/infNFSe/nDFSe | NFSe/infNFSe/DPS/infDPS/nDPS',
+  )
+  assert.equal(numero.campoVersao.estadoPreenchimento, 'Obrigatorio')
+  assert.equal(carga.pendentes.get('EmpnMun'), 'EmpnMun não existe no layout de entrada.')
 })
 
 const PROVEDORES_COM_FONTE = ['e-l', 'elotech']

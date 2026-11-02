@@ -127,6 +127,23 @@ test('mapeamento: monta o caminho pelo sequencial do pai, mesmo com sequenciais 
   assert.equal(tags[3].elemento, 'E')
 })
 
+test('mapeamento: sequencial sem negrito é lido como o com negrito, na mesma tabela', () => {
+  const semNegrito = linha(7, 'Obs', 'Elemento', '2 - Lote', 'xObs', '0-1', 'Obs', 'Externo')
+  const tags = lerMapeamento(`${MAPEAMENTO}\n${semNegrito.replace('**7**', '7')}`)
+  assert.deepEqual(
+    tags.map((tag) => [tag.sequencial, tag.caminho]),
+    [
+      [1, 'Envio'],
+      [2, 'Envio/Lote'],
+      [5, 'Envio/Lote/Senha'],
+      [6, 'Envio/Lote/Valor'],
+      [7, 'Envio/Lote/Obs'],
+    ],
+  )
+  // Negrito aberto e não fechado não é sequencial: a linha não entra.
+  assert.equal(lerMapeamento(`${MAPEAMENTO}\n${semNegrito.replace('**7**', '**7')}`).length, 4)
+})
+
 test('mapeamento: pai inexistente e sequencial repetido interrompem a leitura', () => {
   assert.throws(
     () =>

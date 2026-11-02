@@ -597,7 +597,7 @@ test('a contagem de exemplos é a aprovada', () => {
   })
 })
 
-test('o relatório real cobre os três provedores com fonte e aponta os três sem fonte', () => {
+test('o relatório real cobre os três provedores com fonte e aponta os que não têm', () => {
   assert.deepEqual(
     relatorioReal.provedores.map(({ id, nome, total }) => [id, nome, total]),
     [
@@ -606,7 +606,21 @@ test('o relatório real cobre os três provedores com fonte e aponta os três se
       ['elotech', 'Elotech 2.03', 113],
     ],
   )
-  assert.deepEqual(relatorioReal.naoGerenciados, ['giss', 'ipm', 'issnet'])
+  assert.deepEqual(relatorioReal.naoGerenciados, [
+    'giss',
+    'ipm',
+    'issnet',
+    'betha',
+    'coplan',
+    'dsfnet',
+    'dueto',
+    'fiorilli',
+    'gespam',
+    'joao-pessoa',
+    'rlz',
+    'sigcorp',
+    'smarapdisil',
+  ])
 })
 
 test('no relatório real, cada campo ou recebe exemplo ou aparece com um motivo', () => {

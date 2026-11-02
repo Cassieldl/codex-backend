@@ -12,9 +12,10 @@ import { fileURLToPath } from 'node:url'
 import { LIMITE_CORPO_AVISO } from '../emissor-nacional/transformar.mjs'
 import { lerFonteDeExemploDoDisco } from '../exemplos-xml.mjs'
 import { exigirGruposConhecidos } from '../vocabulario-invoicy.mjs'
-import { avisoDeCamposPendentes } from './avisos.mjs'
+import { avisoDeCamposPendentes, avisosDasObservacoes } from './avisos.mjs'
 import { PROVEDORES } from './catalogo.mjs'
 import { lerMapeamento } from './ler-mapeamento.mjs'
+import { lerObservacoes } from './ler-observacoes.mjs'
 import { comPrefixo, definicoesPorCaminho, indexarEsquema } from './ler-xsd.mjs'
 import { definicoesDeLeiauteTranscrito } from './leiaute-transcrito.mjs'
 import { montarCampos } from './montar-campos.mjs'
@@ -27,10 +28,19 @@ function lerMaterial(caminho) {
   return readFile(join(PASTA_MATERIAL, caminho), 'utf8')
 }
 
+/**
+ * Declara a raiz pelo tipo quando o esquema só traz o tipo dela: o XML da NFS-e nacional (`NFSe`,
+ * tipo TCNFSe) usa os tipos do mesmo XSD da DPS, mas o elemento vive em outro arquivo.
+ */
+function declaracaoDaRaiz({ raiz, tipoDaRaiz }) {
+  return `<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="${raiz}" type="${tipoDaRaiz}"/></xs:schema>`
+}
+
 /** Comportamento das tags: do XSD do provedor, da tabela transcrita do manual ou de lugar nenhum. */
 async function definicoesDe(config, tags) {
   if (config.esquema) {
     const textos = await Promise.all(config.esquema.arquivos.map(lerMaterial))
+    if (config.esquema.tipoDaRaiz) textos.push(declaracaoDaRaiz(config.esquema))
     const definicoes = definicoesPorCaminho(indexarEsquema(textos), config.esquema.raiz)
     return comPrefixo(definicoes, config.esquema.prefixo)
   }
@@ -67,7 +77,17 @@ export async function prepararCarga(id, elementosXsd) {
   const erros = config.erros
     ? montarErros(JSON.parse(await lerMaterial(config.erros)).erros, tags)
     : []
-  const avisos = [...config.avisos, avisoDeCamposPendentes(pendentes)].filter(Boolean)
+  const observacoes = config.observacoes
+    ? avisosDasObservacoes(
+        lerObservacoes(await lerMaterial(config.observacoes.arquivo)),
+        config.observacoes.subsecoes,
+      )
+    : { avisos: [], foraDoAviso: [] }
+  const avisos = [
+    ...config.avisos,
+    ...observacoes.avisos,
+    avisoDeCamposPendentes(pendentes),
+  ].filter(Boolean)
   for (const aviso of avisos) {
     if (aviso.corpo.length > LIMITE_CORPO_AVISO)
       throw new Error(
@@ -75,5 +95,16 @@ export async function prepararCarga(id, elementosXsd) {
       )
   }
 
-  return { config, campos, erros, avisos, pendentes, internos, fonteLida }
+  return {
+    config,
+    campos,
+    erros,
+    avisos,
+    pendentes,
+    internos,
+    fonteLida,
+    foraDoAviso: observacoes.foraDoAviso,
+    // Só o provedor que traz a lista de erros no material é dono dela e pode remover o ausente.
+    removerErrosAusentes: Boolean(config.erros),
+  }
 }
