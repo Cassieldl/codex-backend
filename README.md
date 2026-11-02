@@ -92,9 +92,32 @@ Desktop precisa estar rodando na máquina.
 ## Carga de conteúdo
 
 `database/carga/emissor-nacional/importar.mjs` carrega o provedor **Emissor Nacional** (versão 0.20)
-pela API interna: erros e avisos da Sefin, o vocabulário do Layout InvoiCy 8 (545 campos), os campos
-da versão e o artigo de emissão judicial. Escreve sempre pela API — nunca por SQL —, então slug,
-índice de busca e regras de negócio são os mesmos do produto.
+pela API interna: erros e avisos da Sefin, o Layout InvoiCy, os campos da versão e o artigo de
+emissão judicial. Escreve sempre pela API, nunca por SQL, então slug, índice de busca e regras de
+negócio são os mesmos do produto.
+
+### Layout InvoiCy
+
+Toda carga de provedor começa pelo Layout InvoiCy (`database/carga/layout-invoicy.mjs`): versões 8 e
+9, com a 9 Vigente e a 8 Anterior, o vocabulário das duas (campo novo nasce na 9, campo que saiu fica
+descontinuado na 9) e a estrutura do documento da 9 em XML e JSON. Os provedores continuam mapeados
+no layout 8. Para atualizar só o layout, e depois publicar as versões e os campos dele:
+
+```bash
+CODEX_DEV_USUARIO=codex.dev CODEX_DEV_SENHA=codex.dev \
+  node database/carga/importar-layout-invoicy.mjs
+node database/carga/publicar-layout-invoicy.mjs
+```
+
+Material versionado em `database/carga/emissor-nacional/`: `layout-invoicy-v<N>.xsd`, o extrato da
+planilha (`layout-invoicy-v<N>-planilha.json`) e a estrutura gerada da 9
+(`layout-invoicy-v9-estrutura.json`, que o teste do backend valida contra o XSD). Quando o XSD ou a
+planilha mudarem:
+
+```bash
+node database/carga/emissor-nacional/extrair-planilha-invoicy.mjs <planilha.xlsx> 9
+node database/carga/gerar-estrutura-invoicy.mjs 9
+```
 
 - **Sincroniza**, não só cria: rodar de novo corrige o que mudou e não duplica nada.
 - **Não publica nada.** Publicar é decisão editorial, feita na área interna.

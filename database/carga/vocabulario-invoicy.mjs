@@ -24,6 +24,12 @@ export const GRUPOS_COMO_CAMPO = new Set([
   'Envio/RPS/ListaParcelas',
 ])
 
+/**
+ * Regiões fora do vocabulário, por versão. Na 8 o XSD punha os campos de substituição dentro de
+ * tpOper e deixava RPSSubs vazio; a 9 corrige, então ali não há dúvida.
+ */
+const CAMINHOS_EXCLUIDOS_POR_VERSAO = { 8: CAMINHOS_EM_DUVIDA, 9: [] }
+
 /** Interrompe a carga quando um provedor mapeia como campo um grupo que o vocabulário não tem. */
 export function exigirGruposConhecidos(caminhosUsados, elementosXsd) {
   const grupos = new Set(elementosXsd.filter((item) => item.ehGrupo).map((item) => item.caminho))
@@ -37,18 +43,27 @@ export function exigirGruposConhecidos(caminhosUsados, elementosXsd) {
   }
 }
 
-/** Elementos do XSD de entrada do InvoiCy e o vocabulário canônico montado a partir deles. */
-export async function lerVocabularioInvoicy() {
+/** XSD e extrato da planilha de uma versão do layout, como texto e JSON. */
+export async function lerMaterialDoLayout(rotulo) {
   const [xsd, planilha] = await Promise.all([
-    readFile(join(PASTA_DO_LAYOUT, 'layout-invoicy-v8.xsd'), 'utf8'),
-    readFile(join(PASTA_DO_LAYOUT, 'layout-invoicy-v8-planilha.json'), 'utf8'),
+    readFile(join(PASTA_DO_LAYOUT, `layout-invoicy-v${rotulo}.xsd`), 'utf8'),
+    readFile(join(PASTA_DO_LAYOUT, `layout-invoicy-v${rotulo}-planilha.json`), 'utf8'),
   ])
+  return { xsd, planilha: JSON.parse(planilha) }
+}
+
+/**
+ * Elementos do XSD de entrada do InvoiCy e o vocabulário canônico montado a partir deles. Sem
+ * rótulo, a versão 8, que é a dos provedores.
+ */
+export async function lerVocabularioInvoicy(rotulo = '8') {
+  const { xsd, planilha } = await lerMaterialDoLayout(rotulo)
   const elementos = lerXsd(xsd)
   const vocabulario = montarVocabulario(
     elementos,
-    JSON.parse(planilha),
+    planilha,
     GRUPOS_COMO_CAMPO,
-    CAMINHOS_EM_DUVIDA,
+    CAMINHOS_EXCLUIDOS_POR_VERSAO[rotulo] ?? [],
   )
   return { elementos, vocabulario }
 }

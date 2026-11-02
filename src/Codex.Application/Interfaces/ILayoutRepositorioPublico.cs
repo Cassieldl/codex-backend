@@ -19,6 +19,9 @@ public interface ILayoutRepositorioPublico
 
     Task<VersaoLayout?> ObterVersaoPorIdAsync(int id, CancellationToken ct);
 
+    /// <summary>JSON gravado na coluna <c>estrutura</c>; <c>null</c> quando a versão não tem estrutura.</summary>
+    Task<string?> ObterEstruturaAsync(int versaoLayoutId, CancellationToken ct);
+
     /// <summary>
     /// Todo <c>CampoLayout</c> VISÍVEL (§4.1: campo e versão de ORIGEM publicados e não
     /// desativados) — a base sobre a qual a fórmula M12 (§4.2) é aplicada em memória, por versão-

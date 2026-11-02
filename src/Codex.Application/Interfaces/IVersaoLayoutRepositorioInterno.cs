@@ -16,5 +16,11 @@ public interface IVersaoLayoutRepositorioInterno
 
     Task AdicionarAsync(VersaoLayout versaoLayout, CancellationToken ct);
 
+    /// <summary>
+    /// Grava a estrutura só se a linha ainda estiver em <paramref name="versaoEsperada"/>
+    /// (<c>xmin</c>). <c>false</c> quando outra escrita chegou antes.
+    /// </summary>
+    Task<bool> SubstituirEstruturaAsync(int id, string conteudo, uint versaoEsperada, CancellationToken ct);
+
     Task SalvarAlteracoesAsync(CancellationToken ct);
 }

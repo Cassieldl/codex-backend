@@ -9,42 +9,71 @@ import {
   sincronizarVocabulario,
 } from './sincronizar-campos.mjs'
 
-/** API falsa: responde ao GET com os existentes e registra todas as escritas. */
+const ID_DO_LAYOUT = new Map([
+  ['8', 1],
+  ['9', 2],
+])
+
+/** API falsa: responde ao GET de campos pela versão de origem e registra todas as escritas. */
 function criarApiFalsa(existentes) {
   const escritas = []
   return {
     escritas,
     async chamar(metodo, rota, corpo, etag) {
-      if (metodo === 'GET') return { dados: existentes }
+      if (metodo === 'GET') {
+        const versaoLayoutId = Number(rota.match(/versoes\/(\d+)\/campos/)[1])
+        return { dados: existentes.filter((campo) => campo.versaoLayoutId === versaoLayoutId) }
+      }
       escritas.push({ metodo, rota, corpo, etag })
-      return { dados: { id: 900 + escritas.length } }
+      // Como a API: o criado volta com o que foi enviado, ativo.
+      return {
+        dados: { ...corpo, id: 900 + escritas.length, estado: 'Ativo', versaoConcorrencia: 70 },
+      }
     },
   }
 }
 
-const campoDoVocabulario = (caminhoXml, grupo, ordem) => ({
-  caminhoCompleto: `Envio/RPS/${caminhoXml.slice(2)}`,
-  nome: caminhoXml.split('/').at(-1),
+const existenteNo8 = (caminhoXml, grupo, ordem, extra = {}) => ({
+  id: 7,
+  versaoLayoutId: 1,
   caminhoXml,
-  significado: 'Significado.',
   grupo,
   ordem,
+  estado: 'Ativo',
+  versaoConcorrencia: 41,
+  ...extra,
 })
 
-test('existente com grupo antigo é reposicionado com If-Match, sem tocar nome nem significado', async () => {
-  const api = criarApiFalsa([
-    {
-      id: 7,
-      caminhoXml: '//Servico/Valores/IBSCBS/IBS/ValpIBSUF',
-      grupo: 'Servico',
-      ordem: 3,
-      versaoConcorrencia: 41,
-    },
-  ])
+function plano(campos, porVersao = {}) {
+  return {
+    campos: campos.map((campo) => ({
+      nome: campo.caminhoXml.split('/').at(-1),
+      significado: 'Significado.',
+      origem: '8',
+      descontinuadoEm: null,
+      ...campo,
+    })),
+    porVersao: new Map(
+      Object.entries(porVersao).map(([rotulo, caminhos]) => [
+        rotulo,
+        caminhos.map((caminhoXml) => ({
+          caminhoXml,
+          caminhoCompleto: `Envio/RPS/${caminhoXml.slice(2)}`,
+        })),
+      ]),
+    ),
+  }
+}
 
-  await sincronizarVocabulario(api, 1, [
-    campoDoVocabulario('//Servico/Valores/IBSCBS/IBS/ValpIBSUF', 'Servico/Valores/IBSCBS/IBS', 3),
-  ])
+test('existente com grupo antigo é reposicionado com If-Match, sem tocar nome nem significado', async () => {
+  const caminho = '//Servico/Valores/IBSCBS/IBS/ValpIBSUF'
+  const api = criarApiFalsa([existenteNo8(caminho, 'Servico', 3)])
+
+  await sincronizarVocabulario(
+    api,
+    ID_DO_LAYOUT,
+    plano([{ caminhoXml: caminho, grupo: 'Servico/Valores/IBSCBS/IBS', ordem: 3 }]),
+  )
 
   assert.deepEqual(api.escritas, [
     {
@@ -56,37 +85,122 @@ test('existente com grupo antigo é reposicionado com If-Match, sem tocar nome n
   ])
 })
 
-test('existente com ordem antiga também é reposicionado', async () => {
-  const api = criarApiFalsa([
-    { id: 7, caminhoXml: '//Tomador/TomaCNPJ', grupo: 'Tomador', ordem: 2, versaoConcorrencia: 5 },
-  ])
-
-  await sincronizarVocabulario(api, 1, [campoDoVocabulario('//Tomador/TomaCNPJ', 'Tomador', 9)])
-
-  assert.equal(api.escritas.length, 1)
-  assert.deepEqual(api.escritas[0].corpo, { grupo: 'Tomador', ordem: 9 })
-})
-
 test('rodar de novo com tudo no lugar não escreve nada', async () => {
-  const api = criarApiFalsa([
-    { id: 7, caminhoXml: '//Tomador/TomaCNPJ', grupo: 'Tomador', ordem: 2, versaoConcorrencia: 5 },
-  ])
+  const api = criarApiFalsa([existenteNo8('//Tomador/TomaCNPJ', 'Tomador', 2)])
 
-  await sincronizarVocabulario(api, 1, [campoDoVocabulario('//Tomador/TomaCNPJ', 'Tomador', 2)])
+  await sincronizarVocabulario(
+    api,
+    ID_DO_LAYOUT,
+    plano([{ caminhoXml: '//Tomador/TomaCNPJ', grupo: 'Tomador', ordem: 2 }]),
+  )
 
   assert.deepEqual(api.escritas, [])
 })
 
-test('campo que falta é criado, e o id devolvido entra no mapa por caminho completo', async () => {
+test('campo que já existe no 8 e segue no 9 mantém a origem 8: não é recriado', async () => {
+  const api = criarApiFalsa([existenteNo8('//Tomador/TomaCNPJ', 'Tomador', 2)])
+
+  const idPorCaminho = await sincronizarVocabulario(
+    api,
+    ID_DO_LAYOUT,
+    plano([{ caminhoXml: '//Tomador/TomaCNPJ', grupo: 'Tomador', ordem: 2 }], {
+      8: ['//Tomador/TomaCNPJ'],
+      9: ['//Tomador/TomaCNPJ'],
+    }),
+  )
+
+  assert.deepEqual(api.escritas, [])
+  assert.equal(idPorCaminho.get('9').get('Envio/RPS/Tomador/TomaCNPJ'), 7)
+})
+
+test('campo só do 9 nasce na versão 9 e entra só no mapa do 9', async () => {
   const api = criarApiFalsa([])
 
-  const idPorCaminho = await sincronizarVocabulario(api, 1, [
-    campoDoVocabulario('//Tomador/TomaCNPJ', 'Tomador', 1),
+  const idPorCaminho = await sincronizarVocabulario(
+    api,
+    ID_DO_LAYOUT,
+    plano(
+      [
+        {
+          caminhoXml: '//Servico/Valores/nroDUIMP',
+          grupo: 'Servico/Valores',
+          ordem: 1,
+          origem: '9',
+        },
+      ],
+      {
+        8: [],
+        9: ['//Servico/Valores/nroDUIMP'],
+      },
+    ),
+  )
+
+  assert.equal(api.escritas.length, 1)
+  assert.equal(api.escritas[0].metodo, 'POST')
+  assert.equal(api.escritas[0].rota, '/interno/layout/versoes/2/campos')
+  assert.equal(idPorCaminho.get('9').get('Envio/RPS/Servico/Valores/nroDUIMP'), 901)
+  assert.equal(idPorCaminho.get('8').size, 0)
+})
+
+test('campo do 8 que saiu do 9 é descontinuado na versão 9, uma vez só', async () => {
+  const caminho = '//Servico/Valores/nDI'
+  const plano9 = plano([
+    { caminhoXml: caminho, grupo: 'Servico/Valores', ordem: 5, descontinuadoEm: '9' },
   ])
 
-  assert.equal(api.escritas[0].metodo, 'POST')
-  assert.equal(api.escritas[0].corpo.grupo, 'Tomador')
-  assert.equal(idPorCaminho.get('Envio/RPS/Tomador/TomaCNPJ'), 901)
+  const api = criarApiFalsa([existenteNo8(caminho, 'Servico/Valores', 5)])
+  await sincronizarVocabulario(api, ID_DO_LAYOUT, plano9)
+  assert.deepEqual(api.escritas, [
+    {
+      metodo: 'PUT',
+      rota: '/interno/campos-layout/7',
+      corpo: { estado: 'Descontinuado', versaoLayoutDescontinuadoId: 2 },
+      etag: '41',
+    },
+  ])
+
+  const jaDescontinuado = existenteNo8(caminho, 'Servico/Valores', 5, {
+    estado: 'Descontinuado',
+    versaoLayoutDescontinuadoId: 2,
+  })
+  const apiDeNovo = criarApiFalsa([jaDescontinuado])
+  await sincronizarVocabulario(apiDeNovo, ID_DO_LAYOUT, plano9)
+  assert.deepEqual(apiDeNovo.escritas, [])
+})
+
+test('campo criado agora e já fora da versão mais nova nasce na origem e é descontinuado em seguida', async () => {
+  const api = criarApiFalsa([])
+
+  await sincronizarVocabulario(
+    api,
+    ID_DO_LAYOUT,
+    plano([
+      {
+        caminhoXml: '//Servico/Valores/nRE',
+        grupo: 'Servico/Valores',
+        ordem: 1,
+        descontinuadoEm: '9',
+      },
+    ]),
+  )
+
+  assert.deepEqual(
+    api.escritas.map(({ metodo, rota, corpo, etag }) => ({
+      metodo,
+      rota,
+      estado: corpo.estado,
+      etag,
+    })),
+    [
+      {
+        metodo: 'POST',
+        rota: '/interno/layout/versoes/1/campos',
+        estado: undefined,
+        etag: undefined,
+      },
+      { metodo: 'PUT', rota: '/interno/campos-layout/901', estado: 'Descontinuado', etag: '70' },
+    ],
+  )
 })
 
 // --- Campos da versão: exemplo ---

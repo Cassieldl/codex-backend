@@ -199,6 +199,9 @@ public sealed class RateLimitParticaoPorIpTests
         public Task<LayoutVersaoDto> ObterVersaoAsync(string versaoSlug, CancellationToken ct) =>
             throw new NotSupportedException("O teste de rate limit só exercita o índice.");
 
+        public Task<LayoutEstruturaDto> ObterEstruturaAsync(string versaoSlug, CancellationToken ct) =>
+            throw new NotSupportedException("O teste de rate limit só exercita o índice.");
+
         public Task<CampoLayoutVerbeteDto> ObterCampoAsync(string campoSlug, CancellationToken ct) =>
             throw new NotSupportedException("O teste de rate limit só exercita o índice.");
     }

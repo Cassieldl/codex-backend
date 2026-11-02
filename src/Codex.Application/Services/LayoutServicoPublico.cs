@@ -1,3 +1,5 @@
+using System.Text.Json;
+using Codex.Application.DTOs.Interno;
 using Codex.Application.DTOs.Publico;
 using Codex.Application.Interfaces;
 using Codex.Domain.Entities;
@@ -83,6 +85,33 @@ public sealed class LayoutServicoPublico : ILayoutServicoPublico
         };
     }
 
+    public async Task<LayoutEstruturaDto> ObterEstruturaAsync(string versaoSlug, CancellationToken ct)
+    {
+        // Despublicada responde 404 como a inexistente: a estrutura não existe para o leitor.
+        var versao = await _repositorio.ObterVersaoPorSlugAsync(versaoSlug, ct);
+        if (versao is null || !versao.Publicado)
+            throw new EntidadeNaoEncontradaException("VersaoLayout", versaoSlug);
+
+        var conteudo = await _repositorio.ObterEstruturaAsync(versao.Id, ct);
+        var estrutura = conteudo is null
+            ? null
+            : JsonSerializer.Deserialize<AtualizarEstruturaVersaoLayoutDto>(conteudo, JsonSerializerOptions.Web);
+        if (estrutura is null)
+            throw new EntidadeNaoEncontradaException("EstruturaVersaoLayout", versaoSlug);
+
+        var camposVisiveis = await _repositorio.ListarCamposVisiveisAsync(ct);
+        var slugPorCaminho = camposVisiveis
+            .Where(c => CampoEmVigorNaVersao(c.OrigemOrdem, c.DescontinuadoOrdem, versao.Ordem))
+            .ToDictionary(c => c.CaminhoXml, c => c.Slug, StringComparer.Ordinal);
+
+        return new LayoutEstruturaDto
+        {
+            Versao = MontarResumo(versao, camposVisiveis),
+            Xml = MapearNo(estrutura.Xml, slugPorCaminho),
+            Json = MapearNo(estrutura.Json, slugPorCaminho),
+        };
+    }
+
     public async Task<CampoLayoutVerbeteDto> ObterCampoAsync(string campoSlug, CancellationToken ct)
     {
         var campo = await _repositorio.ObterCampoPorSlugAsync(campoSlug, ct)
@@ -140,6 +169,26 @@ public sealed class LayoutServicoPublico : ILayoutServicoPublico
     /// </summary>
     private static bool CampoAtivoNaVersao(int origemOrdem, int? descontinuadoOrdem, int ordemAlvo) =>
         origemOrdem <= ordemAlvo && (descontinuadoOrdem is null || descontinuadoOrdem >= ordemAlvo);
+
+    /// <summary>
+    /// Mais estrito que <see cref="CampoAtivoNaVersao"/>: o campo descontinuado NA versão aparece no
+    /// dicionário dela com o selo, mas já não é campo do documento daquela versão.
+    /// </summary>
+    private static bool CampoEmVigorNaVersao(int origemOrdem, int? descontinuadoOrdem, int ordemAlvo) =>
+        origemOrdem <= ordemAlvo && (descontinuadoOrdem is null || descontinuadoOrdem > ordemAlvo);
+
+    private static NoEstruturaDto MapearNo(NoEstruturaLayoutDto no, IReadOnlyDictionary<string, string> slugPorCaminho) => new()
+    {
+        Nome = no.Nome,
+        Caminho = no.Caminho,
+        EhGrupo = no.EhGrupo,
+        Repete = no.Repete,
+        Escolha = no.Escolha,
+        ValorModelo = no.ValorModelo,
+        CampoSlug = no.CaminhoCampo is not null && slugPorCaminho.TryGetValue(no.CaminhoCampo, out var slug) ? slug : null,
+        Formato = no.Formato,
+        Filhos = no.Filhos.Select(filho => MapearNo(filho, slugPorCaminho)).ToArray(),
+    };
 
     private static LayoutVersaoResumoDto MontarResumo(VersaoLayout versao, IReadOnlyCollection<CampoLayoutVisivelBrutoDto> camposVisiveis) => new()
     {

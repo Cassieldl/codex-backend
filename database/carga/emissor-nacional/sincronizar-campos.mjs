@@ -23,57 +23,90 @@ function posicaoMudou(existente, desejado) {
 }
 
 /**
- * Cria os campos canônicos que faltam, identificados pelo caminho XML — que é único e imutável, então
- * um campo existente nunca é recriado nem tem o caminho alterado. Do existente, só a posição (grupo
- * e ordem) acompanha o XSD; nome e significado ficam como a edição os deixou. Devolve caminho
- * completo → id.
+ * Corpo do PUT que alinha o existente ao plano: posição (grupo e ordem, que o XSD decide) e
+ * descontinuação. Nome e significado ficam como a edição os deixou. `null` quando nada muda.
  */
-export async function sincronizarVocabulario(api, versaoLayoutId, vocabulario) {
-  const { dados: existentes } = await api.chamar(
-    'GET',
-    `/interno/layout/versoes/${versaoLayoutId}/campos`,
-  )
-  const existentePorCaminhoXml = new Map(existentes.map((campo) => [campo.caminhoXml, campo]))
-  const idPorCaminhoXml = new Map(existentes.map((campo) => [campo.caminhoXml, campo.id]))
+export function planejarAtualizacaoDeCampo(existente, desejado, idDescontinuacao) {
+  const corpo = {}
+  if (posicaoMudou(existente, desejado))
+    Object.assign(corpo, { grupo: desejado.grupo, ordem: desejado.ordem })
+  if (idDescontinuacao && existente.estado !== 'Descontinuado')
+    Object.assign(corpo, { estado: 'Descontinuado', versaoLayoutDescontinuadoId: idDescontinuacao })
+  return Object.keys(corpo).length ? corpo : null
+}
 
-  let criados = 0
-  let reposicionados = 0
-  for (const campo of vocabulario) {
-    const existente = existentePorCaminhoXml.get(campo.caminhoXml)
-    if (existente) {
-      if (posicaoMudou(existente, campo)) {
-        await api.chamar(
-          'PUT',
-          `/interno/campos-layout/${existente.id}`,
-          { grupo: campo.grupo, ordem: campo.ordem },
-          String(existente.versaoConcorrencia),
-        )
-        reposicionados++
-      }
-      continue
-    }
-    const { dados: criado } = await api.chamar(
-      'POST',
-      `/interno/layout/versoes/${versaoLayoutId}/campos`,
-      {
-        nome: campo.nome,
-        caminhoXml: campo.caminhoXml,
-        significado: campo.significado,
-        grupo: campo.grupo,
-        ordem: campo.ordem,
-      },
+function avisarDivergencias(existente, desejado, idOrigem) {
+  // Origem e descontinuação passadas não têm caminho de volta na API; divergência é decisão editorial.
+  if (existente.versaoLayoutId !== idOrigem)
+    console.warn(`  ${desejado.caminhoXml}: origem na API difere da do plano (${desejado.origem}).`)
+  if (!desejado.descontinuadoEm && existente.estado === 'Descontinuado')
+    console.warn(
+      `  ${desejado.caminhoXml}: descontinuado na API, mas presente na versão mais nova.`,
     )
-    idPorCaminhoXml.set(campo.caminhoXml, criado.id)
-    criados++
-    if (criados % 100 === 0) console.log(`  campos canônicos: ${criados}`)
+}
+
+/**
+ * Sincroniza o vocabulário de todas as versões do layout a partir do plano multiversão. O campo é
+ * identificado pelo caminho XML, único e imutável: existente nunca é recriado. Campo novo nasce na
+ * versão de origem do plano e, se já saiu de uma versão posterior, é descontinuado nela. Devolve,
+ * por rótulo, caminho completo → id dos campos ativos naquela versão.
+ */
+export async function sincronizarVocabulario(api, idPorRotulo, plano) {
+  const existentePorCaminhoXml = new Map()
+  for (const versaoLayoutId of idPorRotulo.values()) {
+    const { dados } = await api.chamar('GET', `/interno/layout/versoes/${versaoLayoutId}/campos`)
+    for (const campo of dados) existentePorCaminhoXml.set(campo.caminhoXml, campo)
+  }
+
+  const idPorCaminhoXml = new Map()
+  const contagem = { criados: 0, atualizados: 0, descontinuados: 0 }
+  for (const campo of plano.campos) {
+    const idOrigem = idPorRotulo.get(campo.origem)
+    const idDescontinuacao = campo.descontinuadoEm ? idPorRotulo.get(campo.descontinuadoEm) : null
+    let existente = existentePorCaminhoXml.get(campo.caminhoXml)
+
+    if (existente) {
+      avisarDivergencias(existente, campo, idOrigem)
+    } else {
+      ;({ dados: existente } = await api.chamar(
+        'POST',
+        `/interno/layout/versoes/${idOrigem}/campos`,
+        {
+          nome: campo.nome,
+          caminhoXml: campo.caminhoXml,
+          significado: campo.significado,
+          grupo: campo.grupo,
+          ordem: campo.ordem,
+        },
+      ))
+      contagem.criados++
+      if (contagem.criados % 100 === 0) console.log(`  campos canônicos: ${contagem.criados}`)
+    }
+    idPorCaminhoXml.set(campo.caminhoXml, existente.id)
+
+    const corpo = planejarAtualizacaoDeCampo(existente, campo, idDescontinuacao)
+    if (!corpo) continue
+    await api.chamar(
+      'PUT',
+      `/interno/campos-layout/${existente.id}`,
+      corpo,
+      String(existente.versaoConcorrencia),
+    )
+    contagem.atualizados++
+    if (corpo.estado) contagem.descontinuados++
   }
   console.log(
-    `vocabulário: ${criados} criados, ${reposicionados} reposicionados, ` +
-      `${vocabulario.length - criados} já existiam`,
+    `vocabulário: ${contagem.criados} criados, ${contagem.atualizados} atualizados ` +
+      `(${contagem.descontinuados} descontinuados), ${plano.campos.length - contagem.criados} já existiam`,
   )
 
   return new Map(
-    vocabulario.map((campo) => [campo.caminhoCompleto, idPorCaminhoXml.get(campo.caminhoXml)]),
+    [...plano.porVersao].map(([rotulo, campos]) => [
+      rotulo,
+      new Map(
+        campos.map((campo) => [campo.caminhoCompleto, idPorCaminhoXml.get(campo.caminhoXml)]),
+      ),
+    ]),
   )
 }
 

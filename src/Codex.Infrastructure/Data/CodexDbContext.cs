@@ -20,6 +20,7 @@ public sealed class CodexDbContext : DbContext
 
     // Caminho crítico (migram na 001)
     public DbSet<VersaoLayout> VersoesLayout => Set<VersaoLayout>();
+    public DbSet<EstruturaVersaoLayout> EstruturasVersaoLayout => Set<EstruturaVersaoLayout>();
     public DbSet<CampoLayout> CamposLayout => Set<CampoLayout>();
     public DbSet<Provedor> Provedores => Set<Provedor>();
     public DbSet<AliasProvedor> AliasesProvedor => Set<AliasProvedor>();

@@ -34,6 +34,12 @@ public sealed class LayoutRepositorioPublico : RepositorioBase<CodexDbContext>, 
             .Where(v => v.Id == id && v.DesativadoEm == null)
             .FirstOrDefaultAsync(ct);
 
+    public Task<string?> ObterEstruturaAsync(int versaoLayoutId, CancellationToken ct) =>
+        Contexto.EstruturasVersaoLayout.AsNoTracking()
+            .Where(e => e.VersaoLayoutId == versaoLayoutId)
+            .Select(e => e.Conteudo)
+            .FirstOrDefaultAsync(ct);
+
     public async Task<IReadOnlyCollection<CampoLayoutVisivelBrutoDto>> ListarCamposVisiveisAsync(CancellationToken ct) =>
         await (
             from cl in Contexto.CamposLayout.AsNoTracking()

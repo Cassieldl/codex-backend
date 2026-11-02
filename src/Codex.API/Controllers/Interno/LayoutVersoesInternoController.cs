@@ -85,6 +85,27 @@ public sealed class LayoutVersoesInternoController : ControllerBase
         return Ok(new ApiResponse<VersaoLayoutAdminDto> { Data = atualizado });
     }
 
+    /// <summary>Grava a estrutura da versão: as árvores do documento em XML (SOAP) e em JSON (REST).</summary>
+    /// <response code="200">Estrutura gravada; o ETag é a nova versão de concorrência.</response>
+    /// <response code="400">Sem If-Match.</response>
+    /// <response code="404">Versão não encontrada.</response>
+    /// <response code="409">A versão mudou desde a leitura.</response>
+    /// <response code="422">Árvore inválida, grande ou funda demais.</response>
+    [HttpPut("{id:int}/estrutura")]
+    [Authorize(Roles = "versoeslayout-atualizar")]
+    [ProducesResponseType(typeof(ApiResponse<VersaoLayoutAdminDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<ApiResponse<VersaoLayoutAdminDto>>> AtualizarEstrutura(int id, AtualizarEstruturaVersaoLayoutDto dto, CancellationToken ct)
+    {
+        var versaoEsperada = Request.ExigirIfMatch();
+        var atualizado = await _servico.AtualizarEstruturaAsync(id, dto, versaoEsperada, ct);
+        Response.PublicarETagConcorrencia(atualizado.VersaoConcorrencia);
+        return Ok(new ApiResponse<VersaoLayoutAdminDto> { Data = atualizado, Message = "Estrutura da versão de layout gravada com sucesso." });
+    }
+
     /// <summary>I16 GET — campos canônicos da versão de layout.</summary>
     [HttpGet("{id:int}/campos")]
     [Authorize(Roles = "campolayout-buscar")]

@@ -13,4 +13,6 @@ public interface IVersaoLayoutServicoInterno
     Task<VersaoLayoutAdminDto> AtualizarAsync(int id, AtualizarVersaoLayoutDto dto, uint versaoEsperada, CancellationToken ct);
 
     Task<VersaoLayoutAdminDto> AtualizarPublicacaoAsync(int id, bool publicado, uint versaoEsperada, CancellationToken ct);
+
+    Task<VersaoLayoutAdminDto> AtualizarEstruturaAsync(int id, AtualizarEstruturaVersaoLayoutDto dto, uint versaoEsperada, CancellationToken ct);
 }

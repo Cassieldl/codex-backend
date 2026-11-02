@@ -825,6 +825,28 @@ namespace Codex.Infrastructure.Data.Migrations
                     b.ToTable("errosversoes", "codex");
                 });
 
+            modelBuilder.Entity("Codex.Domain.Entities.EstruturaVersaoLayout", b =>
+                {
+                    b.Property<int>("VersaoLayoutId")
+                        .HasColumnType("integer")
+                        .HasColumnName("versaolayoutid");
+
+                    b.Property<string>("Conteudo")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("estrutura");
+
+                    b.Property<uint>("Versao")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("VersaoLayoutId")
+                        .HasName("pk_codex_versoeslayout");
+
+                    b.ToTable("versoeslayout", "codex");
+                });
+
             modelBuilder.Entity("Codex.Domain.Entities.Exemplo", b =>
                 {
                     b.Property<int>("Id")
@@ -1708,6 +1730,15 @@ namespace Codex.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_codex_errosversoes_versaoprovedorid");
+                });
+
+            modelBuilder.Entity("Codex.Domain.Entities.EstruturaVersaoLayout", b =>
+                {
+                    b.HasOne("Codex.Domain.Entities.VersaoLayout", null)
+                        .WithOne()
+                        .HasForeignKey("Codex.Domain.Entities.EstruturaVersaoLayout", "VersaoLayoutId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Codex.Domain.Entities.Exemplo", b =>

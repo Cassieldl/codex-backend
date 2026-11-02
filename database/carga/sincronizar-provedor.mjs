@@ -1,7 +1,7 @@
 /**
- * Etapas de carga comuns a todo provedor: layout InvoiCy, provedor, versão, avisos e erros. Fala com
- * a API interna e sincroniza em vez de só criar — cria o que falta, corrige o que mudou e remove o
- * que deixou de valer para a versão. Nada aqui publica.
+ * Etapas de carga comuns a todo provedor: provedor, versão, avisos e erros (o layout InvoiCy é de
+ * layout-invoicy.mjs). Fala com a API interna e sincroniza em vez de só criar: cria o que falta,
+ * corrige o que mudou e remove o que deixou de valer para a versão. Nada aqui publica.
  */
 
 import { planejarAtualizacaoDeErro } from './emissor-nacional/transformar.mjs'
@@ -10,27 +10,23 @@ function itensDe(dados) {
   return dados.items ?? dados
 }
 
-/** A API cria toda versão de layout como Prevista e só aceita o estado na atualização. */
-export async function garantirLayoutInvoicy(api, layout, estado) {
-  const { dados } = await api.chamar('GET', '/interno/layout/versoes')
-  let versao = itensDe(dados).find((item) => item.rotulo === layout.rotulo)
+function mesmaLista(atual, desejada) {
+  return [...atual].sort().join('\n') === [...desejada].sort().join('\n')
+}
 
-  if (!versao) {
-    ;({ dados: versao } = await api.chamar('POST', '/interno/layout/versoes', layout))
-    console.log(`versão ${layout.rotulo} do Layout InvoiCy criada (id ${versao.id})`)
-  }
+/** Aliases do catálogo valem para o provedor existente; nome e slug continuam como estão. */
+async function alinharAliases(api, provedorId, provedor) {
+  const { dados: atual } = await api.chamar('GET', `/interno/provedores/${provedorId}`)
+  const desejados = provedor.aliases ?? []
+  if (mesmaLista(atual.aliases ?? [], desejados)) return
 
-  if (versao.estado !== estado) {
-    await api.chamar(
-      'PUT',
-      `/interno/layout/versoes/${versao.id}`,
-      { estado },
-      String(versao.versaoConcorrencia),
-    )
-    console.log(`versão ${layout.rotulo} do Layout InvoiCy: ${versao.estado} → ${estado}`)
-  }
-
-  return versao.id
+  await api.chamar(
+    'PUT',
+    `/interno/provedores/${provedorId}`,
+    { nome: atual.nome, categoria: atual.categoria, aliases: desejados },
+    String(atual.versaoConcorrencia),
+  )
+  console.log(`aliases de ${atual.nome} alinhados: ${desejados.join(', ') || 'nenhum'}`)
 }
 
 export async function garantirProvedor(api, provedor) {
@@ -38,7 +34,10 @@ export async function garantirProvedor(api, provedor) {
     `/interno/provedores?q=${encodeURIComponent(provedor.nome)}`,
   )
   const existente = provedores.find((item) => item.nome === provedor.nome)
-  if (existente) return existente
+  if (existente) {
+    await alinharAliases(api, existente.id, provedor)
+    return existente
+  }
 
   const { dados: criado } = await api.chamar('POST', '/interno/provedores', provedor)
   console.log(`provedor ${provedor.nome} criado (id ${criado.id})`)
@@ -133,8 +132,18 @@ export async function sincronizarAvisos(api, versaoId, avisos) {
  * Só considera os erros já vinculados a este provedor: código de erro não é único entre
  * provedores, e o mesmo código registrado para outro provedor não pode impedir a criação deste.
  * `idPorCaminho` liga o caminho completo do campo no XSD do InvoiCy ao id do campo canônico.
+ *
+ * `removerAusentes` só vale para quem é dono da lista de erros da versão: sem ele, a carga cria e
+ * atualiza, mas nunca apaga um erro gravado por outra carga (e o slug apagado continua reservado).
  */
-export async function sincronizarErros(api, provedorSlug, versaoId, erros, idPorCaminho) {
+export async function sincronizarErros(
+  api,
+  provedorSlug,
+  versaoId,
+  erros,
+  idPorCaminho,
+  { removerAusentes = false } = {},
+) {
   const existentes = await api.listarTudo(
     `/interno/erros?provedor=${encodeURIComponent(provedorSlug)}`,
   )
@@ -189,7 +198,10 @@ export async function sincronizarErros(api, provedorSlug, versaoId, erros, idPor
     console.warn(`  causa editada na área interna, mantida: ${causasPreservadas.join(', ')}`)
 
   let removidos = 0
-  for (const erro of existentes.filter((existente) => !codigosDesejados.has(existente.codigo))) {
+  const ausentes = removerAusentes
+    ? existentes.filter((existente) => !codigosDesejados.has(existente.codigo))
+    : []
+  for (const erro of ausentes) {
     const { dados: detalhe } = await api.chamar('GET', `/interno/erros/${erro.id}`)
     const somenteDestaVersao =
       detalhe.versoesProvedorIds.length === 1 && detalhe.versoesProvedorIds[0] === versaoId

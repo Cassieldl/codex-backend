@@ -67,6 +67,7 @@ public sealed class PipelineAutorizacaoTests : IClassFixture<CodexApiFactory>
             (HttpMethod.Post, "/api/v1/interno/layout/versoes", "versoeslayout-adicionar"),
             (HttpMethod.Put, "/api/v1/interno/layout/versoes/1", "versoeslayout-atualizar"),
             (HttpMethod.Put, "/api/v1/interno/layout/versoes/1/publicacao", "versoeslayout-publicar"),
+            (HttpMethod.Put, "/api/v1/interno/layout/versoes/1/estrutura", "versoeslayout-atualizar"),
             (HttpMethod.Get, "/api/v1/interno/layout/versoes/1/campos", "campolayout-buscar"),
             (HttpMethod.Post, "/api/v1/interno/layout/versoes/1/campos", "campolayout-adicionar"),
 

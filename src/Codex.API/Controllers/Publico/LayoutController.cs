@@ -70,6 +70,29 @@ public sealed class LayoutController : ControllerBase
         return Ok(new ApiResponse<LayoutVersaoDto> { Data = versao });
     }
 
+    /// <summary>Estrutura do documento de uma versão publicada, em XML (SOAP) e em JSON (REST).</summary>
+    /// <response code="200">Estrutura da versão, com o slug dos campos publicados.</response>
+    /// <response code="304">If-None-Match casou: a estrutura não mudou.</response>
+    /// <response code="404">Versão inexistente, despublicada ou sem estrutura gravada.</response>
+    [HttpGet("versoes/{versaoSlug}/estrutura")]
+    [ProducesResponseType(typeof(ApiResponse<LayoutEstruturaDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status304NotModified)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ObterEstrutura(string versaoSlug, CancellationToken ct)
+    {
+        var estrutura = await _servico.ObterEstruturaAsync(versaoSlug, ct);
+
+        Response.Headers[HeaderNames.CacheControl] = PoliticaDeCache;
+
+        // ETag do corpo: o slug dos campos muda com a publicação deles, sem tocar a linha da versão.
+        var etag = ETagDeConteudo.MontarDoCorpo(estrutura);
+        if (Request.Headers.IfNoneMatch.ToString() == etag)
+            return StatusCode(StatusCodes.Status304NotModified);
+
+        Response.Headers.ETag = etag;
+        return Ok(new ApiResponse<LayoutEstruturaDto> { Data = estrutura });
+    }
+
     /// <summary>P12 — resolução do campo canônico e provedores/versões publicados que o usam (com destino no XML e obrigatoriedade).</summary>
     /// <response code="200">Campo visível, com a versão em que o frontend deve abri-lo.</response>
     /// <response code="404">Campo nunca existiu.</response>

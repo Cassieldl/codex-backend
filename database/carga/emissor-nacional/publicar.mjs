@@ -11,7 +11,8 @@
  */
 
 import { criarClienteApi } from '../cliente-api.mjs'
-import { ARTIGOS, LAYOUT_INVOICY, PROVEDOR, ROTULO_VERSAO } from './identificacao.mjs'
+import { ROTULO_LAYOUT_DOS_PROVEDORES } from '../layout-invoicy.mjs'
+import { ARTIGOS, PROVEDOR, ROTULO_VERSAO } from './identificacao.mjs'
 import { lerDataDeVerificacao, pendentesDePublicacao } from './publicacao.mjs'
 
 function itensDe(dados) {
@@ -30,7 +31,9 @@ async function publicarTodos(api, rotaBase, itens, descricao) {
 
 async function localizar(api) {
   const { dados: versoesLayout } = await api.chamar('GET', '/interno/layout/versoes')
-  const layout = itensDe(versoesLayout).find((versao) => versao.rotulo === LAYOUT_INVOICY.rotulo)
+  const layout = itensDe(versoesLayout).find(
+    (versao) => versao.rotulo === ROTULO_LAYOUT_DOS_PROVEDORES,
+  )
 
   const provedores = await api.listarTudo(
     `/interno/provedores?q=${encodeURIComponent(PROVEDOR.nome)}`,

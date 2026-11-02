@@ -10,7 +10,7 @@
  */
 
 import { criarClienteApi } from '../cliente-api.mjs'
-import { LAYOUT_INVOICY } from '../emissor-nacional/identificacao.mjs'
+import { ROTULO_LAYOUT_DOS_PROVEDORES } from '../layout-invoicy.mjs'
 import { lerDataDeVerificacao, pendentesDePublicacao } from '../emissor-nacional/publicacao.mjs'
 import { PROVEDORES } from './catalogo.mjs'
 
@@ -31,7 +31,9 @@ async function publicarTodos(api, rotaBase, itens, descricao) {
 /** Os campos canônicos novos (grupos de lista) entram junto com o primeiro provedor que os usa. */
 async function publicarLayoutInvoicy(api) {
   const { dados: versoesLayout } = await api.chamar('GET', '/interno/layout/versoes')
-  const layout = itensDe(versoesLayout).find((versao) => versao.rotulo === LAYOUT_INVOICY.rotulo)
+  const layout = itensDe(versoesLayout).find(
+    (versao) => versao.rotulo === ROTULO_LAYOUT_DOS_PROVEDORES,
+  )
   if (!layout) throw new Error('Layout InvoiCy não encontrado: rode a carga (importar.mjs) antes.')
 
   await publicarTodos(api, '/interno/layout/versoes', [layout], 'versão do Layout InvoiCy')

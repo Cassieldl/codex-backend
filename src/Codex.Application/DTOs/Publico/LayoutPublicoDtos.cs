@@ -162,3 +162,40 @@ public sealed record CampoLayoutVisivelBrutoDto
 
     public int? DescontinuadoOrdem { get; init; }
 }
+
+/// <summary>Estrutura do documento de uma versão publicada do layout, em XML (SOAP) e em JSON (REST).</summary>
+public sealed record LayoutEstruturaDto
+{
+    public required LayoutVersaoResumoDto Versao { get; init; }
+
+    public required NoEstruturaDto Xml { get; init; }
+
+    public required NoEstruturaDto Json { get; init; }
+}
+
+/// <summary>
+/// Nó da árvore do documento. <see cref="CampoSlug"/> só aparece quando o nó é um campo canônico
+/// publicado e ativo na versão, resolvido na leitura.
+/// </summary>
+public sealed record NoEstruturaDto
+{
+    public required string Nome { get; init; }
+
+    public required string Caminho { get; init; }
+
+    public required bool EhGrupo { get; init; }
+
+    public required bool Repete { get; init; }
+
+    /// <summary>Alternativa de um <c>xs:choice</c>: entre irmãos consecutivos marcados, só um vai no documento.</summary>
+    public required bool Escolha { get; init; }
+
+    public string? ValorModelo { get; init; }
+
+    public string? CampoSlug { get; init; }
+
+    /// <summary><c>ambos</c>, <c>soXml</c> ou <c>soJson</c>.</summary>
+    public required string Formato { get; init; }
+
+    public required IReadOnlyList<NoEstruturaDto> Filhos { get; init; }
+}

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Codex.Application.Common;
 using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
@@ -16,6 +17,8 @@ namespace Codex.Application.Services.Interno;
 /// </summary>
 public sealed class VersaoLayoutServicoInterno : IVersaoLayoutServicoInterno
 {
+    private const string MensagemConflito = "A versão do layout foi alterada por outra requisição. Recarregue e tente novamente.";
+
     private readonly IVersaoLayoutRepositorioInterno _repositorio;
     private readonly IIndiceBuscaWriter _indiceBuscaWriter;
     private readonly IUnidadeDeTrabalho _unidadeDeTrabalho;
@@ -84,6 +87,24 @@ public sealed class VersaoLayoutServicoInterno : IVersaoLayoutServicoInterno
         return Mapear(versaoLayout);
     }
 
+    public async Task<VersaoLayoutAdminDto> AtualizarEstruturaAsync(int id, AtualizarEstruturaVersaoLayoutDto dto, uint versaoEsperada, CancellationToken ct)
+    {
+        var versaoLayout = await _repositorio.ObterPorIdAsync(id, rastreada: false, ct)
+            ?? throw new EntidadeNaoEncontradaException("VersaoLayout", id);
+
+        if (versaoLayout.Versao != versaoEsperada)
+            throw new ConflitoConcorrenciaException(MensagemConflito);
+
+        var conteudo = JsonSerializer.Serialize(dto, JsonSerializerOptions.Web);
+        if (!await _repositorio.SubstituirEstruturaAsync(id, conteudo, versaoEsperada, ct))
+            throw new ConflitoConcorrenciaException(MensagemConflito);
+
+        var atualizada = await _repositorio.ObterPorIdAsync(id, rastreada: false, ct)
+            ?? throw new EntidadeNaoEncontradaException("VersaoLayout", id);
+
+        return Mapear(atualizada);
+    }
+
     /// <summary>
     /// <see cref="VersaoLayout"/> só expõe transições sequenciais dedicadas
     /// (<c>Prevista→Vigente→Anterior</c>) — não há caminho de volta. Pedir o mesmo estado atual é
@@ -115,7 +136,7 @@ public sealed class VersaoLayoutServicoInterno : IVersaoLayoutServicoInterno
             ?? throw new EntidadeNaoEncontradaException("VersaoLayout", id);
 
         if (versaoLayout.Versao != versaoEsperada)
-            throw new ConflitoConcorrenciaException("A versão do layout foi alterada por outra requisição. Recarregue e tente novamente.");
+            throw new ConflitoConcorrenciaException(MensagemConflito);
 
         return versaoLayout;
     }

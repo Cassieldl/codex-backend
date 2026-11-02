@@ -93,7 +93,7 @@ export function grupoDe(caminhoCompleto, ehGrupo = false) {
 }
 
 /** A mesma normalização que o slug faz: o que colidir aqui colide no índice único do banco. */
-function chaveDeSlug(caminho) {
+export function chaveDeSlug(caminho) {
   return caminho
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')

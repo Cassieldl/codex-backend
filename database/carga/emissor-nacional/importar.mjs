@@ -17,7 +17,8 @@
  * A versão 0.20 envia o leiaute vigente (Anexo I v1.01), não o RTC: os erros são os do material
  * menos os exclusivos do RTC, mais os exclusivos do Anexo I. Os campos vêm do mapeamento do
  * provedor (mapeamento-invoicy.csv), com caminho no layout de entrada v8 do InvoiCy
- * (layout-invoicy-v8.xsd) — arquivos versionados ao lado deste.
+ * (layout-invoicy-v8.xsd), arquivos versionados ao lado deste. O layout vigente pode ser outro: o
+ * provedor continua mapeado na 8.
  */
 
 import { readFile } from 'node:fs/promises'
@@ -25,8 +26,8 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { criarClienteApi, executarCarga } from '../cliente-api.mjs'
+import { ROTULO_LAYOUT_DOS_PROVEDORES, sincronizarLayoutInvoicy } from '../layout-invoicy.mjs'
 import {
-  garantirLayoutInvoicy,
   garantirProvedor,
   garantirVersao,
   sincronizarAvisos,
@@ -36,7 +37,7 @@ import { lerFonteDeExemploDoDisco } from '../exemplos-xml.mjs'
 import { lerVocabularioInvoicy } from '../vocabulario-invoicy.mjs'
 import { lerMaterialEmissorNacional, prepararCamposEmissorNacional } from './preparar-campos.mjs'
 import { resolverReferencias, sincronizarArtigo } from './sincronizar-artigos.mjs'
-import { sincronizarCamposDaVersao, sincronizarVocabulario } from './sincronizar-campos.mjs'
+import { sincronizarCamposDaVersao } from './sincronizar-campos.mjs'
 import {
   INTRODUCAO_VERSAO,
   codigosSomenteRtc,
@@ -45,13 +46,7 @@ import {
   montarErros,
   rejeicoesSomenteAnexoI,
 } from './transformar.mjs'
-import {
-  ARTIGOS,
-  ESTADO_LAYOUT_INVOICY,
-  LAYOUT_INVOICY,
-  PROVEDOR,
-  ROTULO_VERSAO,
-} from './identificacao.mjs'
+import { ARTIGOS, PROVEDOR, ROTULO_VERSAO } from './identificacao.mjs'
 
 const PASTA_DA_CARGA = dirname(fileURLToPath(import.meta.url))
 
@@ -61,7 +56,9 @@ async function lerTexto(arquivo) {
 
 const material = await lerMaterialEmissorNacional(process.argv[2])
 const { diferencas, rejeicoes } = material
-const { elementos: elementosXsd, vocabulario } = await lerVocabularioInvoicy()
+const { elementos: elementosXsd, vocabulario } = await lerVocabularioInvoicy(
+  ROTULO_LAYOUT_DOS_PROVEDORES,
+)
 const fonteDeExemplo = await lerFonteDeExemploDoDisco('dps-nacional')
 
 // Transformar tudo antes de tocar a API: um conteúdo fora do limite, ou um campo sem caminho
@@ -81,17 +78,20 @@ const erros = montarErros([...rejeicoes.rejeicoes, ...rejeicoesSomenteAnexoI(dif
 const api = await criarClienteApi()
 
 await executarCarga(async () => {
-  const versaoLayoutId = await garantirLayoutInvoicy(api, LAYOUT_INVOICY, ESTADO_LAYOUT_INVOICY)
+  const layouts = await sincronizarLayoutInvoicy(api)
+  const versaoLayoutId = layouts.idPorRotulo.get(ROTULO_LAYOUT_DOS_PROVEDORES)
+  const idPorCaminho = layouts.idPorCaminhoPorRotulo.get(ROTULO_LAYOUT_DOS_PROVEDORES)
   const provedor = await garantirProvedor(api, PROVEDOR)
   const versaoId = await garantirVersao(api, provedor.id, versaoLayoutId, {
     rotulo: ROTULO_VERSAO,
     introducao: INTRODUCAO_VERSAO,
   })
   await sincronizarAvisos(api, versaoId, avisos)
-  const idPorCaminho = await sincronizarVocabulario(api, versaoLayoutId, vocabulario)
   await sincronizarCamposDaVersao(api, versaoId, campos, idPorCaminho)
   // Depois do vocabulário: o vínculo do erro com o campo precisa do id do campo canônico.
-  await sincronizarErros(api, provedor.slug, versaoId, erros, idPorCaminho)
+  await sincronizarErros(api, provedor.slug, versaoId, erros, idPorCaminho, {
+    removerAusentes: true,
+  })
 
   const errosDoProvedor = await api.listarTudo(
     `/interno/erros?provedor=${encodeURIComponent(provedor.slug)}`,

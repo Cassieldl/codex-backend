@@ -1,3 +1,4 @@
+using System.Globalization;
 using Codex.Application.Common;
 using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
@@ -67,6 +68,21 @@ public sealed class VersaoLayoutRepositorioInterno : RepositorioBase<CodexDbCont
 
     public async Task AdicionarAsync(VersaoLayout versaoLayout, CancellationToken ct) =>
         await Contexto.VersoesLayout.AddAsync(versaoLayout, ct);
+
+    /// <summary>
+    /// SQL direto e parametrizado: pela entidade dividida, o EF filtraria <c>estrutura IS NOT NULL</c>
+    /// (dependente opcional) e a primeira gravação nunca acharia a linha. O <c>xmin</c> no WHERE
+    /// mantém a concorrência otimista na mesma instrução.
+    /// </summary>
+    public async Task<bool> SubstituirEstruturaAsync(int id, string conteudo, uint versaoEsperada, CancellationToken ct)
+    {
+        var versaoTexto = versaoEsperada.ToString(CultureInfo.InvariantCulture);
+        var alteradas = await Contexto.Database.ExecuteSqlInterpolatedAsync(
+            $"UPDATE codex.versoeslayout SET estrutura = {conteudo}::jsonb, atualizadoem = now() WHERE versaolayoutid = {id} AND desativadoem IS NULL AND xmin::text = {versaoTexto}",
+            ct);
+
+        return alteradas == 1;
+    }
 
     /// <summary>
     /// PQ-17 — a colisão de <c>uq_codex_versoeslayout_estado_vigente</c> (segunda versão promovida

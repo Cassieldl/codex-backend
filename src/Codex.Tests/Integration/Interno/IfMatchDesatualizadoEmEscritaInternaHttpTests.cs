@@ -11,7 +11,7 @@ namespace Codex.Tests.Integration.Interno;
 [Collection(PostgresCollection.Nome)]
 public sealed class IfMatchDesatualizadoEmEscritaInternaHttpTests : IAsyncLifetime
 {
-    private const int QuantidadeDeEscritasComIfMatch = 33;
+    private const int QuantidadeDeEscritasComIfMatch = 34;
 
     private static readonly string[] EscritasDeLayoutECamposDeVersao =
     [
@@ -22,6 +22,7 @@ public sealed class IfMatchDesatualizadoEmEscritaInternaHttpTests : IAsyncLifeti
         "DELETE /api/v1/interno/campos-versao/1",
         "PUT /api/v1/interno/layout/versoes/1",
         "PUT /api/v1/interno/layout/versoes/1/publicacao",
+        "PUT /api/v1/interno/layout/versoes/1/estrutura",
     ];
 
     private static readonly Regex SegmentoDeId = new("/1(?=/|$)", RegexOptions.CultureInvariant);
@@ -89,6 +90,7 @@ public sealed class IfMatchDesatualizadoEmEscritaInternaHttpTests : IAsyncLifeti
 
         ["PUT /api/v1/interno/layout/versoes/1"] = new(Recurso.VersaoLayout, s => new { rotulo = $"Layout editado {s}" }),
         ["PUT /api/v1/interno/layout/versoes/1/publicacao"] = new(Recurso.VersaoLayout, _ => new { publicado = true }),
+        ["PUT /api/v1/interno/layout/versoes/1/estrutura"] = new(Recurso.VersaoLayout, _ => CorpoDeEstrutura()),
 
         ["PUT /api/v1/interno/campos-layout/1"] = new(Recurso.CampoLayout, s => new { nome = $"Campo editado {s}" }),
         ["DELETE /api/v1/interno/campos-layout/1"] = new(Recurso.CampoLayout, null),
@@ -158,6 +160,12 @@ public sealed class IfMatchDesatualizadoEmEscritaInternaHttpTests : IAsyncLifeti
     }
 
     private static string Chave(object[] linha) => $"{linha[0]} {linha[1]}";
+
+    private static object CorpoDeEstrutura()
+    {
+        var raiz = new { nome = "Envio", caminho = "Envio", formato = "ambos", filhos = Array.Empty<object>() };
+        return new { xml = raiz, json = raiz };
+    }
 
     private static DateOnly Ontem() => DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1);
 

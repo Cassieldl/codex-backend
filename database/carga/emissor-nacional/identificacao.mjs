@@ -31,15 +31,3 @@ export const ARTIGOS = [
     erros: ['E0595', 'E1300'],
   },
 ]
-
-export const LAYOUT_INVOICY = {
-  rotulo: '8',
-  descricao:
-    'Layout de recepção de NFS-e do InvoiCy, versão 8 (Reforma Tributária, NT 009). Caminhos tirados do XSD de entrada.',
-}
-
-/**
- * O layout 8 é o que o InvoiCy usa hoje. A API cria toda versão como Prevista e só aceita o estado
- * na atualização, então a carga o ajusta depois de criar.
- */
-export const ESTADO_LAYOUT_INVOICY = 'Vigente'
