@@ -6,6 +6,10 @@
  *   CODEX_DEV_USUARIO=... CODEX_DEV_SENHA=... node database/carga/artigos/importar-documentacao.mjs \
  *     [--relatorio <arquivo.md>]
  *
+ * Com `--verificado-em AAAA-MM-DD`, também registra a verificação e publica os artigos desta carga.
+ * A data é uma afirmação editorial e nunca é presumida. Nenhum deles é reservado; se algum fosse, a
+ * carga pararia, porque artigo reservado publicado não volta.
+ *
  * Rodar depois da carga de erros (erros/importar.mjs): os vínculos com erros só nascem para erros
  * que já existem.
  */
@@ -15,6 +19,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { criarClienteApi, executarCarga } from '../cliente-api.mjs'
+import { lerDataDeVerificacao } from '../emissor-nacional/publicacao.mjs'
 import { chaveDeSlug } from '../emissor-nacional/transformar-layout.mjs'
 import { temMarcaDePendencia } from '../erros/documentacao.mjs'
 import {
@@ -22,6 +27,7 @@ import {
   ARTIGOS_FORA,
   REJEICOES_DO_PROVEDOR,
   ROTULO_DO_ARQUIVO,
+  planejarPublicacao,
 } from './documentacao.mjs'
 import {
   prepararArtigo,
@@ -194,7 +200,35 @@ function montarRelatorio({ fora, preparados, situacoes, naoResolvidos }) {
   return `${partes.join('\n')}\n`
 }
 
+async function verificarEPublicar(api, titulos, verificadoEm) {
+  const existentes = await api.listarTudo('/interno/artigos')
+  const contagem = { verificados: 0, publicados: 0 }
+  for (const titulo of titulos) {
+    const resumo = existentes.find((artigo) => artigo.titulo === titulo)
+    if (!resumo) continue
+    let { dados: atual } = await api.chamar('GET', `/interno/artigos/${resumo.id}`)
+    const plano = planejarPublicacao({ ...atual, reservado: resumo.reservado }, verificadoEm)
+    if (plano.registrarVerificacao) {
+      ;({ dados: atual } = await api.chamar(
+        'PUT',
+        `/interno/artigos/${atual.id}/verificacao`,
+        { verificadoEm },
+        String(atual.versaoConcorrencia),
+      ))
+      contagem.verificados++
+    }
+    if (plano.publicar) {
+      await api.publicar('/interno/artigos', atual.id, String(atual.versaoConcorrencia))
+      contagem.publicados++
+    }
+  }
+  return contagem
+}
+
 const arquivoRelatorio = valorDoArgumento('--relatorio')
+const verificadoEm = process.argv.includes('--verificado-em')
+  ? lerDataDeVerificacao(process.argv)
+  : null
 const { lidos, fora } = await lerArtigos()
 const api = await criarClienteApi()
 
@@ -242,6 +276,17 @@ await executarCarga(async () => {
     )
     console.log(`relatório: ${arquivoRelatorio}`)
   }
+  if (verificadoEm) {
+    const titulos = preparados.map((artigo) => artigo.titulo)
+    const { verificados, publicados } = await verificarEPublicar(api, titulos, verificadoEm)
+    console.log(
+      `verificação de ${verificadoEm} registrada em ${verificados} artigo(s); ${publicados} publicado(s)`,
+    )
+  }
   api.imprimirResumoDaSimulacao()
-  console.log('\nartigos carregados como rascunho. Nada foi publicado.')
+  console.log(
+    verificadoEm
+      ? '\nartigos carregados.'
+      : '\nartigos carregados como rascunho. Nada foi publicado.',
+  )
 })

@@ -164,6 +164,21 @@ function separarDivergentes(itens, fonte) {
 }
 
 /**
+ * Seção pendente só entra quando a regra dela diz que a pendência é da solução e não lê solução.
+ * Linha com marca própria continua de fora.
+ */
+function aceitaPendenciaDaSecao(fonte, tabela) {
+  const regra = fonte.tabelas.find((candidata) => candidata.secao.test(tabela.secao))
+  if (!regra?.pendenciaSoNaSolucao) return false
+  if (regra.colunas.solucao) {
+    throw new Error(
+      `A seção "${tabela.secao}" de ${fonte.arquivo} tem pendência na solução e lê a solução.`,
+    )
+  }
+  return true
+}
+
+/**
  * Lê as tabelas de uma fonte. Devolve as linhas que viram erro (`itens`), as que ficaram de fora
  * com o motivo (`pulados`) e as tabelas inteiras fora do recorte (`tabelasFora`). Seção marcada
  * como pendente fica de fora inteira, sem precisar de regra.
@@ -174,7 +189,7 @@ export function lerFonte(fonte, markdown) {
   const tabelasFora = []
 
   for (const tabela of lerTabelas(markdown)) {
-    if (tabela.secaoPendente) {
+    if (tabela.secaoPendente && !aceitaPendenciaDaSecao(fonte, tabela)) {
       for (const linha of tabela.linhas) {
         pulados.push({
           fonte: fonte.arquivo,

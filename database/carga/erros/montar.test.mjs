@@ -122,3 +122,38 @@ test('linha secundária que contradiz a lista oficial fica de fora; a que confer
     ['E10', 'E20', 'P0010', 'P0011'],
   )
 })
+
+test('seção com pendência só na solução entra sem solução; linha marcada continua de fora', () => {
+  const regra = {
+    secao: /^Legado/,
+    colunas: { codigo: 'Código', mensagem: 'Descrição' },
+    pendenciaSoNaSolucao: true,
+  }
+  const markdown = [
+    '## Legado',
+    `> ${MARCA_PENDENTE} Pendente: a coluna Solução não tem o link.`,
+    '| Código | Descrição |',
+    '| :--- | :--- |',
+    '| BTH01 | Alíquota inválida. |',
+    `| BTH02 | Duvidoso. ${MARCA_PENDENTE} |`,
+  ].join('\n')
+
+  const { itens, pulados } = lerFonte(fonte([regra]), markdown)
+
+  assert.deepEqual(
+    itens.map((item) => [item.codigo, item.mensagem, item.solucao]),
+    [['BTH01', 'Alíquota inválida.', null]],
+  )
+  assert.deepEqual(
+    pulados.map((pulado) => [pulado.codigo ?? null, pulado.motivo]),
+    [[null, 'linha marcada como pendente']],
+  )
+  assert.throws(
+    () =>
+      lerFonte(
+        fonte([{ ...regra, colunas: { ...regra.colunas, solucao: 'Descrição' } }]),
+        markdown,
+      ),
+    /tem pendência na solução e lê a solução/,
+  )
+})

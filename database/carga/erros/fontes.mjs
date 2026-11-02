@@ -8,6 +8,8 @@
  * a mensagem literal, então só vira variante quando o erro é criado e não há outra.
  * `camposInvoicy`: a fonte cita, entre crases, nomes de campo do Layout InvoiCy. `conferirCom`: a
  * linha só entra se o código não estiver na tabela indicada ou estiver lá com a mesma mensagem.
+ * `pendenciaSoNaSolucao`: a seção marcada como pendente entra mesmo assim, porque a pendência é só
+ * da solução; a regra não pode ler a coluna de solução.
  */
 
 const CODIGO_NACIONAL = /^E\d{4}$/
@@ -111,6 +113,13 @@ export const FONTES = [
       {
         secao: /^Erros da DPS/,
         colunas: { codigo: 'Código', mensagem: 'Mensagem', solucao: 'Orientação' },
+      },
+      {
+        // A pendência da seção é a coluna Solução ("Artigo no link" sem link); código e
+        // mensagem entram, a solução não.
+        secao: /^Erros do webservice Betha \(RPS\)/,
+        colunas: { codigo: 'Código', mensagem: 'Descrição' },
+        pendenciaSoNaSolucao: true,
       },
     ],
     fora: [],

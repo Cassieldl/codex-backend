@@ -6,6 +6,10 @@
  *   CODEX_DEV_USUARIO=... CODEX_DEV_SENHA=... node database/carga/erros/importar.mjs \
  *     [--relatorio <arquivo.md>] [--fontes betha.md,gespam.md] [--aguardar Betha,GESPAM]
  *
+ * Com `--verificado-em AAAA-MM-DD`, também publica os erros desta carga ainda não publicados. A data
+ * é a afirmação editorial de que o conteúdo foi conferido e nunca é presumida; o erro não guarda a
+ * data, ela só libera a publicação.
+ *
  * Provedor ausente no banco não interrompe: as linhas dele ficam como "aguardando" no relatório.
  * `--aguardar` faz o mesmo com provedor que existe mas ainda está sendo carregado: a carga de
  * provedores remove os erros da versão que não estão no material dela.
@@ -16,11 +20,12 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { criarClienteApi, executarCarga } from '../cliente-api.mjs'
+import { lerDataDeVerificacao } from '../emissor-nacional/publicacao.mjs'
 import { ROTULO_LAYOUT_DOS_PROVEDORES } from '../layout-invoicy.mjs'
 import { PROVEDORES } from '../provedores/catalogo.mjs'
 import { FONTES } from './fontes.mjs'
 import { agruparErros, lerFonte } from './montar.mjs'
-import { sincronizarErros } from './sincronizar.mjs'
+import { idsDosErrosDaCarga, publicarErros, sincronizarErros } from './sincronizar.mjs'
 
 const PASTA_FONTE = join(dirname(fileURLToPath(import.meta.url)), 'fonte')
 
@@ -210,6 +215,9 @@ function montarRelatorio(lido, resultado, contexto) {
 const arquivoRelatorio = valorDoArgumento('--relatorio')
 const fontesEscolhidas = valorDoArgumento('--fontes')?.split(',') ?? null
 const aguardar = new Set(valorDoArgumento('--aguardar')?.split(',') ?? [])
+const verificadoEm = process.argv.includes('--verificado-em')
+  ? lerDataDeVerificacao(process.argv)
+  : null
 
 const lido = await lerFontes(fontesEscolhidas)
 const api = await criarClienteApi()
@@ -228,6 +236,10 @@ await executarCarga(async () => {
     await writeFile(arquivoRelatorio, montarRelatorio(lido, resultado, contexto))
     console.log(`relatório: ${arquivoRelatorio}`)
   }
+  if (verificadoEm) {
+    const publicados = await publicarErros(api, idsDosErrosDaCarga(lido.erros, contexto))
+    console.log(`erros publicados (verificação de ${verificadoEm}): ${publicados}`)
+  }
   api.imprimirResumoDaSimulacao()
-  console.log('\ncarga concluída. Nada foi publicado.')
+  console.log(verificadoEm ? '\ncarga concluída.' : '\ncarga concluída. Nada foi publicado.')
 })

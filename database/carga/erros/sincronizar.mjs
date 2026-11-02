@@ -231,3 +231,31 @@ export async function sincronizarErros(api, erros, contexto) {
 
   return resultado
 }
+
+/**
+ * Ids dos erros que vieram desta carga, depois da sincronização: o erro de cada provedor e código
+ * das fontes, já existente ou criado agora. Provedor ausente ou em espera fica de fora.
+ */
+export function idsDosErrosDaCarga(erros, contexto) {
+  const ids = new Set()
+  for (const erro of erros) {
+    if (erro.provedor && contexto.aguardar.has(erro.provedor)) continue
+    const provedor = erro.provedor ? contexto.provedorPorNome.get(erro.provedor) : null
+    if (erro.provedor && !provedor) continue
+    const encontrado = contexto.errosPorProvedor.get(provedor?.slug ?? 'InvoiCy')?.get(erro.codigo)
+    if (encontrado) ids.add(encontrado.id)
+  }
+  return [...ids]
+}
+
+/** Publica os erros ainda não publicados; rodar de novo não escreve nada. */
+export async function publicarErros(api, ids) {
+  let publicados = 0
+  for (const id of ids) {
+    const { dados: detalhe } = await api.chamar('GET', `/interno/erros/${id}`)
+    if (detalhe.publicado) continue
+    await api.publicar('/interno/erros', id, String(detalhe.versaoConcorrencia))
+    publicados++
+  }
+  return publicados
+}

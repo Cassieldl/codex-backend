@@ -5,7 +5,11 @@ import { dirname, join } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-import { CORRECOES_DE_SEGURANCA, aplicarCorrecoesDeSeguranca } from './documentacao.mjs'
+import {
+  CORRECOES_DE_SEGURANCA,
+  aplicarCorrecoesDeSeguranca,
+  planejarPublicacao,
+} from './documentacao.mjs'
 
 const PASTA_DA_COPIA = join(dirname(fileURLToPath(import.meta.url)), 'documentacao')
 
@@ -29,4 +33,29 @@ test('nenhum artigo copiado tem o trecho inseguro, e cada um tem a troca', async
     assert.ok(!copia.includes(trecho), `${arquivo} voltou a ter o trecho inseguro`)
     assert.ok(copia.includes(troca), `${arquivo} não tem a troca de segurança`)
   }
+})
+
+test('publicação registra a verificação que falta, publica o rascunho e recusa artigo reservado', () => {
+  assert.deepEqual(
+    planejarPublicacao(
+      { titulo: 'Retenção de ISS', reservado: false, publicado: false, verificadoEm: null },
+      '2026-11-02',
+    ),
+    { registrarVerificacao: true, publicar: true },
+  )
+  assert.deepEqual(
+    planejarPublicacao(
+      { titulo: 'Retenção de ISS', reservado: false, publicado: true, verificadoEm: '2026-11-02' },
+      '2026-11-02',
+    ),
+    { registrarVerificacao: false, publicar: false },
+  )
+  assert.throws(
+    () =>
+      planejarPublicacao(
+        { titulo: 'Como funciona', reservado: true, publicado: false, verificadoEm: null },
+        '2026-11-02',
+      ),
+    /reservado/,
+  )
 })

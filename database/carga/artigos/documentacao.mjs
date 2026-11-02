@@ -135,3 +135,17 @@ export const ROTULO_DO_ARQUIVO = {
   'padrao-nacional.md': 'rejeições do Padrão Nacional',
   'ipm.md': 'rejeições do IPM',
 }
+
+/**
+ * O que falta para publicar um artigo desta carga com a verificação informada. Artigo reservado
+ * interrompe: publicado, ele não volta, e esta carga não é dona de nenhum.
+ */
+export function planejarPublicacao(artigo, verificadoEm) {
+  if (artigo.reservado) {
+    throw new Error(`"${artigo.titulo}" é reservado e não é publicado por esta carga.`)
+  }
+  return {
+    registrarVerificacao: artigo.verificadoEm !== verificadoEm,
+    publicar: !artigo.publicado,
+  }
+}
