@@ -6,6 +6,8 @@
  * estourasse o formulário não poderia mais ser editado por lá.
  */
 
+import { avisoDeCamposPendentes } from '../provedores/avisos.mjs'
+
 export const LIMITE_TITULO = 200
 export const LIMITE_CAUSA = 2000
 export const LIMITE_VARIANTE = 1000
@@ -197,8 +199,11 @@ export const INTRODUCAO_VERSAO =
 /**
  * Avisos de escopo versão, todos tirados do README e dos arquivos do material. Valem para uma
  * versão que envia o leiaute vigente; os do RTC entram na versão que o implementar.
+ *
+ * `nomesPendentes`: campos do mapeamento que esperam o InvoiCy. Viram o mesmo aviso da carga de
+ * provedores, porque a tabela de campos é exaustiva e a ausência precisa ser dita.
  */
-export function montarAvisos() {
+export function montarAvisos(nomesPendentes = []) {
   const avisos = [
     {
       severidade: 'Alerta',
@@ -250,24 +255,9 @@ export function montarAvisos() {
         'outra, emita nova DPS com o grupo subst (chSubstda e cMotivo 01 a 05 ou 99): o cancelamento ' +
         'por substituição (105102) é gerado automaticamente.',
     },
-    {
-      // A tabela de campos é exaustiva: o que ainda espera confirmação do InvoiCy precisa ser dito,
-      // senão a ausência leria como "não se aplica".
-      severidade: 'Informativo',
-      titulo: 'Campos ainda em confirmação com o InvoiCy',
-      corpo:
-        'Estas situações ainda não têm campo documentado nesta versão, porque o caminho no layout ' +
-        'InvoiCy está sendo confirmado:\n\n' +
-        '- documentos de reembolso, repasse e ressarcimento (grupo gReeRepRes);\n' +
-        '- endereço no exterior do intermediário, da obra, do evento e do fornecedor da dedução;\n' +
-        '- indicador do total de tributos (indTotTrib);\n' +
-        '- valor recebido pelo intermediário (vReceb);\n' +
-        '- substituição de NFS-e (chave, código e descrição do motivo) e tipo de operação com entes ' +
-        'governamentais (tpOper).\n\n' +
-        'Fora desta lista, campo que não aparece na tabela não se aplica a esta versão. Se precisar ' +
-        'de uma destas situações agora, fale com o suporte.',
-    },
   ]
+  const avisoDePendentes = avisoDeCamposPendentes(nomesPendentes)
+  if (avisoDePendentes) avisos.push(avisoDePendentes)
 
   for (const aviso of avisos)
     exigirLimite(aviso.corpo, LIMITE_CORPO_AVISO, `Corpo do aviso "${aviso.titulo}"`)

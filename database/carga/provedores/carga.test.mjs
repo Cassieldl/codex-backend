@@ -83,17 +83,18 @@ test('erro: código repetido na transcrição interrompe a carga', () => {
   assert.throws(() => montarErros([repetido, repetido], TAGS), /repetido/)
 })
 
-test('aviso de pendentes agrupa os campos pelo motivo; sem pendentes, não há aviso', () => {
+test('aviso de pendentes lista os campos em ordem e sem o motivo interno; sem pendentes, nada', () => {
   assert.equal(avisoDeCamposPendentes(new Map()), null)
   const aviso = avisoDeCamposPendentes(
     new Map([
-      ['DocCNPJ', 'Bloco gReeRepRes.'],
-      ['indTotTrib', 'Não existe.'],
-      ['DocCPF', 'Bloco gReeRepRes.'],
+      ['indTotTrib', 'Não existe no layout de entrada.'],
+      ['DocCPF', 'Bloco gReeRepRes (1.01) sem equivalente confiável no layout v8.'],
+      ['DocCNPJ', 'Bloco gReeRepRes (1.01) sem equivalente confiável no layout v8.'],
     ]),
   )
   assert.equal(aviso.titulo, TITULO_CAMPOS_PENDENTES)
-  assert.match(aviso.corpo, /\n- DocCNPJ, DocCPF: Bloco gReeRepRes\.\n- indTotTrib: Não existe\.$/)
+  assert.match(aviso.corpo, /desta versão: DocCNPJ, DocCPF, indTotTrib\.\n\nFora desta lista/)
+  assert.doesNotMatch(aviso.corpo, /gReeRepRes|layout v8|XSD|planilha|a confirmar/)
 })
 
 test('leiaute transcrito: domínio vira tipo, "Agrup." vira grupo, célula vazia fica vazia', () => {

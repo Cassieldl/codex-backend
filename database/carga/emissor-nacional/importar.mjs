@@ -63,13 +63,12 @@ const fonteDeExemplo = await lerFonteDeExemploDoDisco('dps-nacional')
 
 // Transformar tudo antes de tocar a API: um conteúdo fora do limite, ou um campo sem caminho
 // resolvido, interrompe a carga sem deixá-la pela metade.
-const avisos = montarAvisos()
-
 const { tags, pendentes, campos } = prepararCamposEmissorNacional(
   material,
   elementosXsd,
   fonteDeExemplo,
 )
+const avisos = montarAvisos([...pendentes.values()].map(({ nomeCampo }) => nomeCampo))
 const erros = montarErros([...rejeicoes.rejeicoes, ...rejeicoesSomenteAnexoI(diferencas)], {
   codigosForaDaVersao: codigosSomenteRtc(diferencas),
   camposPorCaminhoDps: indexarCamposPorCaminhoDps(tags, vocabulario),

@@ -2,7 +2,10 @@
  * Publica o que a carga dos provedores do catálogo criou. Separado da carga de propósito: carregar é
  * repetível e não muda o que o leitor vê; publicar é decisão editorial.
  *
- *   node database/carga/provedores/publicar.mjs <id>... | --todos [--verificado-em AAAA-MM-DD]
+ *   node database/carga/provedores/publicar.mjs <id>... | --todos [--verificado-em AAAA-MM-DD] [--sem-erros]
+ *
+ * Com --sem-erros os erros ligados ao provedor ficam como estão: quem publica é a carga dona deles
+ * (database/carga/erros).
  *
  * Sem `--verificado-em`, a versão vai ao ar como "ainda não verificada": o selo afirma que alguém
  * conferiu o conteúdo naquele dia, e quem afirma é o editor, não o script. Idempotente: o que já está
@@ -55,7 +58,7 @@ async function registrarVerificacao(api, versaoId, verificadoEm) {
   return atualizada
 }
 
-async function publicarProvedor(api, config, verificadoEm) {
+async function publicarProvedor(api, config, verificadoEm, comErros) {
   const provedores = await api.listarTudo(
     `/interno/provedores?q=${encodeURIComponent(config.provedor.nome)}`,
   )
@@ -73,11 +76,13 @@ async function publicarProvedor(api, config, verificadoEm) {
   const { dados: detalhe } = await api.chamar('GET', `/interno/versoes/${versao.id}`)
   await publicarTodos(api, '/interno/avisos', detalhe.avisos, 'avisos da versão')
 
+  if (!comErros) return
   const erros = await api.listarTudo(`/interno/erros?provedor=${encodeURIComponent(provedor.slug)}`)
   await publicarTodos(api, '/interno/erros', erros, 'erros do provedor')
 }
 
 const argumentos = process.argv.slice(2)
+const comErros = !argumentos.includes('--sem-erros')
 const verificadoEm = argumentos.includes('--verificado-em')
   ? lerDataDeVerificacao(argumentos)
   : null
@@ -89,7 +94,7 @@ const ids = argumentos.includes('--todos')
     })
 if (!ids.length) {
   console.error(
-    'Uso: node database/carga/provedores/publicar.mjs <id>... | --todos [--verificado-em AAAA-MM-DD]',
+    'Uso: node database/carga/provedores/publicar.mjs <id>... | --todos [--verificado-em AAAA-MM-DD] [--sem-erros]',
   )
   process.exit(1)
 }
@@ -99,6 +104,6 @@ const api = await criarClienteApi()
 await publicarLayoutInvoicy(api)
 for (const id of ids) {
   console.log(`\n== ${PROVEDORES[id].provedor.nome} ==`)
-  await publicarProvedor(api, PROVEDORES[id], verificadoEm)
+  await publicarProvedor(api, PROVEDORES[id], verificadoEm, comErros)
 }
 console.log('\npublicação concluída.')

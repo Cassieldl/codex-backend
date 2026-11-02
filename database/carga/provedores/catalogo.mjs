@@ -32,7 +32,10 @@ const INTRODUCAO_DPS =
  * "Pendente" continua lá e tira o trecho do aviso). Cada subseção vira um aviso com o título e a
  * severidade decididos aqui.
  */
-function provedorDeLeiauteNacional(id, { provedor, introducao, envelope, esquema, subsecoes }) {
+function provedorDeLeiauteNacional(
+  id,
+  { provedor, introducao, envelope, esquema, subsecoes, avisos = [] },
+) {
   return {
     provedor: { categoria: 'Proprio', aliases: [], ...provedor },
     versao: { rotulo: '1.01', introducao: introducao ?? INTRODUCAO_DPS },
@@ -45,7 +48,7 @@ function provedorDeLeiauteNacional(id, { provedor, introducao, envelope, esquema
     },
     ...(envelope ? { prefixoDestino: `${envelope}/` } : {}),
     observacoes: { arquivo: `${id}/observacoes.md`, subsecoes },
-    avisos: [],
+    avisos,
   }
 }
 
@@ -81,9 +84,22 @@ const PROVEDORES_DE_LEIAUTE_NACIONAL = {
       'DPS no leiaute nacional v1.01, dentro do envelope GerarNfseEnvio. Tipo, tamanho e ' +
       'obrigatoriedade das tags da DPS vêm do XSD nacional; o envelope não está descrito nele.',
     envelope: 'GerarNfseEnvio',
+    avisos: [
+      {
+        // O E138 já existe como erro do GISS: o slug do erro nasce de código e título, então a
+        // solução do Coplan vive aqui, como a do E0037 no E&L.
+        severidade: 'Alerta',
+        titulo: 'E138: usuário não autorizado a emitir pelo webservice em produção',
+        corpo:
+          'O Coplan devolve o E138 ("Usuário não autorizado a realizar o serviço") quando o ' +
+          'prestador ainda não tem permissão para emitir via webservice em produção.\n\n' +
+          'Peça a liberação a equipetributario@coplanmt.com.br, com os dados do prestador. Em ' +
+          'Sinop/MT, a liberação é feita pela prefeitura.',
+      },
+    ],
     subsecoes: {
       'Visão geral': informativo('O Coplan segue as regras do Emissor Nacional'),
-      'Autenticação e acesso': alerta('E138: liberação para emitir via webservice em produção'),
+      'Autenticação e acesso': { ignorar: 'Vira o aviso do E138, escrito no catálogo.' },
       'Regras de preenchimento': alerta(
         'Retenções federais, intermediário e alíquota de ISS no Coplan',
       ),
@@ -189,9 +205,7 @@ const PROVEDORES_DE_LEIAUTE_NACIONAL = {
     esquema: { arquivos: ESQUEMA_DPS_NACIONAL, raiz: 'NFSe', tipoDaRaiz: 'TCNFSe' },
     subsecoes: {
       'Origem da rejeição': informativo('Rejeição do Emissor Nacional ou da prefeitura'),
-      'Versões anteriores (WS e WS2)': informativo(
-        'Regras das versões anteriores WS e WS2, que não valem para a DPS',
-      ),
+      'Versões anteriores (WS e WS2)': { ignorar: 'Fala de outras versões do provedor.' },
       'Artigos relacionados': {
         ignorar: 'Só lista artigos da base de conhecimento, que têm carga própria.',
       },
