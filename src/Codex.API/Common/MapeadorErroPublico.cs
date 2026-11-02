@@ -18,7 +18,7 @@ public static class MapeadorErroPublico
 {
     public static IActionResult Mapear(ControllerBase controller, Exception excecao) => excecao switch
     {
-        EntidadeNaoEncontradaException e => controller.NotFound(Erro("NAO_ENCONTRADO", e.Message)),
+        EntidadeNaoEncontradaException e => controller.NotFound(Erro(e.Codigo, e.Message)),
         ConteudoDespublicadoException e => controller.StatusCode(
             StatusCodes.Status410Gone, Erro(CodigoDespublicado(e.TipoItem), e.Message)),
         LimiteExcedidoException e => controller.StatusCode(

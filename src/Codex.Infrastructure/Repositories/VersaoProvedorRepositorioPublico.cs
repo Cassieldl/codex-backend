@@ -125,6 +125,23 @@ public sealed class VersaoProvedorRepositorioPublico : RepositorioBase<CodexDbCo
         }).ToArray();
     }
 
+    public async Task<IReadOnlyCollection<CampoEnvioModeloBrutoDto>> ListarCamposDoEnvioModeloAsync(int versaoProvedorId, CancellationToken ct) =>
+        await (
+            from cv in Contexto.CamposVersao.AsNoTracking()
+            join cl in Contexto.CamposLayout.AsNoTracking() on cv.CampoLayoutId equals cl.Id
+            where cv.VersaoProvedorId == versaoProvedorId && cv.DesativadoEm == null && cl.DesativadoEm == null
+            orderby cl.Ordem
+            select new CampoEnvioModeloBrutoDto(cl.Slug, cl.CaminhoXml, cv.EstadoPreenchimento)
+        ).ToListAsync(ct);
+
+    public Task<string?> ObterEstruturaDoLayoutPublicadoAsync(int versaoLayoutId, CancellationToken ct) =>
+        (
+            from e in Contexto.EstruturasVersaoLayout.AsNoTracking()
+            join vl in Contexto.VersoesLayout.AsNoTracking() on e.VersaoLayoutId equals vl.Id
+            where vl.Id == versaoLayoutId && vl.Publicado && vl.DesativadoEm == null
+            select e.Conteudo
+        ).FirstOrDefaultAsync(ct);
+
     public async Task<IReadOnlyCollection<Aviso>> ListarAvisosPublicadosDaVersaoAsync(int versaoProvedorId, CancellationToken ct) =>
         await Contexto.Avisos.AsNoTracking()
             .Where(a => a.VersaoProvedorId == versaoProvedorId && a.Publicado && a.DesativadoEm == null)

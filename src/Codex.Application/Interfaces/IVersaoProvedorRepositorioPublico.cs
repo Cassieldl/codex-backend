@@ -46,6 +46,15 @@ public interface IVersaoProvedorRepositorioPublico
     /// </summary>
     Task<IReadOnlyCollection<ExemploPublicoDto>> ListarExemplosAsync(int versaoProvedorId, CancellationToken ct);
 
+    /// <summary>Campos ativos da versão com o caminho canônico e o estado, para recortar o envio modelo.</summary>
+    Task<IReadOnlyCollection<CampoEnvioModeloBrutoDto>> ListarCamposDoEnvioModeloAsync(int versaoProvedorId, CancellationToken ct);
+
+    /// <summary>
+    /// Estrutura gravada da versão de layout, só se ela estiver publicada e ativa. Nulo quando não
+    /// tem estrutura ou não está visível.
+    /// </summary>
+    Task<string?> ObterEstruturaDoLayoutPublicadoAsync(int versaoLayoutId, CancellationToken ct);
+
     /// <summary>Demais versões publicadas do mesmo provedor, excluindo a atual — para <c>outrasVersoes</c>.</summary>
     Task<IReadOnlyCollection<VersaoProvedor>> ListarOutrasVersoesPublicadasAsync(int provedorId, int versaoProvedorIdAtual, CancellationToken ct);
 }

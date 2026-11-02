@@ -1,6 +1,9 @@
+using System.Text.Json;
 using Codex.Application.Common;
+using Codex.Application.DTOs.Interno;
 using Codex.Application.DTOs.Publico;
 using Codex.Application.Interfaces;
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Codex.Domain.Enums;
 using Codex.Domain.Exceptions;
@@ -147,6 +150,50 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
                 .Select(v => new VersaoResumoMinimaDto { Slug = v.Slug, Rotulo = v.Rotulo })
                 .ToArray(),
             Exemplos = exemplos,
+        };
+    }
+
+    public async Task<EnvioModeloDto> ObterEnvioModeloAsync(
+        string provedorSlug, string versaoSlug, AlcanceEnvioModelo alcance, CancellationToken ct)
+    {
+        // Oculto responde como inexistente: o envio modelo não existe para o leitor.
+        var encontrado = await _versaoRepositorio.ObterPorSlugsAsync(provedorSlug, versaoSlug, ct);
+        if (encontrado is null || !encontrado.Provedor.Publicado || !encontrado.Versao.Publicado)
+            throw new EntidadeNaoEncontradaException("VersaoProvedor", $"{provedorSlug}/{versaoSlug}");
+
+        var conteudo = await _versaoRepositorio.ObterEstruturaDoLayoutPublicadoAsync(encontrado.Versao.VersaoLayoutId, ct);
+        var estrutura = (conteudo is null
+            ? null
+            : JsonSerializer.Deserialize<AtualizarEstruturaVersaoLayoutDto>(conteudo, JsonSerializerOptions.Web))
+            ?? throw new EntidadeNaoEncontradaException(
+                $"O layout {encontrado.VersaoLayoutRotulo} da versão '{provedorSlug}/{versaoSlug}' não tem estrutura.")
+            {
+                Codigo = CodigosErro.EstruturaIndisponivel,
+            };
+
+        var campos = await _versaoRepositorio.ListarCamposDoEnvioModeloAsync(encontrado.Versao.Id, ct);
+        var camposDoAlcance = campos
+            .Where(campo => alcance == AlcanceEnvioModelo.Maximo || campo.EstadoPreenchimento == EstadoPreenchimento.Obrigatorio)
+            .ToArray();
+        var slugPorCaminho = camposDoAlcance
+            .GroupBy(campo => campo.CaminhoXml, StringComparer.Ordinal)
+            .ToDictionary(grupo => grupo.Key, grupo => grupo.First().CampoLayoutSlug, StringComparer.Ordinal);
+
+        var xml = RecorteEnvioModelo.Recortar(estrutura.Xml, slugPorCaminho, alcance);
+        var json = RecorteEnvioModelo.Recortar(estrutura.Json, slugPorCaminho, alcance);
+
+        return new EnvioModeloDto
+        {
+            Alcance = AlcancesEnvioModelo.ParaTexto(alcance),
+            VersaoLayoutRotulo = encontrado.VersaoLayoutRotulo,
+            Xml = xml.Raiz,
+            Json = json.Raiz,
+            CamposSemPosicao = camposDoAlcance
+                .Where(campo => !xml.CaminhosComNo.Contains(campo.CaminhoXml) && !json.CaminhosComNo.Contains(campo.CaminhoXml))
+                .Select(campo => campo.CampoLayoutSlug)
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal)
+                .ToArray(),
         };
     }
 

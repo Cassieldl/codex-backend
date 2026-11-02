@@ -79,7 +79,7 @@ public sealed class TratamentoErrosMiddleware
     private static (int Status, string Codigo, string Mensagem) Mapear(Exception excecao) => excecao switch
     {
         EntidadeNaoEncontradaException e =>
-            (StatusCodes.Status404NotFound, "NAO_ENCONTRADO", e.Message),
+            (StatusCodes.Status404NotFound, e.Codigo, e.Message),
 
         ConteudoDespublicadoException e =>
             (StatusCodes.Status410Gone, CodigoDespublicado(e.TipoItem), e.Message),

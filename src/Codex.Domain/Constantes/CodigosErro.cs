@@ -37,6 +37,9 @@ public static class CodigosErro
     /// <summary>P12 sobre campo de layout existente e não visível pelo predicado A1 (analise-backend.md §4.1, 410).</summary>
     public const string CampoLayoutDespublicado = "CAMPO_LAYOUT_DESPUBLICADO";
 
+    /// <summary>Envio modelo de versão de provedor cuja versão de layout não tem estrutura gravada (404).</summary>
+    public const string EstruturaIndisponivel = "ESTRUTURA_INDISPONIVEL";
+
     /// <summary>
     /// I15d promovendo uma segunda <c>VersaoLayout</c> a <c>Vigente</c> (PQ-17, analise-backend.md
     /// §4.6, 409). Traduzido da violação de <c>uq_codex_versoeslayout_estado_vigente</c> por

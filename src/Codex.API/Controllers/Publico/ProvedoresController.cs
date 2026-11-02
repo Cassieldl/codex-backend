@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Codex.API.Common;
 using Codex.Application.DTOs.Publico;
 using Codex.Application.Interfaces;
@@ -124,6 +125,44 @@ public sealed class ProvedoresController : ControllerBase
             return Ok(new ApiResponse<VersaoProvedorPaginaDto> { Data = pagina });
         }
         catch (Exception excecao) when (excecao is EntidadeNaoEncontradaException or ConteudoDespublicadoException or LimiteExcedidoException)
+        {
+            return MapeadorErroPublico.Mapear(this, excecao);
+        }
+    }
+
+    /// <summary>Envio modelo InvoiCy da versão, em XML (SOAP) e JSON (REST), recortado ao alcance.</summary>
+    /// <param name="provedorSlug">Slug do provedor.</param>
+    /// <param name="versaoSlug">Slug da versão do provedor.</param>
+    /// <param name="alcance"><c>minimo</c> (só os obrigatórios) ou <c>maximo</c> (tudo o que a versão aceita).</param>
+    /// <response code="200">Envio modelo da versão publicada.</response>
+    /// <response code="304">If-None-Match casou: o envio modelo não mudou.</response>
+    /// <response code="400">Alcance ausente ou fora de <c>minimo</c> e <c>maximo</c>.</response>
+    /// <response code="404">Provedor ou versão inexistente ou despublicado; <c>ESTRUTURA_INDISPONIVEL</c> quando o layout da versão não tem estrutura.</response>
+    [HttpGet("{provedorSlug}/versoes/{versaoSlug}/envio-modelo")]
+    [ProducesResponseType(typeof(ApiResponse<EnvioModeloDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status304NotModified)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ObterEnvioModelo(
+        string provedorSlug,
+        string versaoSlug,
+        [FromQuery, Required, AllowedValues(AlcancesEnvioModelo.Minimo, AlcancesEnvioModelo.Maximo)] string alcance,
+        CancellationToken ct)
+    {
+        try
+        {
+            var envioModelo = await _servico.ObterEnvioModeloAsync(
+                provedorSlug, versaoSlug, AlcancesEnvioModelo.DeTexto(alcance), ct);
+
+            // ETag do corpo: campos da versão e estrutura do layout mudam sem tocar a linha da versão.
+            var etag = ETagDeConteudo.MontarDoCorpo(envioModelo);
+            if (Request.Headers.IfNoneMatch.ToString() == etag)
+                return StatusCode(StatusCodes.Status304NotModified);
+
+            Response.Headers.ETag = etag;
+            return Ok(new ApiResponse<EnvioModeloDto> { Data = envioModelo });
+        }
+        catch (EntidadeNaoEncontradaException excecao)
         {
             return MapeadorErroPublico.Mapear(this, excecao);
         }

@@ -36,6 +36,8 @@ public sealed class AllowlistRotasAnonimasTests : IClassFixture<CodexApiFactory>
         "GET api/v1/provedores",
         "GET api/v1/provedores/{provedorSlug}",
         "GET api/v1/provedores/{provedorSlug}/versoes/{versaoSlug}",
+        // Envio modelo da versão publicada: recorte da estrutura do layout, só GET.
+        "GET api/v1/provedores/{provedorSlug}/versoes/{versaoSlug}/envio-modelo",
         "GET api/v1/erros",
         "GET api/v1/erros/{erroSlug}",
         // Artigos — P7/P8 (BACK-B)
