@@ -65,20 +65,23 @@ test('link sem destino no Codex fica só com o texto, e nenhum .md ou caminho da
   assert.deepEqual(problemasDoCorpo(resultado.corpo), [])
 })
 
-test('imagem sai do corpo e entra na lista; célula que só tinha imagem ganha aviso', () => {
+test('imagem de assets/imagens fica com o caminho do portal; Betha legado e o resto saem', () => {
   const resultado = preparar(
     [
       '1. Abra a tela.',
       '',
-      '   ![Tela](../../assets/imagens/tela.png)',
+      '   ![Tela de emissão](../../assets/imagens/emissao/tela.png "Menu Emissão")',
+      '',
+      '![Natureza ABRASF](../../assets/imagens/betha/natureza-da-operacao-abrasf.jpg)',
       '',
       '2. Salve.',
       '',
       '| Padrão | Tabela |',
       '| :--- | :--- |',
       '| CITTA | [imagem](../../assets/imagens/citta.png) |',
+      '| Betha | ![Regime](../../assets/imagens/betha/regime-especial-de-tributacao-abrasf.jpg) |',
       '',
-      'Prints: [trocar](../../assets/a.png) · [herdar](../../assets/b.png).',
+      'Prints: [trocar](../../assets/a.png) · ![externa](https://exemplo.com/a.png).',
     ].join('\n'),
   )
 
@@ -87,15 +90,56 @@ test('imagem sai do corpo e entra na lista; célula que só tinha imagem ganha a
     [
       '1. Abra a tela.',
       '',
+      '   ![Tela de emissão](/imagens/emissao/tela.png "Menu Emissão")',
+      '',
       '2. Salve.',
       '',
       '| Padrão | Tabela |',
       '| :--- | :--- |',
       '| CITTA | Só em imagem, não incluída. |',
+      '| Betha | Só em imagem, não incluída. |',
       '',
     ].join('\n'),
   )
-  assert.equal(resultado.imagensRemovidas.length, 4)
+  assert.deepEqual(resultado.imagensMantidas, [
+    { de: '../../assets/imagens/emissao/tela.png', para: '/imagens/emissao/tela.png' },
+  ])
+  assert.equal(resultado.imagensRemovidas.length, 5)
+})
+
+test('marcadores de bloco e fluxo passam pela carga sem mudança', () => {
+  const blocos = [
+    '> [!RESUMO]',
+    '> O RPS é validado antes do envio.',
+    '',
+    '> [!DETALHES] Quando o lote volta',
+    '> Confira o protocolo.',
+    '',
+    '```fluxo',
+    'Envio: o InvoiCy monta o lote',
+    'Retorno: a prefeitura responde',
+    '```',
+  ].join('\n')
+
+  assert.equal(preparar(blocos).corpo, `${blocos}\n`)
+})
+
+test('corpo só aceita imagem com caminho do portal e recusa link para imagem', () => {
+  assert.deepEqual(problemasDoCorpo('![Tela](/imagens/emissao/tela.png "Legenda")'), [])
+  assert.deepEqual(problemasDoCorpo('![x](https://exemplo.com/a.png)'), [
+    'imagem fora de /imagens/',
+  ])
+  assert.deepEqual(problemasDoCorpo('![x](data:image/png;base64,AAAA)'), [
+    'imagem fora de /imagens/',
+  ])
+  assert.deepEqual(problemasDoCorpo('![x](/imagens/../segredo.png)'), ['imagem fora de /imagens/'])
+  assert.deepEqual(problemasDoCorpo('Ver [print](/imagens/emissao/tela.png).'), [
+    'link para imagem',
+  ])
+  assert.deepEqual(problemasDoCorpo('![x](../../assets/imagens/a.png)'), [
+    'link para caminho da Documentação',
+    'imagem fora de /imagens/',
+  ])
 })
 
 test('corpo com link para .md ou marca de pendência é recusado', () => {

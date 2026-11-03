@@ -3,8 +3,10 @@
  *
  * O título sai da primeira linha. Link para outro arquivo da Documentação vira a rota pública do
  * Codex quando o destino existe lá (artigo carregado: /artigos/<slug>; provedor: /provedores/<slug>)
- * e vira texto quando não existe. Imagem sai, porque o Codex não hospeda os prints. Marca de fonte
- * entre colchetes sai. Link externo fica.
+ * e vira texto quando não existe. Imagem de `assets/imagens/` fica, com o caminho que o portal
+ * serve (/imagens/<pasta>/<arquivo>), o mesmo texto alternativo e a mesma legenda; os prints do
+ * Betha legado e qualquer outra imagem saem. Link para arquivo de imagem sai. Marca de fonte entre
+ * colchetes sai. Link externo fica.
  */
 
 import { posix } from 'node:path'
@@ -12,11 +14,24 @@ import { posix } from 'node:path'
 import { MARCA_PENDENTE, removerMarcasDeFonte, textoSimples } from '../erros/documentacao.mjs'
 
 const LINK = /(?<!!)\[([^\]]+)\]\(([^)\s]+)\)/g
-const IMAGEM = /!\[[^\]]*\]\(([^)\s]+)\)/g
-const LINHA_SO_DE_IMAGEM = /^\s*!\[[^\]]*\]\([^)\s]+\)\s*$/
-const ALVO_DE_IMAGEM = /(^|\/)assets\/|\.(png|jpe?g|gif|svg|webp)$/i
+const IMAGEM = /!\[([^\]]*)\]\(([^)\s]+)(\s+"[^"\n]*")?\)/g
+const EXTENSAO_DE_IMAGEM = /\.(png|jpe?g|gif|svg|webp)$/i
+const NA_PASTA_DE_ASSETS = /(^|\/)assets\//
+const NA_PASTA_DE_IMAGENS = /(?:^|\/)assets\/imagens\/(.+)$/
+/** Prints do Betha ABRASF, que não vale mais: o Betha atual é leiaute nacional. */
+export const IMAGENS_DESCARTADAS = new Set([
+  'betha/natureza-da-operacao-abrasf.jpg',
+  'betha/regime-especial-de-tributacao-abrasf.jpg',
+  'betha/forma-de-pagamento-betha.jpg',
+])
+/** Único formato de imagem aceito no corpo: caminho do portal, sem `..`, legenda opcional. */
+const IMAGEM_DO_PORTAL =
+  /!\[[^\]]*\]\(\/imagens\/(?:[\w-][\w.-]*\/)*[\w-][\w.-]*\.(?:png|jpe?g|gif|svg|webp)(?:\s+"[^"\n]*")?\)/gi
+const LINK_QUALQUER = /(?<!!)\[[^\]]*\]\(([^)\s]+)[^)]*\)/g
 const SEM_IMAGEM = '\u0000'
 const SEM_LINK = '\u0001'
+/** Imagem mantida fica guardada fora do texto até o fim, para nenhuma limpeza alterá-la. */
+const IMAGEM_GUARDADA = /\u0002(\d+)\u0003/g
 /** Texto de link que, sem o link, não diz nada ("Ver artigo."): a referência sai inteira. */
 const TEXTO_GENERICO = /^(artigo|lista|aqui)$/i
 const CELULA_SO_COM_IMAGEM = 'Só em imagem, não incluída.'
@@ -123,6 +138,13 @@ function limparLinhaSemImagem(linha) {
   return /^[^:]*:\s*[.·\s]*$/.test(texto) ? null : texto.replace(/\s+\./g, '.')
 }
 
+/** Caminho do portal para a imagem, ou null quando ela não fica no corpo. */
+function caminhoDaImagemNoPortal(alvo) {
+  const achado = NA_PASTA_DE_IMAGENS.exec(alvo)
+  if (!achado || IMAGENS_DESCARTADAS.has(achado[1])) return null
+  return `/imagens/${achado[1]}`
+}
+
 /** Problemas que impedem gravar o corpo: resto de caminho da Documentação, imagem ou pendência. */
 export function problemasDoCorpo(corpo) {
   const problemas = []
@@ -134,9 +156,12 @@ export function problemasDoCorpo(corpo) {
   )
     problemas.push('link para caminho da Documentação')
   if (/_origem\/|pendencias-revisao/.test(corpo)) problemas.push('caminho da Documentação no texto')
-  if (/!\[/.test(corpo)) problemas.push('imagem')
+  if (corpo.split('![').length - 1 > [...corpo.matchAll(IMAGEM_DO_PORTAL)].length)
+    problemas.push('imagem fora de /imagens/')
+  if ([...corpo.matchAll(LINK_QUALQUER)].some(([, alvo]) => EXTENSAO_DE_IMAGEM.test(alvo)))
+    problemas.push('link para imagem')
   if (corpo.includes(MARCA_PENDENTE)) problemas.push('marca de pendência')
-  if (corpo.includes(SEM_IMAGEM) || corpo.includes(SEM_LINK))
+  if (corpo.includes(SEM_IMAGEM) || corpo.includes(SEM_LINK) || corpo.includes('\u0002'))
     problemas.push('resto de link removido')
   return problemas
 }
@@ -149,33 +174,41 @@ export function problemasDoCorpo(corpo) {
  */
 export function prepararArtigo(markdown, contexto) {
   const { titulo, corpo: semTitulo } = separarTitulo(markdown)
-  const registro = { linksReescritos: [], linksRemovidos: [], imagensRemovidas: [] }
+  const registro = {
+    linksReescritos: [],
+    linksRemovidos: [],
+    imagensMantidas: [],
+    imagensRemovidas: [],
+  }
   const proprios = { ...contexto, artigos: new Map(contexto.artigos) }
   proprios.artigos.set(contexto.arquivo, {
     slug: contexto.slug,
     titulos: titulosDeSecao(semTitulo),
   })
 
-  const semLinhasDeImagem = semTitulo
-    .split('\n')
-    .filter((linha) => {
-      if (!LINHA_SO_DE_IMAGEM.test(linha)) return true
-      registro.imagensRemovidas.push(linha.trim().match(/\(([^)\s]+)\)/)[1])
-      return false
-    })
-    .join('\n')
-
-  const semImagensNoTexto = semLinhasDeImagem.replace(IMAGEM, (_, alvo) => {
-    registro.imagensRemovidas.push(alvo)
-    return SEM_IMAGEM
-  })
-
-  const comLinks = semImagensNoTexto.replace(LINK, (original, texto, alvo) => {
-    if (/^(https?:|mailto:)/.test(alvo)) return original
-    if (ALVO_DE_IMAGEM.test(alvo)) {
+  const imagensGuardadas = []
+  const comImagensTratadas = semTitulo.replace(IMAGEM, (_, alt, alvo, legenda = '') => {
+    const caminho = caminhoDaImagemNoPortal(alvo)
+    if (!caminho) {
       registro.imagensRemovidas.push(alvo)
       return SEM_IMAGEM
     }
+    registro.imagensMantidas.push({ de: alvo, para: caminho })
+    imagensGuardadas.push(`![${alt}](${caminho}${legenda})`)
+    return `\u0002${imagensGuardadas.length - 1}\u0003`
+  })
+  const semLinhasDeImagem = comImagensTratadas
+    .split('\n')
+    .filter((linha) => !/^[\s\u0000]*\u0000[\s\u0000]*$/.test(linha))
+    .join('\n')
+
+  const comLinks = semLinhasDeImagem.replace(LINK, (original, texto, alvo) => {
+    const ehImagem = EXTENSAO_DE_IMAGEM.test(alvo.split(/[?#]/)[0])
+    if (ehImagem || (!/^(https?:|mailto:)/.test(alvo) && NA_PASTA_DE_ASSETS.test(alvo))) {
+      registro.imagensRemovidas.push(alvo)
+      return SEM_IMAGEM
+    }
+    if (/^(https?:|mailto:)/.test(alvo)) return original
 
     const { destino, fragmento } = resolverAlvo(alvo, contexto.arquivo)
     const rota = rotaDoDestino(destino, fragmento, proprios)
@@ -198,6 +231,7 @@ export function prepararArtigo(markdown, contexto) {
     .join('\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
+    .replace(IMAGEM_GUARDADA, (_, indice) => imagensGuardadas[Number(indice)])
 
   const problemas = problemasDoCorpo(corpo)
   if (problemas.length) {

@@ -4,7 +4,10 @@
  * artigo já publicado não é tocado, fica no relatório. Nada aqui publica.
  *
  *   CODEX_DEV_USUARIO=... CODEX_DEV_SENHA=... node database/carga/artigos/importar-documentacao.mjs \
- *     [--relatorio <arquivo.md>]
+ *     [--relatorio <arquivo.md>] [--atualizar-publicados]
+ *
+ * Com `--atualizar-publicados`, artigo já publicado também recebe o corpo, o tipo e os vínculos
+ * novos. Ele continua publicado e a data de verificação não muda.
  *
  * Com `--verificado-em AAAA-MM-DD`, também registra a verificação e publica os artigos desta carga.
  * A data é uma afirmação editorial e nunca é presumida. Nenhum deles é reservado; se algum fosse, a
@@ -35,17 +38,13 @@ import {
   soLetrasENumeros,
   titulosDeSecao,
 } from './reescrever-corpo.mjs'
+import { sincronizarArtigoDaDocumentacao } from './sincronizar-documentacao.mjs'
 
 const PASTA = join(dirname(fileURLToPath(import.meta.url)), 'documentacao')
 
 function valorDoArgumento(nome) {
   const indice = process.argv.indexOf(nome)
   return indice >= 0 ? process.argv[indice + 1] : null
-}
-
-function mesmoConjunto(a, b) {
-  const ordenado = (ids) => [...ids].sort((x, y) => x - y).join(',')
-  return ordenado(a) === ordenado(b)
 }
 
 async function lerArtigos() {
@@ -125,33 +124,6 @@ async function resolverErros(api, lidos, slugPorNome) {
   return { resolvidos, naoResolvidos }
 }
 
-async function sincronizar(api, desejado, existentePorTitulo, slugsOcupados) {
-  const existente = existentePorTitulo.get(desejado.titulo)
-  if (!existente) {
-    const dono = slugsOcupados.get(chaveDeSlug(desejado.titulo))
-    if (dono) return { situacao: 'colisão', detalhe: `slug já é do artigo "${dono}"` }
-    await api.chamar('POST', '/interno/artigos', desejado)
-    return { situacao: 'criado' }
-  }
-
-  const { dados: atual } = await api.chamar('GET', `/interno/artigos/${existente.id}`)
-  const mudou =
-    atual.tipo !== desejado.tipo ||
-    atual.corpo !== desejado.corpo ||
-    !mesmoConjunto(atual.campoLayoutIds, desejado.campoLayoutIds) ||
-    !mesmoConjunto(atual.erroIds, desejado.erroIds)
-  if (!mudou) return { situacao: 'sem mudança' }
-  if (atual.publicado) return { situacao: 'só relatório', detalhe: 'artigo já publicado' }
-
-  await api.chamar(
-    'PUT',
-    `/interno/artigos/${atual.id}`,
-    desejado,
-    String(atual.versaoConcorrencia),
-  )
-  return { situacao: 'atualizado' }
-}
-
 function montarRelatorio({ fora, preparados, situacoes, naoResolvidos }) {
   const contagem = new Map()
   for (const { situacao } of situacoes) contagem.set(situacao, (contagem.get(situacao) ?? 0) + 1)
@@ -193,6 +165,9 @@ function montarRelatorio({ fora, preparados, situacoes, naoResolvidos }) {
   listar('Links removidos (texto mantido)', (artigo) =>
     artigo.linksRemovidos.map((link) => `${link.de} ("${link.texto}")`),
   )
+  listar('Imagens mantidas', (artigo) =>
+    artigo.imagensMantidas.map((imagem) => `${imagem.de} -> ${imagem.para}`),
+  )
   listar('Imagens removidas', (artigo) => artigo.imagensRemovidas)
 
   partes.push('', `### Erros citados sem vínculo (${naoResolvidos.length})`, '')
@@ -226,6 +201,7 @@ async function verificarEPublicar(api, titulos, verificadoEm) {
 }
 
 const arquivoRelatorio = valorDoArgumento('--relatorio')
+const atualizarPublicados = process.argv.includes('--atualizar-publicados')
 const verificadoEm = process.argv.includes('--verificado-em')
   ? lerDataDeVerificacao(process.argv)
   : null
@@ -264,7 +240,13 @@ await executarCarga(async () => {
       campoLayoutIds: [],
       erroIds: resolvidos.get(artigo.arquivo),
     }
-    const situacao = await sincronizar(api, desejado, existentePorTitulo, slugsOcupados)
+    const situacao = await sincronizarArtigoDaDocumentacao(
+      api,
+      desejado,
+      existentePorTitulo,
+      slugsOcupados,
+      { atualizarPublicados },
+    )
     console.log(`${situacao.situacao}: ${artigo.titulo}`)
     situacoes.push(situacao)
   }
