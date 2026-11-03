@@ -111,7 +111,7 @@ export const CORRECOES_DE_SEGURANCA = [
     arquivo: 'erro-173-chave-de-comunicacao.md',
     motivo: 'calculadora MD5 de terceiros por HTTP levaria o leitor a colar a chave de acesso nela',
     trecho:
-      'Também é possível conferir com uma calculadora MD5 externa, como <http://miraclesalad.com/>.',
+      'Também dá para conferir com uma calculadora MD5 externa, como <http://miraclesalad.com/>.',
     troca:
       'Para conferir fora do InvoiCy, calcule o MD5 localmente, na sua máquina. Nunca cole a chave de acesso em site de terceiros.',
   },
