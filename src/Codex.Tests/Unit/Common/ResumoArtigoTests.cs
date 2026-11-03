@@ -3,7 +3,7 @@ using FluentAssertions;
 
 namespace Codex.Tests.Unit.Common;
 
-/// <summary>analise-backend.md §4.2/§13 — derivação pura do resumo de artigo, sem banco.</summary>
+/// <summary>Derivação pura do resumo de artigo, sem banco.</summary>
 public sealed class ResumoArtigoTests
 {
     [Fact]
@@ -83,5 +83,81 @@ public sealed class ResumoArtigoTests
         var resultado = ResumoArtigo.Derivar("## Título da seção");
 
         resultado.Should().Be("Título da seção");
+    }
+
+    [Fact]
+    public void Derivar_ComBlocoResumo_UsaOTextoDeleSemMarcacao()
+    {
+        var corpo = string.Join('\n',
+            "![Tela](/imagens/geral/tela.png)",
+            "",
+            "Introdução que perde para o resumo.",
+            "",
+            "> [!RESUMO]",
+            "> O **InvoiCy** valida o RPS",
+            "> antes de [enviar](/artigos/envio).",
+            "",
+            "Resto.");
+
+        var resultado = ResumoArtigo.Derivar(corpo);
+
+        resultado.Should().Be("O InvoiCy valida o RPS antes de enviar.");
+    }
+
+    [Fact]
+    public void Derivar_SemBlocoResumo_PulaImagemFluxoEBlockquoteDeMarcador()
+    {
+        var corpo = string.Join('\n',
+            "![Fluxo do RPS](/imagens/geral/fluxo.png \"Legenda\")",
+            "",
+            "> [!DICA]",
+            "> Confira o lote antes.",
+            "",
+            "```fluxo",
+            "Envio: o RPS sai do InvoiCy",
+            "```",
+            "",
+            "Primeiro parágrafo de verdade, com ![ícone](/imagens/geral/icone.png) no meio.");
+
+        var resultado = ResumoArtigo.Derivar(corpo);
+
+        resultado.Should().Be("Primeiro parágrafo de verdade, com no meio.");
+    }
+
+    [Fact]
+    public void Derivar_CercaDentroDoDetalhes_NaoSoltaOFimDoBlocoComoResumo()
+    {
+        var corpo = string.Join('\n',
+            "> [!DETALHES] Código de exemplo",
+            "> ```csharp",
+            "> var hash = Md5(xml);",
+            "> ```",
+            "> **Java**",
+            "",
+            "Texto do artigo.");
+
+        var resultado = ResumoArtigo.Derivar(corpo);
+
+        resultado.Should().Be("Texto do artigo.");
+    }
+
+    [Fact]
+    public void Derivar_CorpoSoComBlocosVisuais_RetornaNull()
+    {
+        var corpo = "> [!ATENCAO]\n> Só aviso.\n\n![Tela](/imagens/geral/tela.png)";
+
+        var resultado = ResumoArtigo.Derivar(corpo);
+
+        resultado.Should().BeNull();
+    }
+
+    [Fact]
+    public void Derivar_ResumoLongo_TruncaEmDuzentosCaracteres()
+    {
+        var corpo = "> [!RESUMO]\n> " + new string('a', 250);
+
+        var resultado = ResumoArtigo.Derivar(corpo);
+
+        resultado.Should().Be(new string('a', 200) + "…");
     }
 }

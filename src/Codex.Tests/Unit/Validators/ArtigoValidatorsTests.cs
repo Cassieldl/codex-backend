@@ -60,6 +60,16 @@ public sealed class CriarArtigoDtoValidatorTests
     }
 
     [Fact]
+    public void Validate_CorpoAcimaDoTeto_RetornaErro()
+    {
+        var dto = DtoValido() with { Corpo = new string('a', CriarArtigoDtoValidator.LimiteCorpo + 1) };
+
+        var resultado = _sut.Validate(dto);
+
+        resultado.Errors.Should().ContainSingle(e => e.PropertyName == nameof(CriarArtigoDto.Corpo));
+    }
+
+    [Fact]
     public void Validate_CampoLayoutIdsComDuplicata_RetornaErro()
     {
         var dto = DtoValido() with { CampoLayoutIds = [1, 1] };

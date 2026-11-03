@@ -3,52 +3,136 @@ using System.Text.RegularExpressions;
 namespace Codex.Application.Common;
 
 /// <summary>
-/// Deriva o <c>resumo</c> de P7 (analise-backend.md §4.2) a partir do corpo em Markdown — função
-/// estática pura, testável isoladamente sem banco. Não usa <c>react-markdown</c>/parser completo
-/// (é backend, sem dependência de renderização): pega o primeiro bloco não vazio até a primeira
-/// linha em branco dupla, remove marcação inline básica e trunca em 200 caracteres.
+/// Deriva o resumo de um artigo (listagem e home) a partir do corpo em Markdown, sem parser
+/// completo. O bloco <c>&gt; [!RESUMO]</c> vence quando existe; sem ele, vale o primeiro parágrafo
+/// de texto, pulando bloco cercado, linha só de imagem e blockquote de marcador (<c>[!DICA]</c> e
+/// afins). A marcação inline sai e o texto é truncado em 200 caracteres.
 /// </summary>
 public static partial class ResumoArtigo
 {
     private const int TamanhoMaximo = 200;
+    private const string MarcadorResumo = "RESUMO";
 
     public static string? Derivar(string? corpo)
     {
         if (string.IsNullOrWhiteSpace(corpo))
             return null;
 
-        var primeiroParagrafo = ExtrairPrimeiroParagrafo(corpo);
-        if (string.IsNullOrWhiteSpace(primeiroParagrafo))
+        var paragrafos = SepararParagrafos(corpo);
+        var textoEscolhido = TextoDoResumo(paragrafos) ?? TextoDoPrimeiroParagrafo(paragrafos);
+        if (textoEscolhido is null)
             return null;
 
-        var textoPuro = RemoverMarcacaoInline(primeiroParagrafo).Trim();
-        if (string.IsNullOrWhiteSpace(textoPuro))
-            return null;
-
-        return textoPuro.Length > TamanhoMaximo
-            ? textoPuro[..TamanhoMaximo].TrimEnd() + "…"
-            : textoPuro;
+        return textoEscolhido.Length > TamanhoMaximo
+            ? textoEscolhido[..TamanhoMaximo].TrimEnd() + "…"
+            : textoEscolhido;
     }
 
-    private static string ExtrairPrimeiroParagrafo(string corpo)
+    /// <summary>Linhas não vazias seguidas, fora de bloco cercado (que nunca vira resumo).</summary>
+    private static List<List<string>> SepararParagrafos(string corpo)
     {
-        var normalizado = corpo.Replace("\r\n", "\n");
-        var blocos = normalizado.Split("\n\n", StringSplitOptions.RemoveEmptyEntries);
+        var paragrafos = new List<List<string>>();
+        var atual = new List<string>();
+        var dentroDeBlocoCercado = false;
 
-        return blocos.Select(bloco => bloco.Trim()).FirstOrDefault(bloco => !string.IsNullOrWhiteSpace(bloco)) ?? string.Empty;
+        void Fechar()
+        {
+            if (atual.Count > 0)
+                paragrafos.Add(atual);
+            atual = [];
+        }
+
+        foreach (var linha in corpo.Replace("\r\n", "\n").Split('\n'))
+        {
+            if (MarcacaoCorpoArtigo.Cerca().IsMatch(linha))
+            {
+                // Cerca dentro de blockquote não encerra o blockquote, que segue um parágrafo só.
+                if (!linha.TrimStart().StartsWith('>'))
+                    Fechar();
+                dentroDeBlocoCercado = !dentroDeBlocoCercado;
+                continue;
+            }
+
+            if (dentroDeBlocoCercado)
+                continue;
+
+            if (string.IsNullOrWhiteSpace(linha))
+            {
+                Fechar();
+                continue;
+            }
+
+            atual.Add(linha);
+        }
+
+        Fechar();
+        return paragrafos;
+    }
+
+    private static string? TextoDoResumo(List<List<string>> paragrafos)
+    {
+        var bloco = paragrafos.FirstOrDefault(p => MarcadorDaPrimeiraLinha(p) == MarcadorResumo);
+        if (bloco is null)
+            return null;
+
+        var linhas = bloco.Select(RemoverPrefixoDeCitacao).ToList();
+        linhas[0] = MarcacaoCorpoArtigo.Marcador().Replace(linhas[0], string.Empty, 1);
+        return Limpar(linhas);
+    }
+
+    private static string? TextoDoPrimeiroParagrafo(List<List<string>> paragrafos)
+    {
+        foreach (var paragrafo in paragrafos)
+        {
+            if (MarcadorDaPrimeiraLinha(paragrafo) is not null)
+                continue;
+
+            var texto = Limpar(paragrafo
+                .Where(linha => !EhLinhaSoDeImagem(linha))
+                .Select(RemoverPrefixoDeCitacao));
+            if (texto is not null)
+                return texto;
+        }
+
+        return null;
+    }
+
+    private static string? MarcadorDaPrimeiraLinha(List<string> paragrafo)
+    {
+        var achado = RegexCitacaoComMarcador().Match(paragrafo[0]);
+        return achado.Success ? achado.Groups["marcador"].Value.ToUpperInvariant() : null;
+    }
+
+    private static bool EhLinhaSoDeImagem(string linha) =>
+        MarcacaoCorpoArtigo.Imagem().IsMatch(linha)
+        && string.IsNullOrWhiteSpace(MarcacaoCorpoArtigo.Imagem().Replace(linha, string.Empty));
+
+    private static string RemoverPrefixoDeCitacao(string linha) => RegexPrefixoDeCitacao().Replace(linha, string.Empty);
+
+    private static string? Limpar(IEnumerable<string> linhas)
+    {
+        var texto = RemoverMarcacaoInline(string.Join('\n', linhas)).Trim();
+        return string.IsNullOrWhiteSpace(texto) ? null : texto;
     }
 
     private static string RemoverMarcacaoInline(string texto)
     {
-        var semLinks = RegexLink().Replace(texto, "$1");
+        var semImagens = MarcacaoCorpoArtigo.Imagem().Replace(texto, string.Empty);
+        var semMarcadores = MarcacaoCorpoArtigo.Marcador().Replace(semImagens, string.Empty);
+        var semLinks = RegexLink().Replace(semMarcadores, "$1");
         var semNegrito = RegexNegrito().Replace(semLinks, "$2");
         var semItalico = RegexItalico().Replace(semNegrito, "$2");
         var semCodigo = RegexCodigo().Replace(semItalico, "$1");
         var semCabecalho = RegexCabecalho().Replace(semCodigo, string.Empty);
-        var semQuebrasDeLinha = semCabecalho.Replace('\n', ' ');
 
-        return semQuebrasDeLinha;
+        return RegexEspacos().Replace(semCabecalho, " ");
     }
+
+    [GeneratedRegex(@"^\s*>\s*\[!(?<marcador>[A-Za-z]+)\]")]
+    private static partial Regex RegexCitacaoComMarcador();
+
+    [GeneratedRegex(@"^\s*(>\s?)+")]
+    private static partial Regex RegexPrefixoDeCitacao();
 
     [GeneratedRegex(@"\[([^\]]+)\]\([^)]+\)")]
     private static partial Regex RegexLink();
@@ -64,4 +148,7 @@ public static partial class ResumoArtigo
 
     [GeneratedRegex(@"^\s*#{1,6}\s*")]
     private static partial Regex RegexCabecalho();
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex RegexEspacos();
 }

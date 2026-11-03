@@ -34,10 +34,13 @@ public static class PesosBusca
         (null, Concatenar(campoLayout.Nome, campoLayout.CaminhoXml), Concatenar(campoLayout.Significado), null);
 
     /// <summary>
-    /// arquitetura.md §5.A: A = título, C = corpo, D = rótulo do tipo. B fica vazio — artigo não
-    /// tem análogo de "nome próprio/alias" (provedor) ou "caminho XML" (campo), e inflar B com o
-    /// título duplicaria peso e faria artigo vencer erro em consulta por código.
+    /// A = título, C = corpo, D = rótulo do tipo. B fica vazio: artigo não tem análogo de nome
+    /// próprio ou caminho XML, e repetir o título em B faria artigo vencer erro em consulta por
+    /// código. O corpo entra sem a marcação visual, que viraria lexema e apareceria no trecho.
     /// </summary>
-    public static (string? A, string? B, string? C, string? D) DoArtigo(Artigo artigo) =>
-        (Concatenar(artigo.Titulo), null, Concatenar(artigo.Corpo), Concatenar(artigo.Tipo.ToString()));
+    public static (string? A, string? B, string? C, string? D) DoArtigo(Artigo artigo) => (
+        Concatenar(artigo.Titulo),
+        null,
+        Concatenar(MarcacaoCorpoArtigo.TextoIndexavel(artigo.Corpo)),
+        Concatenar(artigo.Tipo.ToString()));
 }
