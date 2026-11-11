@@ -24,7 +24,7 @@ namespace Codex.Tests.Integration.Publico;
 public sealed class ContratoErroArtigosRelacionadosHttpTests : IAsyncLifetime
 {
     /// <summary>A união de tipos que o cliente declara — ASCII, decisão M-5.</summary>
-    private static readonly string[] TiposDeContrato = ["Conceito", "Procedimento", "Mudanca"];
+    private static readonly string[] TiposDeContrato = ["Conceito", "Procedimento", "Mudanca", "Configuracao"];
 
     private readonly PostgresContainerFixture _fixture;
     private CodexApiFactoryComBanco _factory = null!;

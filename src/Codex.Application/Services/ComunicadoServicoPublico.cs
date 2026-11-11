@@ -82,6 +82,6 @@ public sealed class ComunicadoServicoPublico : IComunicadoServicoPublico
         Versao = comunicado.VersaoSlug is null || comunicado.VersaoRotulo is null
             ? null
             : new VersaoDoComunicadoDto { Rotulo = comunicado.VersaoRotulo, Slug = comunicado.VersaoSlug },
-        Url = UrlComunicado.Montar(comunicado.Abrangencia, comunicado.ProvedorSlug, comunicado.VersaoSlug),
+        Url = UrlComunicado.Montar(comunicado.Abrangencia, comunicado.ProvedorSlug),
     };
 }

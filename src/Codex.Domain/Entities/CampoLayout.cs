@@ -32,6 +32,9 @@ public class CampoLayout : EntidadeAuditada
 
     public int Ordem { get; private set; }
 
+    /// <summary>Campo criado pela reforma tributária (IBS/CBS), marcado pelo InvoiCy na planilha do layout.</summary>
+    public bool ReformaTributaria { get; private set; }
+
     public string Slug { get; private set; } = null!;
 
     public EstadoCampoLayout Estado { get; private set; }
@@ -51,7 +54,8 @@ public class CampoLayout : EntidadeAuditada
         string caminhoXml,
         string significado,
         int ordem,
-        string? grupo = null)
+        string? grupo = null,
+        bool reformaTributaria = false)
     {
         if (string.IsNullOrWhiteSpace(nome))
             throw new ArgumentException("Nome do campo é obrigatório.", nameof(nome));
@@ -68,6 +72,7 @@ public class CampoLayout : EntidadeAuditada
             Significado = significado,
             Grupo = grupo,
             Ordem = ordem,
+            ReformaTributaria = reformaTributaria,
             Slug = SlugVo.DeTexto(caminhoXml),
             Estado = EstadoCampoLayout.Ativo,
             VersaoLayoutDescontinuadoId = null,
@@ -122,6 +127,11 @@ public class CampoLayout : EntidadeAuditada
     public void AtualizarOrdem(int ordem)
     {
         Ordem = ordem;
+    }
+
+    public void AtualizarReformaTributaria(bool reformaTributaria)
+    {
+        ReformaTributaria = reformaTributaria;
     }
 
     public void Publicar()

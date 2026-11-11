@@ -304,7 +304,7 @@ public sealed class ComunicadosPublicosHttpTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ComunicadoDeVersao_TrazProvedorVersaoEUrlDaPaginaDaVersao()
+    public async Task ComunicadoDeVersao_TrazProvedorVersaoEUrlDaPaginaDoProvedor()
     {
         var daVersao = await LocalizarAsync(Consulta(("provedor", _cenario.SlugP)), "V1-alerta");
 
@@ -313,7 +313,7 @@ public sealed class ComunicadosPublicosHttpTests : IAsyncLifetime
         daVersao.GetProperty("versao").EnumerateObject().Select(p => p.Name).Should().BeEquivalentTo(["rotulo", "slug"]);
         daVersao.GetProperty("versao").GetProperty("slug").GetString().Should().Be(_cenario.SlugV1);
         daVersao.GetProperty("versao").GetProperty("rotulo").GetString().Should().Be(_cenario.RotuloV1);
-        daVersao.GetProperty("url").GetString().Should().Be($"/provedores/{_cenario.SlugP}/{_cenario.SlugV1}");
+        daVersao.GetProperty("url").GetString().Should().Be($"/provedores/{_cenario.SlugP}");
     }
 
     // --------------------------------------------------------------- cache, anonimato, sem ETag

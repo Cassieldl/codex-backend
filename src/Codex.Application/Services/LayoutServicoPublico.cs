@@ -38,6 +38,24 @@ public sealed class LayoutServicoPublico : ILayoutServicoPublico
         {
             Vigente = vigente is null ? null : MontarResumo(vigente, camposVisiveis),
             Versoes = versoesOrdenadas.Select(v => MontarResumo(v, camposVisiveis)).ToArray(),
+            Novidades = vigente is null ? null : MontarNovidades(vigente, versoesOrdenadas, camposVisiveis),
+        };
+    }
+
+    private static NovidadesVersaoLayoutDto MontarNovidades(
+        VersaoLayout vigente,
+        IReadOnlyCollection<VersaoLayout> versoesOrdenadas,
+        IReadOnlyCollection<CampoLayoutVisivelBrutoDto> camposVisiveis)
+    {
+        var anterior = versoesOrdenadas.FirstOrDefault(v => v.Ordem < vigente.Ordem);
+
+        return new NovidadesVersaoLayoutDto
+        {
+            Versao = MontarResumo(vigente, camposVisiveis),
+            Anterior = anterior is null ? null : MontarResumo(anterior, camposVisiveis),
+            Descricao = vigente.Descricao,
+            CamposNovos = anterior is null ? 0 : camposVisiveis.Count(c => c.VersaoLayoutOrigemId == vigente.Id),
+            CamposDescontinuados = camposVisiveis.Count(c => c.VersaoLayoutDescontinuadoId == vigente.Id),
         };
     }
 
@@ -146,6 +164,7 @@ public sealed class LayoutServicoPublico : ILayoutServicoPublico
             Nome = campo.Nome,
             CaminhoXml = campo.CaminhoXml,
             Significado = campo.Significado,
+            ReformaTributaria = campo.ReformaTributaria,
             Estado = campo.Estado.ToString(),
             VersaoExibicao = MontarResumo(versaoExibicao, camposVisiveis),
             VersaoOrigem = MontarResumo(origem, camposVisiveis),
@@ -210,6 +229,7 @@ public sealed class LayoutServicoPublico : ILayoutServicoPublico
         CaminhoXml = campo.CaminhoXml,
         Significado = campo.Significado,
         Ordem = campo.Ordem,
+        ReformaTributaria = campo.ReformaTributaria,
         NovoNestaVersao = existeAnterior && campo.VersaoLayoutOrigemId == versaoAlvo.Id,
         DescontinuadoNestaVersao = campo.VersaoLayoutDescontinuadoId == versaoAlvo.Id,
         UrlCanonica = $"/layout/campos/{campo.Slug}",

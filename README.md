@@ -151,6 +151,12 @@ versionado em `database/carga/provedores/material/<id>/`:
   daí que vêm tipo, tamanho, valores aceitos e obrigatoriedade.
 - `erros.json`: códigos e mensagens transcritos do manual, quando o material traz a lista (IPM).
 
+O de-para da natureza da operação de cada versão vem do artigo
+`database/carga/artigos/documentacao/natureza-da-operacao.md`: a chave `naturezaOperacao` do
+catálogo diz qual seção do artigo vale para o provedor, e a carga grava a tabela dessa seção. O
+Emissor Nacional usa a seção do Padrão Nacional. Para mudar uma conversão, edite o artigo e rode a
+carga de novo.
+
 ```bash
 CODEX_DEV_USUARIO=codex.dev CODEX_DEV_SENHA=codex.dev \
   node database/carga/provedores/importar.mjs --todos   # ou: importar.mjs ipm elotech

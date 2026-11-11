@@ -89,3 +89,17 @@ test('provedor existente: alias diferente do catálogo é corrigido; igual não 
   await garantirProvedor(igual, COPLAN)
   assert.equal(igual.chamadas.filter(({ metodo }) => metodo !== 'GET').length, 0)
 })
+
+test('provedor existente: categoria diferente do catálogo é corrigida', async (contexto) => {
+  contexto.mock.method(console, 'log', () => {})
+  const api = apiComProvedor(['COPLAN - Modelo Nacional'])
+  await garantirProvedor(api, { ...COPLAN, categoria: 'Nacional' })
+  const escritas = api.chamadas.filter(({ metodo }) => metodo !== 'GET')
+  assert.deepEqual(escritas, [
+    {
+      metodo: 'PUT',
+      rota: '/interno/provedores/16',
+      corpo: { nome: 'Coplan', categoria: 'Nacional', aliases: ['COPLAN - Modelo Nacional'] },
+    },
+  ])
+})

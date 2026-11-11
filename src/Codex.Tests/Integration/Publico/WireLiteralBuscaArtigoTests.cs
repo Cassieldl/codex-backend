@@ -90,17 +90,21 @@ public sealed class WireLiteralBuscaArtigoTests : IAsyncLifetime
             because: "se a cedilha vazar para o wire, a união de literais do TypeScript deixa de casar e o filtro da tela 7 para de achar o tipo");
     }
 
-    [Fact]
-    public async Task FiltroPorMudanca_UsaOMesmoLiteralQueOWireDevolve()
+    [Theory]
+    [InlineData(TipoArtigo.Mudanca, "Mudanca")]
+    [InlineData(TipoArtigo.Configuracao, "Configuracao")]
+    public async Task FiltroPorTipo_UsaOMesmoLiteralQueOWireDevolve(TipoArtigo tipo, string literal)
     {
-        var termo = await SemearArtigoPublicadoAsync(TipoArtigo.Mudanca);
+        var termo = await SemearArtigoPublicadoAsync(tipo);
 
-        using var resposta = await _cliente.GetAsync($"/api/v1/artigos?tipo=Mudanca&q={termo}&tamanhoPagina=50");
+        using var resposta = await _cliente.GetAsync($"/api/v1/artigos?tipo={literal}&q={termo}&tamanhoPagina=50");
         var corpo = JsonDocument.Parse(await resposta.Content.ReadAsStringAsync()).RootElement;
 
         resposta.StatusCode.Should().Be(HttpStatusCode.OK);
-        corpo.GetProperty("items").GetArrayLength().Should().Be(1,
+        var itens = corpo.GetProperty("items");
+        itens.GetArrayLength().Should().Be(1,
             because: "o valor que o servidor devolve tem de ser aceito de volta como filtro — ida e volta com a mesma string é o que fecha o contrato");
+        itens[0].GetProperty("tipo").GetString().Should().Be(literal);
     }
 
     // ------------------------------------------------------------------ apoio

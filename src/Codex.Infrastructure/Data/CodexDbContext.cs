@@ -44,6 +44,7 @@ public sealed class CodexDbContext : DbContext
 
     // Migrada na 003 (U-1/M-a) — saiu de ExcludeFromMigrations().
     public DbSet<Exemplo> Exemplos => Set<Exemplo>();
+    public DbSet<NaturezaOperacao> NaturezasOperacao => Set<NaturezaOperacao>();
 
     // Fila editorial — buscas internas sem resultado.
     public DbSet<LacunaBusca> LacunasBusca => Set<LacunaBusca>();

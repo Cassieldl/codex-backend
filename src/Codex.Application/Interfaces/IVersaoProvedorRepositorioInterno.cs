@@ -25,5 +25,10 @@ public interface IVersaoProvedorRepositorioInterno
 
     Task AdicionarAsync(VersaoProvedor versao, CancellationToken ct);
 
+    Task<IReadOnlyCollection<ItemNaturezaOperacaoDto>> ListarNaturezasOperacaoAsync(int versaoProvedorId, CancellationToken ct);
+
+    /// <summary>Apaga as linhas atuais da versão e grava as novas. Chamar dentro da transação de escrita.</summary>
+    Task SubstituirNaturezasOperacaoAsync(int versaoProvedorId, IReadOnlyCollection<NaturezaOperacao> naturezas, CancellationToken ct);
+
     Task SalvarAlteracoesAsync(CancellationToken ct);
 }

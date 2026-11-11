@@ -32,8 +32,15 @@ import {
   garantirVersao,
   sincronizarAvisos,
   sincronizarErros,
+  sincronizarNaturezasOperacao,
 } from '../sincronizar-provedor.mjs'
 import { lerFonteDeExemploDoDisco } from '../exemplos-xml.mjs'
+import {
+  TABELAS_NATUREZA,
+  destinoDoTipoDeImunidade,
+  lerArtigoNaturezaOperacao,
+  montarNaturezasOperacao,
+} from '../naturezas-operacao.mjs'
 import { lerVocabularioInvoicy } from '../vocabulario-invoicy.mjs'
 import { lerMaterialEmissorNacional, prepararCamposEmissorNacional } from './preparar-campos.mjs'
 import { resolverReferencias, sincronizarArtigo } from './sincronizar-artigos.mjs'
@@ -68,6 +75,11 @@ const { tags, pendentes, campos } = prepararCamposEmissorNacional(
   elementosXsd,
   fonteDeExemplo,
 )
+const naturezasOperacao = montarNaturezasOperacao(
+  await lerArtigoNaturezaOperacao(),
+  TABELAS_NATUREZA.nacional,
+  destinoDoTipoDeImunidade(tags),
+)
 const avisos = montarAvisos([...pendentes.values()].map(({ nomeCampo }) => nomeCampo))
 const erros = montarErros([...rejeicoes.rejeicoes, ...rejeicoesSomenteAnexoI(diferencas)], {
   codigosForaDaVersao: codigosSomenteRtc(diferencas),
@@ -86,6 +98,7 @@ await executarCarga(async () => {
     introducao: INTRODUCAO_VERSAO,
   })
   await sincronizarAvisos(api, versaoId, avisos)
+  await sincronizarNaturezasOperacao(api, versaoId, naturezasOperacao)
   await sincronizarCamposDaVersao(api, versaoId, campos, idPorCaminho)
   // Depois do vocabulário: o vínculo do erro com o campo precisa do id do campo canônico.
   await sincronizarErros(api, provedor.slug, versaoId, erros, idPorCaminho, {

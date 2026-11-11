@@ -39,7 +39,7 @@ public sealed class RotulosResultadoBuscaTests
     /// </summary>
     private static string NovoTermo() => $"rotulobusca{NovoSufixo()}";
 
-    private sealed record VersaoCriada(int ProvedorId, string ProvedorNome, string ProvedorSlug, int VersaoId, string VersaoRotulo, string VersaoSlug);
+    private sealed record VersaoCriada(int ProvedorId, string ProvedorNome, string ProvedorSlug, int VersaoId, string VersaoRotulo);
 
     /// <summary>Provedor + versão reais (não só a linha de projeção) — a hidratação lê daqui, não de <c>itensbusca</c>.</summary>
     private static async Task<VersaoCriada> CriarProvedorComVersaoAsync(
@@ -66,7 +66,7 @@ public sealed class RotulosResultadoBuscaTests
 
         var versao = await CriarVersaoAsync(contexto, provedor.Id, versaoLayout.Id, discriminador, publicado, verificadoEm);
 
-        return new VersaoCriada(provedor.Id, provedor.Nome, provedor.Slug, versao.Id, versao.Rotulo, versao.Slug);
+        return new VersaoCriada(provedor.Id, provedor.Nome, provedor.Slug, versao.Id, versao.Rotulo);
     }
 
     private static async Task<VersaoProvedor> CriarVersaoAsync(
@@ -119,7 +119,7 @@ public sealed class RotulosResultadoBuscaTests
     {
         var item = ItemBusca.Criar(
             TipoItemIndexado.versaoprovedor, versao.VersaoId, versao.VersaoRotulo,
-            $"/provedores/{versao.ProvedorSlug}/{versao.VersaoSlug}",
+            $"/provedores/{versao.ProvedorSlug}",
             subtitulo: versao.ProvedorNome, provedorId: versao.ProvedorId, versaoProvedorId: versao.VersaoId,
             provedorIds: [versao.ProvedorId]);
         item.AtualizarPesos(termo, null, null, null);
@@ -138,7 +138,7 @@ public sealed class RotulosResultadoBuscaTests
 
         var item = ItemBusca.Criar(
             TipoItemIndexado.aviso, aviso.Id, titulo,
-            $"/provedores/{versao.ProvedorSlug}/{versao.VersaoSlug}#avisos",
+            $"/provedores/{versao.ProvedorSlug}#avisos",
             subtitulo: versao.ProvedorNome, provedorId: versao.ProvedorId, versaoProvedorId: versao.VersaoId,
             provedorIds: [versao.ProvedorId]);
         item.AtualizarPesos(termo, null, null, null);
@@ -297,7 +297,8 @@ public sealed class RotulosResultadoBuscaTests
             await IndexarVersaoAsync(contexto, termo, versao);
         }
 
-        var item = (await BuscarItensAsync(termo)).Should().ContainSingle().Subject;
+        // Versão de provedor só aparece na busca interna.
+        var item = (await BuscarItensAsync(termo, incluirRascunho: true)).Should().ContainSingle().Subject;
 
         item.ProvedorNome.Should().Be(versao.ProvedorNome);
         item.VersaoRotulo.Should().Be(versao.VersaoRotulo);
@@ -318,7 +319,7 @@ public sealed class RotulosResultadoBuscaTests
             await IndexarVersaoAsync(contexto, termo, versao);
         }
 
-        var item = (await BuscarItensAsync(termo)).Should().ContainSingle().Subject;
+        var item = (await BuscarItensAsync(termo, incluirRascunho: true)).Should().ContainSingle().Subject;
 
         item.VersaoRotulo.Should().Be(versao.VersaoRotulo);
         item.Meta.Should().BeNull();

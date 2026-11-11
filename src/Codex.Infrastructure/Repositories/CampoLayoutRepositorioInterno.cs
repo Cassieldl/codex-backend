@@ -50,6 +50,7 @@ public sealed class CampoLayoutRepositorioInterno : RepositorioBase<CodexDbConte
             Significado = cl.Significado,
             Grupo = cl.Grupo,
             Ordem = cl.Ordem,
+            ReformaTributaria = cl.ReformaTributaria,
             Slug = cl.Slug,
             Estado = cl.Estado.ToString(),
             Publicado = cl.Publicado,

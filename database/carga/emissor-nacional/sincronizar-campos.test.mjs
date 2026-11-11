@@ -51,6 +51,7 @@ function plano(campos, porVersao = {}) {
       significado: 'Significado.',
       origem: '8',
       descontinuadoEm: null,
+      reformaTributaria: false,
       ...campo,
     })),
     porVersao: new Map(
@@ -140,6 +141,30 @@ test('campo só do 9 nasce na versão 9 e entra só no mapa do 9', async () => {
   assert.equal(api.escritas[0].rota, '/interno/layout/versoes/2/campos')
   assert.equal(idPorCaminho.get('9').get('Envio/RPS/Servico/Valores/nroDUIMP'), 901)
   assert.equal(idPorCaminho.get('8').size, 0)
+})
+
+test('existente sem a marca da reforma recebe a marca da planilha, e o criado já nasce com ela', async () => {
+  const existente = '//Servico/Valores/IBSCBS/IBS/ValIBSTot'
+  const novo = '//ListaDedIBSCBS/DedIBSCBS/DedvlrRedIBSCBS'
+  const api = criarApiFalsa([existenteNo8(existente, 'Servico/Valores/IBSCBS/IBS', 1)])
+
+  await sincronizarVocabulario(
+    api,
+    ID_DO_LAYOUT,
+    plano([
+      { caminhoXml: existente, grupo: 'Servico/Valores/IBSCBS/IBS', ordem: 1, reformaTributaria: true },
+      { caminhoXml: novo, grupo: 'ListaDedIBSCBS/DedIBSCBS', ordem: 2, reformaTributaria: true },
+    ]),
+  )
+
+  assert.deepEqual(api.escritas[0], {
+    metodo: 'PUT',
+    rota: '/interno/campos-layout/7',
+    corpo: { reformaTributaria: true },
+    etag: '41',
+  })
+  assert.equal(api.escritas[1].metodo, 'POST')
+  assert.equal(api.escritas[1].corpo.reformaTributaria, true)
 })
 
 test('campo do 8 que saiu do 9 é descontinuado na versão 9, uma vez só', async () => {

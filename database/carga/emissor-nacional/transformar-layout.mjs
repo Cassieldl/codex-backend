@@ -185,6 +185,7 @@ export function montarVocabulario(
           `Grupo de ${caminhoXml}`,
         ),
         ordem: indice + 1,
+        reformaTributaria: daPlanilha?.reformaTributaria === true,
       }
     })
 

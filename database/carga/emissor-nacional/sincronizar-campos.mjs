@@ -23,13 +23,16 @@ function posicaoMudou(existente, desejado) {
 }
 
 /**
- * Corpo do PUT que alinha o existente ao plano: posição (grupo e ordem, que o XSD decide) e
- * descontinuação. Nome e significado ficam como a edição os deixou. `null` quando nada muda.
+ * Corpo do PUT que alinha o existente ao plano: posição (grupo e ordem, que o XSD decide), marca
+ * da reforma tributária (que a planilha decide) e descontinuação. Nome e significado ficam como a
+ * edição os deixou. `null` quando nada muda.
  */
 export function planejarAtualizacaoDeCampo(existente, desejado, idDescontinuacao) {
   const corpo = {}
   if (posicaoMudou(existente, desejado))
     Object.assign(corpo, { grupo: desejado.grupo, ordem: desejado.ordem })
+  if ((existente.reformaTributaria ?? false) !== desejado.reformaTributaria)
+    corpo.reformaTributaria = desejado.reformaTributaria
   if (idDescontinuacao && existente.estado !== 'Descontinuado')
     Object.assign(corpo, { estado: 'Descontinuado', versaoLayoutDescontinuadoId: idDescontinuacao })
   return Object.keys(corpo).length ? corpo : null
@@ -77,6 +80,7 @@ export async function sincronizarVocabulario(api, idPorRotulo, plano) {
           significado: campo.significado,
           grupo: campo.grupo,
           ordem: campo.ordem,
+          reformaTributaria: campo.reformaTributaria,
         },
       ))
       contagem.criados++

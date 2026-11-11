@@ -56,6 +56,7 @@ public sealed class VersaoProvedorRepositorioPublico : RepositorioBase<CodexDbCo
                 cl.Nome,
                 cl.CaminhoXml,
                 cl.Significado,
+                cl.ReformaTributaria,
                 cl.Grupo,
                 cl.Ordem,
                 cv.Tipo,
@@ -109,6 +110,7 @@ public sealed class VersaoProvedorRepositorioPublico : RepositorioBase<CodexDbCo
             Nome = c.Nome,
             CaminhoXml = c.CaminhoXml,
             Significado = c.Significado,
+            ReformaTributaria = c.ReformaTributaria,
             Tipo = c.Tipo,
             Tamanho = c.Tamanho,
             Mascara = c.Mascara,
@@ -215,6 +217,20 @@ public sealed class VersaoProvedorRepositorioPublico : RepositorioBase<CodexDbCo
                 Nome = e.Nome,
                 Descricao = e.Descricao,
                 Xml = e.Xml,
+            })
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyCollection<NaturezaOperacaoPublicoDto>> ListarNaturezasOperacaoAsync(int versaoProvedorId, CancellationToken ct) =>
+        await Contexto.NaturezasOperacao.AsNoTracking()
+            .Where(n => n.VersaoProvedorId == versaoProvedorId && n.DesativadoEm == null)
+            .OrderBy(n => n.Ordem)
+            .Select(n => new NaturezaOperacaoPublicoDto
+            {
+                CodigoInvoicy = n.CodigoInvoicy,
+                Descricao = n.Descricao,
+                ValorProvedor = n.ValorProvedor,
+                Observacao = n.Observacao,
+                AConfirmar = n.AConfirmar,
             })
             .ToListAsync(ct);
 

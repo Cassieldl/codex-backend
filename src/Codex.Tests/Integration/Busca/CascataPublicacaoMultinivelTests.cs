@@ -73,7 +73,7 @@ public sealed class CascataPublicacaoMultinivelTests
         itemProvedor.AtualizarPesos(termo, null, null, null);
         itemProvedor.MarcarPublicado(true);
 
-        var itemVersao = ItemBusca.Criar(TipoItemIndexado.versaoprovedor, versao.Id, "Versão Cascata", $"/provedores/{provedor.Slug}/{versao.Slug}", provedorId: provedor.Id, versaoProvedorId: versao.Id, provedorIds: [provedor.Id]);
+        var itemVersao = ItemBusca.Criar(TipoItemIndexado.versaoprovedor, versao.Id, "Versão Cascata", $"/provedores/{provedor.Slug}", provedorId: provedor.Id, versaoProvedorId: versao.Id, provedorIds: [provedor.Id]);
         itemVersao.AtualizarPesos(termo, null, null, null);
         itemVersao.MarcarPublicado(true);
 
@@ -81,7 +81,7 @@ public sealed class CascataPublicacaoMultinivelTests
         itemAvisoProvedor.AtualizarPesos(null, null, termo, null);
         itemAvisoProvedor.MarcarPublicado(true);
 
-        var itemAvisoVersao = ItemBusca.Criar(TipoItemIndexado.aviso, avisoVersao.Id, "Aviso de Versão Cascata", $"/provedores/{provedor.Slug}/{versao.Slug}#avisos", provedorId: provedor.Id, versaoProvedorId: versao.Id, provedorIds: [provedor.Id]);
+        var itemAvisoVersao = ItemBusca.Criar(TipoItemIndexado.aviso, avisoVersao.Id, "Aviso de Versão Cascata", $"/provedores/{provedor.Slug}#avisos", provedorId: provedor.Id, versaoProvedorId: versao.Id, provedorIds: [provedor.Id]);
         itemAvisoVersao.AtualizarPesos(null, null, termo, null);
         itemAvisoVersao.MarcarPublicado(true);
 
@@ -106,8 +106,8 @@ public sealed class CascataPublicacaoMultinivelTests
     {
         var cenario = await MontarCenarioPublicadoAsync();
 
-        // Estado inicial: tudo publicado — os quatro aparecem em ambas as superfícies.
-        (await TiposEncontradosAsync(cenario.Termo, incluirRascunho: false)).Should().HaveCount(4);
+        // Tudo publicado: a interna vê os quatro; a pública não lista a versão, que não tem página própria.
+        (await TiposEncontradosAsync(cenario.Termo, incluirRascunho: false)).Should().HaveCount(3).And.NotContain("Versão Cascata");
         (await TiposEncontradosAsync(cenario.Termo, incluirRascunho: true)).Should().HaveCount(4);
 
         // Despublica SÓ o provedor, mesma transação lógica: SaveChanges do domínio + cascata do writer.
@@ -127,7 +127,7 @@ public sealed class CascataPublicacaoMultinivelTests
         var internosAposDespublicar = await TiposEncontradosAsync(cenario.Termo, incluirRascunho: true);
         internosAposDespublicar.Should().HaveCount(4, because: "a busca interna enxerga rascunho — despublicar o provedor não remove as linhas do índice, só da superfície pública");
 
-        // Republica o provedor — os quatro voltam à busca pública sem reconstrução manual do índice.
+        // Republica o provedor: os três públicos voltam sem reconstrução manual do índice.
         await using (var contexto = _fixture.CriarContexto())
         {
             var provedorRastreado = await contexto.Provedores.FirstAsync(p => p.Id == cenario.ProvedorId);
@@ -138,7 +138,7 @@ public sealed class CascataPublicacaoMultinivelTests
         }
 
         var publicosAposRepublicar = await TiposEncontradosAsync(cenario.Termo, incluirRascunho: false);
-        publicosAposRepublicar.Should().HaveCount(4, because: "republicar o provedor deve restaurar a visibilidade de toda a cadeia sem reconstrução manual do índice");
+        publicosAposRepublicar.Should().HaveCount(3, because: "republicar o provedor deve restaurar a visibilidade de toda a cadeia sem reconstrução manual do índice");
     }
 
     [Fact]
@@ -146,7 +146,7 @@ public sealed class CascataPublicacaoMultinivelTests
     {
         var cenario = await MontarCenarioPublicadoAsync();
 
-        (await TiposEncontradosAsync(cenario.Termo, incluirRascunho: false)).Should().HaveCount(4);
+        (await TiposEncontradosAsync(cenario.Termo, incluirRascunho: false)).Should().Contain("Aviso de Versão Cascata");
 
         await using (var contexto = _fixture.CriarContexto())
         {
@@ -160,7 +160,7 @@ public sealed class CascataPublicacaoMultinivelTests
         var publicosAposDespublicarVersao = await TiposEncontradosAsync(cenario.Termo, incluirRascunho: false);
 
         publicosAposDespublicarVersao.Should().HaveCount(2,
-            because: "só a versão e o aviso de versão dependem da versão publicada — provedor e aviso de provedor continuam publicados e visíveis");
+            because: "o aviso de versão depende da versão publicada; provedor e aviso de provedor continuam visíveis");
         publicosAposDespublicarVersao.Should().Contain("Provedor Cascata");
         publicosAposDespublicarVersao.Should().Contain("Aviso de Provedor Cascata");
         publicosAposDespublicarVersao.Should().NotContain("Versão Cascata");

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Codex.Domain.Enums;
 using Codex.Tests.Integration.Api;
@@ -42,34 +43,22 @@ public sealed class BuscaPublicaContratoJsonTests : IAsyncLifetime
     private static string NovoSufixo() => Guid.NewGuid().ToString("N")[..10];
 
     [Fact]
-    public async Task GetBusca_ItemComVersaoVerificada_TemDescricaoCasamentoNoItemEMetaComoObjeto()
+    public async Task GetBusca_ItemVerificado_TemDescricaoCasamentoNoItemEMetaComoObjeto()
     {
         var sufixo = NovoSufixo();
         var termo = $"contratojson{sufixo}";
 
         await using (var contexto = _fixture.CriarContexto())
         {
-            var maiorOrdemAtual = contexto.VersoesLayout.Any() ? contexto.VersoesLayout.Max(v => v.Ordem) : 0;
-            var versaoLayout = VersaoLayout.Criar($"Layout Contrato {sufixo}", maiorOrdemAtual + 1);
-            contexto.VersoesLayout.Add(versaoLayout);
-            await contexto.SaveChangesAsync();
-
-            var provedor = Provedor.Criar($"Provedor Contrato {sufixo}", $"INV-{sufixo}", CategoriaProvedor.Nacional);
-            provedor.Publicar();
-            contexto.Provedores.Add(provedor);
-            await contexto.SaveChangesAsync();
-
-            var versao = VersaoProvedor.Criar(provedor.Id, versaoLayout.Id, $"Versão Contrato {sufixo}");
-            versao.Publicar();
-            versao.RegistrarVerificacao(new DateOnly(2026, 5, 12));
-            contexto.VersoesProvedor.Add(versao);
+            var artigo = Artigo.Criar(TipoArtigo.Conceito, $"Artigo Contrato {sufixo}", "Corpo.");
+            artigo.Publicar();
+            artigo.RegistrarVerificacao(new DateTimeOffset(2026, 5, 12, 0, 0, 0, TimeSpan.Zero));
+            contexto.Artigos.Add(artigo);
             await contexto.SaveChangesAsync();
 
             var item = ItemBusca.Criar(
-                TipoItemIndexado.versaoprovedor, versao.Id, versao.Rotulo,
-                $"/provedores/{provedor.Slug}/{versao.Slug}",
-                subtitulo: provedor.Nome, provedorId: provedor.Id, versaoProvedorId: versao.Id,
-                provedorIds: [provedor.Id]);
+                TipoItemIndexado.artigo, artigo.Id, artigo.Titulo, SlugsReservadosArtigo.RotaCanonica(artigo.Slug),
+                provedorIds: []);
             item.AtualizarPesos(termo, null, null, null);
             item.MarcarPublicado(true);
             contexto.ItensBusca.Add(item);

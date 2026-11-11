@@ -166,6 +166,29 @@ public sealed class VersaoProvedorServicoInterno : IVersaoProvedorServicoInterno
         return await MapearAsync(versao, ct);
     }
 
+    /// <summary>
+    /// O If-Match confere a versão lida pelo chamador; a troca da lista não altera o xmin da versão,
+    /// então duas cargas seguidas com o mesmo ETag passam, e vale a última.
+    /// </summary>
+    public async Task<IReadOnlyCollection<ItemNaturezaOperacaoDto>> SubstituirNaturezasOperacaoAsync(
+        int id, AtualizarNaturezasOperacaoDto dto, uint versaoEsperada, CancellationToken ct)
+    {
+        var versao = await CarregarRastreadaOuFalharAsync(id, versaoEsperada, ct);
+
+        var naturezas = dto.Itens
+            .Select((item, indice) => NaturezaOperacao.Criar(
+                versao.Id, item.CodigoInvoicy, item.Descricao, item.ValorProvedor, item.Observacao, item.AConfirmar, indice + 1))
+            .ToArray();
+
+        await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
+        {
+            await _repositorio.BloquearParaAlteracaoAsync(versao.Id, ctInterno);
+            await _repositorio.SubstituirNaturezasOperacaoAsync(versao.Id, naturezas, ctInterno);
+        }, ct);
+
+        return await _repositorio.ListarNaturezasOperacaoAsync(versao.Id, ct);
+    }
+
     private async Task<VersaoProvedor> CarregarRastreadaOuFalharAsync(int id, uint versaoEsperada, CancellationToken ct)
     {
         var versao = await _repositorio.ObterPorIdAsync(id, rastreada: true, ct)

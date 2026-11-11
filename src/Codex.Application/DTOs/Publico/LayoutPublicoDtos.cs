@@ -11,6 +11,28 @@ public sealed record LayoutIndiceDto
     public LayoutVersaoResumoDto? Vigente { get; init; }
 
     public required IReadOnlyCollection<LayoutVersaoResumoDto> Versoes { get; init; }
+
+    /// <summary>O que a vigente mudou em relação à anterior publicada; <c>null</c> sem vigente.</summary>
+    public NovidadesVersaoLayoutDto? Novidades { get; init; }
+}
+
+/// <summary>
+/// Nota da versão vigente e a contagem do que ela mudou. Sem versão anterior publicada, nada é
+/// "novo": a contagem fica em zero, como o selo do dicionário.
+/// </summary>
+public sealed record NovidadesVersaoLayoutDto
+{
+    public required LayoutVersaoResumoDto Versao { get; init; }
+
+    public LayoutVersaoResumoDto? Anterior { get; init; }
+
+    public string? Descricao { get; init; }
+
+    /// <summary>Campos visíveis cuja versão de origem é a vigente.</summary>
+    public required int CamposNovos { get; init; }
+
+    /// <summary>Campos visíveis descontinuados na vigente.</summary>
+    public required int CamposDescontinuados { get; init; }
 }
 
 /// <summary>
@@ -75,6 +97,9 @@ public sealed record CampoLayoutPublicoDto
 
     public required int Ordem { get; init; }
 
+    /// <summary>Campo criado pela reforma tributária (IBS/CBS).</summary>
+    public required bool ReformaTributaria { get; init; }
+
     public required bool NovoNestaVersao { get; init; }
 
     public required bool DescontinuadoNestaVersao { get; init; }
@@ -93,6 +118,8 @@ public sealed record CampoLayoutVerbeteDto
     public required string CaminhoXml { get; init; }
 
     public required string Significado { get; init; }
+
+    public required bool ReformaTributaria { get; init; }
 
     /// <summary>Enum mapeado para <c>string</c> explicitamente (<c>EstadoCampoLayout</c>).</summary>
     public required string Estado { get; init; }
@@ -153,6 +180,8 @@ public sealed record CampoLayoutVisivelBrutoDto
     public string? Grupo { get; init; }
 
     public required int Ordem { get; init; }
+
+    public required bool ReformaTributaria { get; init; }
 
     public required int VersaoLayoutOrigemId { get; init; }
 

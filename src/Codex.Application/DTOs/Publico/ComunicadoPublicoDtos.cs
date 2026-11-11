@@ -28,7 +28,7 @@ public sealed record ComunicadoPublicoDto
     /// <summary>Preenchido só em <c>ProvedorVersao</c>.</summary>
     public VersaoDoComunicadoDto? Versao { get; init; }
 
-    /// <summary><c>/provedores/{slug}</c> ou <c>/provedores/{slug}/{versao}</c>; <c>null</c> em <c>Global</c>.</summary>
+    /// <summary><c>/provedores/{slug}</c>, também em <c>ProvedorVersao</c>; <c>null</c> em <c>Global</c>.</summary>
     public string? Url { get; init; }
 }
 

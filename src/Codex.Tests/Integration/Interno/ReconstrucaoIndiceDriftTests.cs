@@ -138,7 +138,7 @@ public sealed class ReconstrucaoIndiceDriftTests : IAsyncLifetime
         var esperados = new List<Esperado>
         {
             new(TipoItemIndexado.provedor, provedor.Id, provedor.Nome, $"/provedores/{provedor.Slug}"),
-            new(TipoItemIndexado.versaoprovedor, versao.Id, versao.Rotulo, $"/provedores/{provedor.Slug}/{versao.Slug}"),
+            new(TipoItemIndexado.versaoprovedor, versao.Id, versao.Rotulo, $"/provedores/{provedor.Slug}"),
             new(TipoItemIndexado.aviso, aviso.Id, aviso.Titulo, $"/provedores/{provedor.Slug}#avisos"),
             new(TipoItemIndexado.erro, erro.Id, erro.Titulo, $"/erros/{erro.Slug}"),
             new(TipoItemIndexado.campolayout, campoLayout.Id, campoLayout.Nome, $"/layout/campos/{campoLayout.Slug}"),

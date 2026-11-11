@@ -1,8 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Codex.Domain.Enums;
 using Codex.Tests.Integration.Api;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Codex.Tests.Integration.Interno;
 
@@ -72,13 +74,14 @@ public sealed class CascataProjecaoProbeTests : IAsyncLifetime
         return (resposta.StatusCode, corpo);
     }
 
-    private async Task<IReadOnlyList<JsonElement>> BuscarPublicoAsync(string termo)
+    /// <summary>Busca interna: é onde a versão de provedor aparece como resultado.</summary>
+    private async Task<IReadOnlyList<JsonElement>> BuscarInternoAsync(string termo)
     {
-        using var resposta = await _cliente.GetAsync($"/api/v1/busca?q={Uri.EscapeDataString(termo)}&tamanhoPagina=50");
-        resposta.StatusCode.Should().Be(HttpStatusCode.OK);
-        var texto = await resposta.Content.ReadAsStringAsync();
-        return JsonDocument.Parse(texto).RootElement.Clone()
-            .GetProperty("data").GetProperty("grupos").EnumerateArray()
+        var (status, corpo) = await EnviarAsync(
+            HttpMethod.Get, $"/api/v1/interno/busca?q={Uri.EscapeDataString(termo)}&tamanhoPagina=50");
+        status.Should().Be(HttpStatusCode.OK);
+
+        return corpo.GetProperty("data").GetProperty("grupos").EnumerateArray()
             .SelectMany(g => g.GetProperty("itens").EnumerateArray())
             .ToList();
     }
@@ -145,8 +148,8 @@ public sealed class CascataProjecaoProbeTests : IAsyncLifetime
         var (idProvedor, concorrencia, _) = await MontarPublicadoAsync(
             nomeAntigo, $"PRJ-{sufixo}", rotuloVersao, sufixo);
 
-        var antes = await BuscarPublicoAsync(rotuloVersao);
-        antes.Should().HaveCount(1, because: "sanidade: a versão publicada está na busca");
+        var antes = await BuscarInternoAsync(rotuloVersao);
+        antes.Should().HaveCount(1, because: "sanidade: a versão está na busca interna");
         antes[0].GetProperty("provedorNome").GetString().Should().Be(nomeAntigo);
 
         var (statusRename, _) = await EnviarAsync(HttpMethod.Put, $"/api/v1/interno/provedores/{idProvedor}", new
@@ -157,7 +160,7 @@ public sealed class CascataProjecaoProbeTests : IAsyncLifetime
         }, concorrencia);
         statusRename.Should().Be(HttpStatusCode.OK);
 
-        var depois = await BuscarPublicoAsync(rotuloVersao);
+        var depois = await BuscarInternoAsync(rotuloVersao);
         depois.Should().HaveCount(1);
 
         depois[0].GetProperty("provedorNome").GetString().Should().Be(nomeNovo,
@@ -178,17 +181,27 @@ public sealed class CascataProjecaoProbeTests : IAsyncLifetime
         var sufixo = Guid.NewGuid().ToString("N")[..8];
         var rotuloVersao = $"remfilha{sufixo}";
 
-        var (idProvedor, concorrencia, _) = await MontarPublicadoAsync(
+        var (idProvedor, concorrencia, idVersao) = await MontarPublicadoAsync(
             $"remprov{sufixo} Provedor", $"REM-{sufixo}", rotuloVersao, sufixo);
 
-        (await BuscarPublicoAsync(rotuloVersao)).Should().HaveCount(1, because: "sanidade");
+        // A busca pública não lista versão de provedor, então a prova olha a coluna que ela filtra.
+        (await VersaoVisivelNoPublicoAsync(idVersao)).Should().BeTrue(because: "sanidade");
 
         var (statusDelete, _) = await EnviarAsync(
             HttpMethod.Delete, $"/api/v1/interno/provedores/{idProvedor}", corpoRequisicao: null, ifMatch: concorrencia);
         statusDelete.Should().Be(HttpStatusCode.NoContent);
 
-        (await BuscarPublicoAsync(rotuloVersao)).Should().BeEmpty(
-            because: "removido o provedor, a versão dependente não pode continuar sendo devolvida pela busca pública — "
-                     + "o link aponta para /provedores/{slug}/{versao} de um provedor que não existe mais");
+        (await VersaoVisivelNoPublicoAsync(idVersao)).Should().BeFalse(
+            because: "removido o provedor, a linha da versão dependente não pode continuar visível no público");
+    }
+
+    private async Task<bool> VersaoVisivelNoPublicoAsync(int versaoId)
+    {
+        await using var contexto = _fixture.CriarContexto();
+
+        return await contexto.ItensBusca.AsNoTracking()
+            .Where(i => i.TipoItem == TipoItemIndexado.versaoprovedor && i.ItemId == versaoId)
+            .Select(i => i.VisivelPublico)
+            .SingleAsync();
     }
 }

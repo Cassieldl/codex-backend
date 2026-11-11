@@ -22,6 +22,7 @@ import {
   garantirVersao,
   sincronizarAvisos,
   sincronizarErros,
+  sincronizarNaturezasOperacao,
 } from '../sincronizar-provedor.mjs'
 import { lerVocabularioInvoicy } from '../vocabulario-invoicy.mjs'
 import { PROVEDORES } from './catalogo.mjs'
@@ -87,6 +88,7 @@ await executarCarga(async () => {
     erros,
     removerErrosAusentes,
     avisos,
+    naturezasOperacao,
     pendentes,
     internos,
   } of cargas) {
@@ -94,6 +96,7 @@ await executarCarga(async () => {
     const provedor = await garantirProvedor(api, config.provedor)
     const versaoId = await garantirVersao(api, provedor.id, versaoLayoutId, config.versao)
     await sincronizarAvisos(api, versaoId, avisos)
+    if (naturezasOperacao) await sincronizarNaturezasOperacao(api, versaoId, naturezasOperacao)
     await sincronizarCamposDaVersao(api, versaoId, campos, idPorCaminho)
     await sincronizarErros(api, provedor.slug, versaoId, erros, idPorCaminho, {
       removerAusentes: removerErrosAusentes,

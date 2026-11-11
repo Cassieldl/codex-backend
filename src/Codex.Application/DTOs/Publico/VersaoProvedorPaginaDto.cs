@@ -28,6 +28,27 @@ public sealed record VersaoProvedorPaginaDto
     /// exemplos (U9): o cliente nunca precisa distinguir ausente de vazio.
     /// </summary>
     public required IReadOnlyCollection<ExemploPublicoDto> Exemplos { get; init; }
+
+    /// <summary>
+    /// De-para do <c>natOp</c> do InvoiCy para o valor no layout do provedor. Sempre presente,
+    /// <c>[]</c> quando a versão não tem tabela. A tag de destino é o <c>destinoXml</c> do campo
+    /// <c>natOp</c> em <see cref="CamposPorGrupo"/>.
+    /// </summary>
+    public required IReadOnlyCollection<NaturezaOperacaoPublicoDto> NaturezasOperacao { get; init; }
+}
+
+public sealed record NaturezaOperacaoPublicoDto
+{
+    public required int CodigoInvoicy { get; init; }
+
+    public required string Descricao { get; init; }
+
+    public required string ValorProvedor { get; init; }
+
+    public string? Observacao { get; init; }
+
+    /// <summary>Conversão ainda não confirmada na fonte.</summary>
+    public required bool AConfirmar { get; init; }
 }
 
 /// <summary>
@@ -108,6 +129,9 @@ public sealed record CampoVersaoPublicoDto
 
     public required string Significado { get; init; }
 
+    /// <summary>Campo criado pela reforma tributária (IBS/CBS), do vocabulário do layout.</summary>
+    public required bool ReformaTributaria { get; init; }
+
     public required string Tipo { get; init; }
 
     public string? Tamanho { get; init; }
@@ -180,6 +204,9 @@ public sealed record CampoVersaoProjecaoDto
     public required string CaminhoXml { get; init; }
 
     public required string Significado { get; init; }
+
+    /// <summary>Campo criado pela reforma tributária (IBS/CBS), do vocabulário do layout.</summary>
+    public required bool ReformaTributaria { get; init; }
 
     public required string Tipo { get; init; }
 

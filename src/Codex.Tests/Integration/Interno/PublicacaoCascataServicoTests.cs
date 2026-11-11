@@ -155,6 +155,13 @@ public sealed class PublicacaoCascataServicoTests : IAsyncLifetime
 
         public Task AdicionarAsync(VersaoProvedor versao, CancellationToken ct) => throw new NotSupportedException();
 
+        public Task<IReadOnlyCollection<ItemNaturezaOperacaoDto>> ListarNaturezasOperacaoAsync(int versaoProvedorId, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public Task SubstituirNaturezasOperacaoAsync(
+            int versaoProvedorId, IReadOnlyCollection<NaturezaOperacao> naturezas, CancellationToken ct) =>
+            throw new NotSupportedException();
+
         public Task SalvarAlteracoesAsync(CancellationToken ct) => throw new NotSupportedException();
     }
 }

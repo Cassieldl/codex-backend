@@ -10,6 +10,7 @@
   - Senha: senha do prestador no município.
 - Toda chamada exige também `X-NFSe-Prestador-CNPJ: <CNPJ, só números>`, igual ao prestador da DPS (ou ao emitente da nota consultada); divergência rejeita o acesso.
 - O prestador deve solicitar à prefeitura **autorização para emitir via webservice**. [portal antigo]
+- No InvoiCy, preencha **Usuário de autenticação** (Inscrição Municipal) e **Senha de autenticação** (senha do portal) em *Painel de controle → NFS-e → Configurações para emissão de NFS-e*. [obs]
 
 ### Processamento
 

@@ -216,13 +216,12 @@ public sealed class HomeHttpTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Home_ComunicadoDeVersao_TemUrlDaPaginaDaVersao()
+    public async Task Home_ComunicadoDeVersao_TemUrlDaPaginaDoProvedor()
     {
         var comunicado = await LocalizarComunicadoAsync(_cenario.TituloComunicadoDeVersao);
 
         comunicado.GetProperty("abrangencia").GetString().Should().Be("ProvedorVersao");
-        comunicado.GetProperty("url").GetString().Should()
-            .Be($"/provedores/{_cenario.ProvedorPublicadoSlug}/{_cenario.VersaoCSlug}");
+        comunicado.GetProperty("url").GetString().Should().Be($"/provedores/{_cenario.ProvedorPublicadoSlug}");
     }
 
     // ------------------------------------------------------------------ bloco de layout (B-6)

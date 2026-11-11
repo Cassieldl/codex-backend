@@ -76,16 +76,16 @@ public sealed class UrlDerivadaBuscaTests : IAsyncLifetime
         itens.Should().HaveCount(7, because: "seis tipos, com aviso aparecendo nos dois escopos (provedor e versão)");
 
         UrlDe(itens, "provedor").Should().Be($"/provedores/{cenario.ProvedorSlug}");
-        UrlDe(itens, "versaoprovedor").Should().Be($"/provedores/{cenario.ProvedorSlug}/{cenario.VersaoSlug}");
+        UrlDe(itens, "versaoprovedor").Should().Be($"/provedores/{cenario.ProvedorSlug}",
+            because: "a página do provedor mostra o conteúdo da versão; a URL não tem segmento de versão");
         UrlDe(itens, "erro").Should().Be($"/erros/{cenario.ErroSlug}");
         UrlDe(itens, "artigo").Should().Be($"/artigos/{cenario.ArtigoSlug}");
         UrlDe(itens, "campolayout").Should().Be($"/layout/campos/{cenario.CampoLayoutSlug}");
 
         var avisos = itens.Where(i => i.Tipo == "aviso").Select(i => i.Url).ToArray();
-        avisos.Should().BeEquivalentTo([
-            $"/provedores/{cenario.ProvedorSlug}#avisos",
-            $"/provedores/{cenario.ProvedorSlug}/{cenario.VersaoSlug}#avisos",
-        ], because: "a âncora #avisos é da página do PAI conforme o escopo do aviso (U8), não rota própria");
+        avisos.Should().Equal(
+            [$"/provedores/{cenario.ProvedorSlug}#avisos", $"/provedores/{cenario.ProvedorSlug}#avisos"],
+            because: "aviso de provedor e de versão ancoram em #avisos da página do provedor");
 
         itens.Should().NotContain(item => item.Url == UrlCorrompida,
             because: "nenhum dos seis caminhos pode ter continuado lendo a coluna");
@@ -155,15 +155,15 @@ public sealed class UrlDerivadaBuscaTests : IAsyncLifetime
     }
 
     /// <summary>
-    /// O fallback para a coluna é ALCANÇÁVEL, não tampa falsa: a versão pai pode estar desativada
-    /// (a hidratação filtra <c>desativadoem</c>) enquanto a linha de projeção continua ativa. Sem
-    /// este caso, o ramo seria um tratamento que ninguém prova que executa.
+    /// A URL de versão e de aviso de versão depende só do provedor: com a versão pai desativada
+    /// (fora do JOIN de rótulos) a busca não cai na coluna, continua derivando do provedor.
     /// </summary>
     [Fact]
-    public async Task BuscarAsync_ComVersaoPaiDesativada_CaiNaUrlPersistida_SemDerrubarABusca()
+    public async Task BuscarAsync_ComVersaoPaiDesativada_ContinuaDerivandoAUrlDoProvedor()
     {
         var termo = NovoTermo();
         var cenario = await SemearOsSeisTiposAsync(termo);
+        await CorromperUrlsAsync(termo);
 
         await using (var contexto = _fixture.CriarContexto())
         {
@@ -175,8 +175,39 @@ public sealed class UrlDerivadaBuscaTests : IAsyncLifetime
 
         var itens = await BuscarPorTipoAsync(termo);
 
-        UrlDe(itens, "versaoprovedor").Should().Be($"/provedores/{cenario.ProvedorSlug}/{cenario.VersaoSlug}",
-            because: "sem a versão no JOIN, a URL persistida é a melhor informação disponível — melhor que item sem link");
+        UrlDe(itens, "versaoprovedor").Should().Be($"/provedores/{cenario.ProvedorSlug}");
+        itens.Where(i => i.Tipo == "aviso").Select(i => i.Url)
+            .Should().AllBe($"/provedores/{cenario.ProvedorSlug}#avisos");
+    }
+
+    /// <summary>
+    /// Versão de provedor não tem página própria no portal público: a busca pública não lista o
+    /// tipo nem com recorte explícito, e total e grupos ficam coerentes com isso. A interna,
+    /// sobre o mesmo índice, continua listando a versão.
+    /// </summary>
+    [Fact]
+    public async Task BuscarAsync_Publica_OmiteVersaoDeProvedor_EInternaContinuaListando()
+    {
+        var cenario = await SemearOsSeisTiposAsync();
+
+        var publica = await BuscarAsync(cenario.Termo, incluirRascunho: false);
+        var publicaSoVersao = await BuscarAsync(cenario.Termo, incluirRascunho: false, tipos: ["versaoprovedor"]);
+        var interna = await BuscarAsync(cenario.Termo, incluirRascunho: true);
+
+        publica.Grupos.Select(g => g.Tipo).Should().BeEquivalentTo(["provedor", "aviso", "erro", "artigo"],
+            because: "campolayout já não é público e versaoprovedor passa a não ser");
+        publica.TotalGeral.Should().Be(5).And.Be(publica.Grupos.Sum(g => g.Total));
+
+        var itensPublicos = publica.Grupos.SelectMany(g => g.Itens).ToList();
+        UrlDe(itensPublicos, "provedor").Should().Be($"/provedores/{cenario.ProvedorSlug}");
+        itensPublicos.Where(i => i.Tipo == "aviso").Select(i => i.Url)
+            .Should().AllBe($"/provedores/{cenario.ProvedorSlug}#avisos");
+
+        publicaSoVersao.TotalGeral.Should().Be(0);
+        publicaSoVersao.Grupos.Should().BeEmpty();
+
+        interna.Grupos.Should().Contain(g => g.Tipo == "versaoprovedor" && g.Total == 1);
+        interna.TotalGeral.Should().Be(7);
     }
 
     // ------------------------------------------------------------------ apoio
@@ -242,14 +273,14 @@ public sealed class UrlDerivadaBuscaTests : IAsyncLifetime
             $"/provedores/{provedor.Slug}", provedorId: provedor.Id, provedorIds: [provedor.Id]);
 
         await IndexarAsync(contexto, TipoItemIndexado.versaoprovedor, versao.Id, termo, versao.Rotulo,
-            $"/provedores/{provedor.Slug}/{versao.Slug}", provedorId: provedor.Id, versaoProvedorId: versao.Id,
+            $"/provedores/{provedor.Slug}", provedorId: provedor.Id, versaoProvedorId: versao.Id,
             provedorIds: [provedor.Id]);
 
         await IndexarAsync(contexto, TipoItemIndexado.aviso, avisoDeProvedor.Id, termo, avisoDeProvedor.Titulo,
             $"/provedores/{provedor.Slug}#avisos", provedorId: provedor.Id, provedorIds: [provedor.Id]);
 
         await IndexarAsync(contexto, TipoItemIndexado.aviso, avisoDeVersao.Id, termo, avisoDeVersao.Titulo,
-            $"/provedores/{provedor.Slug}/{versao.Slug}#avisos", provedorId: provedor.Id, versaoProvedorId: versao.Id,
+            $"/provedores/{provedor.Slug}#avisos", provedorId: provedor.Id, versaoProvedorId: versao.Id,
             provedorIds: [provedor.Id]);
 
         await IndexarAsync(contexto, TipoItemIndexado.erro, erro.Id, termo, erro.Titulo, $"/erros/{erro.Slug}",
@@ -322,17 +353,20 @@ public sealed class UrlDerivadaBuscaTests : IAsyncLifetime
             """);
     }
 
+    /// <summary>Busca interna: campolayout e versaoprovedor só convivem com os demais tipos nela.</summary>
     private async Task<IReadOnlyCollection<BuscaItemDto>> BuscarPorTipoAsync(string termo, IReadOnlyCollection<string>? tipos = null)
+    {
+        var resultado = await BuscarAsync(termo, incluirRascunho: true, tipos);
+
+        return resultado.Grupos.SelectMany(g => g.Itens).ToList();
+    }
+
+    private async Task<ResultadoBuscaDto> BuscarAsync(string termo, bool incluirRascunho, IReadOnlyCollection<string>? tipos = null)
     {
         await using var contexto = _fixture.CriarContexto();
         var consulta = new ConsultaBuscaPostgres(contexto, new ConfigurationBuilder().Build());
 
-        // incluirRascunho: campolayout não aparece na busca pública (M23) — os seis tipos só
-        // convivem na superfície interna.
-        var resultado = await consulta.BuscarAsync(
-            termo, provedorSlug: null, tipos, pagina: 1, tamanhoPagina: 20, incluirRascunho: true,
-            CancellationToken.None);
-
-        return resultado.Grupos.SelectMany(g => g.Itens).ToList();
+        return await consulta.BuscarAsync(
+            termo, provedorSlug: null, tipos, pagina: 1, tamanhoPagina: 20, incluirRascunho, CancellationToken.None);
     }
 }

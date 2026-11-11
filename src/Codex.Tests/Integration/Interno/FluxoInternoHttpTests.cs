@@ -77,6 +77,19 @@ public sealed class FluxoInternoHttpTests : IAsyncLifetime
         return JsonDocument.Parse(texto).RootElement.Clone().GetProperty("data");
     }
 
+    /// <summary>
+    /// Flag <c>publicado</c> da versão na busca interna. A pública não lista versão de provedor,
+    /// então é por aqui que a cascata de visibilidade da versão aparece via HTTP.
+    /// </summary>
+    private async Task<bool> VersaoPublicadaNaBuscaInternaAsync(string termo)
+    {
+        var (status, corpo) = await EnviarAsync(
+            HttpMethod.Get, $"/api/v1/interno/busca?q={Uri.EscapeDataString(termo)}&tipo=versaoprovedor&tamanhoPagina=50");
+        status.Should().Be(HttpStatusCode.OK);
+
+        return ItensDe(corpo.GetProperty("data")).Should().ContainSingle().Subject.GetProperty("publicado").GetBoolean();
+    }
+
     private static IReadOnlyList<JsonElement> ItensDe(JsonElement resultadoBusca) => resultadoBusca
         .GetProperty("grupos").EnumerateArray()
         .SelectMany(g => g.GetProperty("itens").EnumerateArray())
@@ -162,14 +175,19 @@ public sealed class FluxoInternoHttpTests : IAsyncLifetime
             HttpMethod.Put, $"/api/v1/interno/versoes/{idVersao}/publicacao", new { publicado = true }, concorrenciaVersao);
         statusPubVersao.Should().Be(HttpStatusCode.OK);
 
-        ItensDe(await BuscarPublicoAsync(termo)).Should().HaveCount(2, because: "provedor e versão publicados aparecem na busca pública");
+        ItensDe(await BuscarPublicoAsync(termo)).Should().ContainSingle(because: "a busca pública não lista versão de provedor")
+            .Which.GetProperty("tipo").GetString().Should().Be("provedor");
+        (await VersaoPublicadaNaBuscaInternaAsync(termo)).Should().BeTrue();
 
         versaoProvedor = await PublicarProvedorAsync(idProvedor, versaoProvedor, publicado: false);
-        ItensDe(await BuscarPublicoAsync(termo)).Should().BeEmpty(
+        ItensDe(await BuscarPublicoAsync(termo)).Should().BeEmpty();
+        (await VersaoPublicadaNaBuscaInternaAsync(termo)).Should().BeFalse(
             because: "M19/M28: despublicar o provedor esconde a versão dependente mesmo ela continuando publicada");
 
         await PublicarProvedorAsync(idProvedor, versaoProvedor, publicado: true);
-        ItensDe(await BuscarPublicoAsync(termo)).Should().HaveCount(2, because: "republicar o provedor devolve a versão que continuava publicada");
+        ItensDe(await BuscarPublicoAsync(termo)).Should().ContainSingle();
+        (await VersaoPublicadaNaBuscaInternaAsync(termo)).Should().BeTrue(
+            because: "republicar o provedor devolve a versão que continuava publicada");
     }
 
     [Fact]
@@ -204,8 +222,10 @@ public sealed class FluxoInternoHttpTests : IAsyncLifetime
         await PublicarProvedorAsync(idProvedor, versaoProvedor, publicado: true);
 
         var itens = ItensDe(await BuscarPublicoAsync(termo));
-        itens.Should().HaveCount(1, because: "republicar o provedor não pode ressuscitar uma versão despublicada individualmente");
+        itens.Should().HaveCount(1);
         itens[0].GetProperty("tipo").GetString().Should().Be("provedor");
+        (await VersaoPublicadaNaBuscaInternaAsync(termo)).Should().BeFalse(
+            because: "republicar o provedor não pode ressuscitar uma versão despublicada individualmente");
     }
 
     // ---------------------------------------------------------------- concorrência otimista

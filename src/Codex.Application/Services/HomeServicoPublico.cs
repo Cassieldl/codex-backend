@@ -53,7 +53,7 @@ public sealed class HomeServicoPublico : IHomeServicoPublico
         Abrangencia = comunicado.Abrangencia.ToString(),
         ExpiraEm = comunicado.ExpiraEm,
         ProvedorNome = comunicado.ProvedorNome,
-        Url = UrlComunicado.Montar(comunicado.Abrangencia, comunicado.ProvedorSlug, comunicado.VersaoSlug),
+        Url = UrlComunicado.Montar(comunicado.Abrangencia, comunicado.ProvedorSlug),
     };
 
     private static IReadOnlyCollection<CategoriaProvedoresDto> AgruparPorCategoria(

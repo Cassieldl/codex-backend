@@ -400,6 +400,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                            'StartSel=⟦, StopSel=⟧, MaxFragments=1, MaxWords=35, MinWords=15') AS "FragmentoBruto"
                 FROM codex.itensbusca ib
                 WHERE ib.visivelpublico
+                  AND ib.tipoitem <> {TipoVersaoProvedor} -- versão não tem página própria no portal público
                   AND (cardinality({tiposArray}::text[]) = 0 OR ib.tipoitem = ANY({tiposArray}::text[]))
                   AND ib.documento @@ websearch_to_tsquery('codex.codex_pt'::regconfig, codex.normalizar_consulta({termo}))
                 ORDER BY "Pontuacao" DESC, ib.itembuscaid
@@ -479,6 +480,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                            'StartSel=⟦, StopSel=⟧, MaxFragments=1, MaxWords=35, MinWords=15') AS "FragmentoBruto"
                 FROM codex.itensbusca ib, lexemas
                 WHERE ib.visivelpublico
+                  AND ib.tipoitem <> {TipoVersaoProvedor} -- versão não tem página própria no portal público
                   AND (cardinality({tiposArray}::text[]) = 0 OR ib.tipoitem = ANY({tiposArray}::text[]))
                   AND lexemas.consulta IS NOT NULL
                   AND ib.documento @@ lexemas.consulta
@@ -918,10 +920,10 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
 
         var versoes = await _contexto.VersoesProvedor.AsNoTracking()
             .Where(v => versaoIds.Contains(v.Id) && v.DesativadoEm == null)
-            .Select(v => new { v.Id, v.Rotulo, v.Slug, v.VerificadoEm })
+            .Select(v => new { v.Id, v.Rotulo, v.VerificadoEm })
             .ToListAsync(ct);
 
-        return versoes.ToDictionary(v => v.Id, v => new VersaoDireta(v.Rotulo, v.Slug, v.VerificadoEm));
+        return versoes.ToDictionary(v => v.Id, v => new VersaoDireta(v.Rotulo, v.VerificadoEm));
     }
 
     /// <summary>
@@ -1043,7 +1045,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         IReadOnlyDictionary<int, string> slugsDeErro,
         IReadOnlyDictionary<int, string> slugsDeCampoLayout)
     {
-        var url = MontarUrl(linha, versoesDiretas, provedores, artigos, slugsDeErro, slugsDeCampoLayout);
+        var url = MontarUrl(linha, provedores, artigos, slugsDeErro, slugsDeCampoLayout);
 
         if (linha.TipoItem == TipoErro)
         {
@@ -1114,15 +1116,12 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
     /// tinha resolvido para o NOME.
     ///
     /// <para>
-    /// O fallback para <c>linha.Url</c> é alcançável e deliberado: a versão pai pode ter sido
-    /// desativada (<see cref="CarregarVersoesDiretasAsync"/> filtra <c>desativadoem</c>) sem que a
-    /// linha de projeção tenha sido desativada junto. Nesse caso a URL persistida é a melhor
-    /// informação disponível — melhor que devolver item sem link ou derrubar a busca inteira.
+    /// O fallback para <c>linha.Url</c> cobre a linha cuja entidade de origem não foi encontrada:
+    /// a URL persistida é melhor que item sem link ou busca derrubada.
     /// </para>
     /// </summary>
     private static string MontarUrl(
         LinhaBusca linha,
-        IReadOnlyDictionary<int, VersaoDireta> versoesDiretas,
         IReadOnlyDictionary<int, ProvedorDireto> provedores,
         IReadOnlyDictionary<int, ArtigoDireto> artigos,
         IReadOnlyDictionary<int, string> slugsDeErro,
@@ -1147,7 +1146,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
             case TipoProvedor:
             case TipoVersaoProvedor:
             case TipoAviso:
-                return MontarUrlSobProvedor(linha, versoesDiretas, provedores);
+                return MontarUrlSobProvedor(linha, provedores);
 
             default:
                 return linha.Url;
@@ -1155,12 +1154,11 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
     }
 
     /// <summary>
-    /// Os três tipos que pendem de um provedor. O <c>#avisos</c> do aviso é âncora na página do
-    /// pai (provedor ou versão, conforme o escopo — U8), não rota própria.
+    /// Os três tipos que pendem de um provedor apontam para a página do provedor, que mostra o
+    /// conteúdo da versão. O <c>#avisos</c> do aviso é âncora nessa página, nos dois escopos.
     /// </summary>
     private static string MontarUrlSobProvedor(
         LinhaBusca linha,
-        IReadOnlyDictionary<int, VersaoDireta> versoesDiretas,
         IReadOnlyDictionary<int, ProvedorDireto> provedores)
     {
         if (linha.ProvedorId is null || provedores.GetValueOrDefault(linha.ProvedorId.Value) is not { } provedor)
@@ -1168,13 +1166,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
 
         var ancora = linha.TipoItem == TipoAviso ? "#avisos" : string.Empty;
 
-        if (linha.TipoItem == TipoProvedor || linha.VersaoProvedorId is null)
-            return $"/provedores/{provedor.Slug}{ancora}";
-
-        if (!versoesDiretas.TryGetValue(linha.VersaoProvedorId.Value, out var versao))
-            return linha.Url;
-
-        return $"/provedores/{provedor.Slug}/{versao.Slug}{ancora}";
+        return $"/provedores/{provedor.Slug}{ancora}";
     }
 
     private sealed record ProvedorFiltroInfo(int Id, string Slug, string Nome);
@@ -1205,7 +1197,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
 
     private sealed record ArtigoDireto(string Slug, DateOnly? VerificadoEm);
 
-    private sealed record VersaoDireta(string Rotulo, string Slug, DateOnly? VerificadoEm);
+    private sealed record VersaoDireta(string Rotulo, DateOnly? VerificadoEm);
 
     private sealed record VersaoAplicavel(string ProvedorNome, string VersaoRotulo);
 

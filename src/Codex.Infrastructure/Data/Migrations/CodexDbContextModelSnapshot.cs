@@ -151,7 +151,7 @@ namespace Codex.Infrastructure.Data.Migrations
 
                     b.ToTable("artigos", "codex", t =>
                         {
-                            t.HasCheckConstraint("ck_codex_artigos_tipo", "tipo IN ('Conceito', 'Procedimento', 'Mudanca')");
+                            t.HasCheckConstraint("ck_codex_artigos_tipo", "tipo IN ('Conceito', 'Procedimento', 'Mudanca', 'Configuracao')");
                         });
                 });
 
@@ -407,6 +407,12 @@ namespace Codex.Infrastructure.Data.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("publicado");
+
+                    b.Property<bool>("ReformaTributaria")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("reformatributaria");
 
                     b.Property<string>("Significado")
                         .IsRequired()
@@ -1184,6 +1190,79 @@ namespace Codex.Infrastructure.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Codex.Domain.Entities.NaturezaOperacao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("naturezasoperacaoid");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AConfirmar")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("aconfirmar");
+
+                    b.Property<DateTimeOffset>("AtualizadoEm")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("atualizadoem")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<short>("CodigoInvoicy")
+                        .HasColumnType("smallint")
+                        .HasColumnName("codigoinvoicy");
+
+                    b.Property<DateTimeOffset>("CriadoEm")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criadoem")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset?>("DesativadoEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("desativadoem");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("descricao");
+
+                    b.Property<string>("Observacao")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("observacao");
+
+                    b.Property<short>("Ordem")
+                        .HasColumnType("smallint")
+                        .HasColumnName("ordem");
+
+                    b.Property<string>("ValorProvedor")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("valorprovedor");
+
+                    b.Property<int>("VersaoProvedorId")
+                        .HasColumnType("integer")
+                        .HasColumnName("versaoprovedorid");
+
+                    b.HasKey("Id")
+                        .HasName("pk_codex_naturezasoperacao");
+
+                    b.HasIndex("VersaoProvedorId", "CodigoInvoicy")
+                        .IsUnique()
+                        .HasDatabaseName("uq_codex_naturezasoperacao_versaoprovedorid_codigoinvoicy");
+
+                    b.ToTable("naturezasoperacao", "codex", t =>
+                        {
+                            t.HasCheckConstraint("ck_codex_naturezasoperacao_codigoinvoicy", "codigoinvoicy BETWEEN 0 AND 999");
+                        });
+                });
+
             modelBuilder.Entity("Codex.Domain.Entities.Provedor", b =>
                 {
                     b.Property<int>("Id")
@@ -1764,6 +1843,16 @@ namespace Codex.Infrastructure.Data.Migrations
                         .HasForeignKey("VersaoProvedorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_codex_itensbusca_versaoprovedorid");
+                });
+
+            modelBuilder.Entity("Codex.Domain.Entities.NaturezaOperacao", b =>
+                {
+                    b.HasOne("Codex.Domain.Entities.VersaoProvedor", null)
+                        .WithMany()
+                        .HasForeignKey("VersaoProvedorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_codex_naturezasoperacao_versaoprovedorid");
                 });
 
             modelBuilder.Entity("Codex.Domain.Entities.VarianteMensagem", b =>

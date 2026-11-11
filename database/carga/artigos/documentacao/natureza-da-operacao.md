@@ -61,7 +61,7 @@ A conversão por padrão está na aba *Natureza de Operação* do layout oficial
 | Governo Digital | [Governo Digital](#governo-digital) |
 | H2M (HM2 Soluções WS) | [H2M](#h2m-hm2-soluções-ws) |
 | INFISC | [INFISC](#infisc) |
-| IPM | Tabela natOp × IPM em [ipm.md](../../03-rejeicoes/ipm.md#situação-tributária-natop-invoicy--ipm) |
+| IPM | [IPM](#ipm) |
 | Nota Salvador | [Nota Salvador](#nota-salvador) |
 | Padrão Nacional | [Padrão Nacional](#padrão-nacional-e-provedores-de-leiaute-nacional) |
 | RLZ ABRASF (cidadão online) | [RLZ ABRASF](#rlz-abrasf-cidadão-online) |
@@ -259,6 +259,28 @@ O print traz só o código e a descrição, sem a coluna de valor na prefeitura.
 > | 4 | Imune | 4 |
 > | 5 | Exigibilidade suspensa por decisão judicial | 5 |
 > | 6 | Exigibilidade suspensa por procedimento administrativo | 6 |
+
+### IPM
+
+Entre parênteses, os códigos de rejeição do IPM que validam a regra. As rejeições estão em [ipm.md](../../03-rejeicoes/ipm.md#situação-tributária-natop-invoicy--ipm).
+
+> [!DETALHES] Tabela do IPM
+> | Código no InvoiCy | Descrição da natureza da operação | Valor na prefeitura | Sigla | Admite dedução | Admite ISS retido |
+> | :--- | :--- | :--- | :--- | :--- | :--- |
+> | 1 | Tributada Integralmente | 0 | TI | Não (63) | Não (62) |
+> | 2 | Tributado integralmente (Tomador) | 0 | TI | Não (63) | Não (62) |
+> | 20 | Tributada Integralmente com ISSRF | 1 | TIRF | Não (64) | Obrigatório (65-67, 175) |
+> | 11 | Tributada Integralmente e sujeita à Subs Tributária | 2 | TIST | Não (68) | Obrigatório (69-71, 175) |
+> | 21 | Tributada com redução da base de cálculo | 3 | TRBC | Sim (com autorização, 178) | Não (72) |
+> | 22 | Tributada com redução da base de cálculo com ISSRF | 4 | TRBCRF | Sim (com autorização, 178) | Obrigatório (77-79, 175) |
+> | 23 | Tributada com redução da BC e sujeita à Subst. Tributária | 5 | TRBCST | Sim (com autorização, 178) | Obrigatório (80-82, 175) |
+> | 3 | Isenta | 6 | ISE | Não (83) | Não (84) |
+> | 4 | Imune | 7 | IMU | Não (85) | - |
+> | 10 | Não Tributada - ISS regime Fixo | 8 | NTIFx | Não (86/87) | Não (88) |
+> | 24 | Não Tributada - ISS regime Estimativa | 9 | NTIEs | Não (90) | Não (89) |
+> | 25 | Não Tributada - ISS Construção Civil | 10 | NTICc | - | Não (91/92) |
+> | 26 | Não Tributada - Ato Cooperado | 15 | NTAC | Não (93) | Não (94) |
+> | 16 | Não Tributada | 14 | NTRIB (a confirmar) | - | - |
 
 ### Nota Salvador
 

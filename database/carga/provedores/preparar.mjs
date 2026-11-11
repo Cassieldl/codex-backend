@@ -11,6 +11,11 @@ import { fileURLToPath } from 'node:url'
 
 import { LIMITE_CORPO_AVISO } from '../emissor-nacional/transformar.mjs'
 import { lerFonteDeExemploDoDisco } from '../exemplos-xml.mjs'
+import {
+  destinoDoTipoDeImunidade,
+  lerArtigoNaturezaOperacao,
+  montarNaturezasOperacao,
+} from '../naturezas-operacao.mjs'
 import { exigirGruposConhecidos } from '../vocabulario-invoicy.mjs'
 import { avisoDeCamposPendentes, avisosDasObservacoes } from './avisos.mjs'
 import { PROVEDORES } from './catalogo.mjs'
@@ -55,11 +60,8 @@ export async function prepararCarga(id, elementosXsd) {
   const config = PROVEDORES[id]
   if (!config) throw new Error(`Provedor ${id} não está no catálogo.`)
 
-  const { tags, pendentes, internos } = resolverCampos(
-    lerMapeamento(await lerMaterial(config.mapeamento)),
-    elementosXsd,
-    config.familia,
-  )
+  const mapeamento = lerMapeamento(await lerMaterial(config.mapeamento))
+  const { tags, pendentes, internos } = resolverCampos(mapeamento, elementosXsd, config.familia)
   exigirGruposConhecidos(
     tags.flatMap((tag) => tag.campos.map((campo) => campo.caminhoInvoicy)),
     elementosXsd,
@@ -95,9 +97,18 @@ export async function prepararCarga(id, elementosXsd) {
       )
   }
 
+  const naturezasOperacao = config.naturezaOperacao
+    ? montarNaturezasOperacao(
+        await lerArtigoNaturezaOperacao(),
+        config.naturezaOperacao,
+        destinoDoTipoDeImunidade(mapeamento),
+      )
+    : null
+
   return {
     config,
     campos,
+    naturezasOperacao,
     erros,
     avisos,
     pendentes,

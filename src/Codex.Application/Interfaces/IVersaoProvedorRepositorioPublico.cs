@@ -46,6 +46,9 @@ public interface IVersaoProvedorRepositorioPublico
     /// </summary>
     Task<IReadOnlyCollection<ExemploPublicoDto>> ListarExemplosAsync(int versaoProvedorId, CancellationToken ct);
 
+    /// <summary>De-para da natureza da operação da versão, na ordem de exibição.</summary>
+    Task<IReadOnlyCollection<NaturezaOperacaoPublicoDto>> ListarNaturezasOperacaoAsync(int versaoProvedorId, CancellationToken ct);
+
     /// <summary>Campos ativos da versão com o caminho canônico e o estado, para recortar o envio modelo.</summary>
     Task<IReadOnlyCollection<CampoEnvioModeloBrutoDto>> ListarCamposDoEnvioModeloAsync(int versaoProvedorId, CancellationToken ct);
 

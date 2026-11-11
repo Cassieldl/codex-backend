@@ -24,7 +24,17 @@ export const VERSOES_LAYOUT_INVOICY = [
     descricao:
       'Layout de recepção de NFS-e do InvoiCy, versão 8 (Reforma Tributária, NT 009). Caminhos tirados do XSD de entrada.',
   },
-  { rotulo: '9' },
+  {
+    rotulo: '9',
+    // Uma linha por tópico, no formato "Rótulo: texto"; a primeira linha é o resumo da Home.
+    descricao: [
+      'InvoiCy 3.3.0.0 (NT 009 v1.01).',
+      'Grupos novos: Condominio (cobranças, detalhamento e descontos) e RPSSubs (dados da substituição).',
+      'Campos novos: nroDUIMP, nroDUE, nroContCambio, ValAjusteBCIBSCBSComExt, DestIE e DestIM.',
+      'Mudaram de posição: dados da substituição (de tpOper para RPSSubs); Fornecedor e DocumentoFiscalOutro (agora dentro de Documento); endereço do imóvel (só na unidade imobiliária).',
+      'Saíram ou mudaram: ValServEst saiu; nDI e nRE deram lugar a nroDUIMP e nroDUE; ItermIE virou IntermIE; CEPs passam a texto de 8 posições.',
+    ].join('\n'),
+  },
 ]
 
 /** Estrutura gerada de uma versão, versionada ao lado do XSD para o teste do backend validar o XML. */
@@ -97,6 +107,7 @@ export function planejarVocabularioMultiversao(versoes) {
       significado: campo.significado,
       grupo: campo.grupo,
       ordem: posicao + 1,
+      reformaTributaria: campo.reformaTributaria === true,
       origem: versoes[primeira].rotulo,
       descontinuadoEm: ultima < versoes.length - 1 ? versoes[ultima + 1].rotulo : null,
     }
@@ -151,7 +162,10 @@ function itensDe(dados) {
   return dados.items ?? dados
 }
 
-/** Cria as versões que faltam, na ordem, e devolve as da configuração com o estado atual. */
+/**
+ * Cria as versões que faltam e alinha a descrição das existentes, na ordem; devolve as da
+ * configuração com o estado atual.
+ */
 async function garantirVersoes(api, versoes) {
   const { dados } = await api.chamar('GET', '/interno/layout/versoes?tamanhoPagina=200')
   const existentes = itensDe(dados)
@@ -165,6 +179,15 @@ async function garantirVersoes(api, versoes) {
         descricao,
       }))
       console.log(`versão ${rotulo} do Layout InvoiCy criada (id ${versao.id})`)
+    } else if (versao.descricao !== descricao) {
+      const { dados } = await api.chamar(
+        'PUT',
+        `/interno/layout/versoes/${versao.id}`,
+        { descricao },
+        String(versao.versaoConcorrencia),
+      )
+      versao = { ...versao, ...dados, descricao }
+      console.log(`descrição da versão ${rotulo} do Layout InvoiCy atualizada`)
     }
     resultado.push(versao)
   }

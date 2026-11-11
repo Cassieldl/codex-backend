@@ -36,7 +36,7 @@ public sealed class ContratoCamposPorGrupoHttpTests : IAsyncLifetime
     /// <summary>Propriedades de <c>CampoVersaoPublico</c> no cliente.</summary>
     private static readonly string[] PropriedadesDoCampo =
     [
-        "campoLayoutSlug", "nome", "caminhoXml", "significado", "tipo", "tamanho", "mascara",
+        "campoLayoutSlug", "nome", "caminhoXml", "significado", "reformaTributaria", "tipo", "tamanho", "mascara",
         "dominio", "estadoPreenchimento", "condicao", "exemplo", "notaPreenchimento",
         "destinoXml", "notaTransformacao", "ordem", "errosConhecidos",
     ];
@@ -101,6 +101,15 @@ public sealed class ContratoCamposPorGrupoHttpTests : IAsyncLifetime
                 because: $"'{opcional}' é declarado como nullable no cliente, e nullable exige a chave presente");
             valor.ValueKind.Should().Be(JsonValueKind.Null);
         }
+    }
+
+    [Fact]
+    public async Task P4_ReformaTributaria_VemDoCampoDoLayout()
+    {
+        var pagina = await ObterPaginaAsync();
+
+        LocalizarCampo(pagina, "campo-completo").GetProperty("reformaTributaria").GetBoolean().Should().BeTrue();
+        LocalizarCampo(pagina, "campo-enxuto").GetProperty("reformaTributaria").GetBoolean().Should().BeFalse();
     }
 
     [Fact]
@@ -208,7 +217,7 @@ public sealed class ContratoCamposPorGrupoHttpTests : IAsyncLifetime
 
             var semGrupo = CampoLayout.Criar(layout.Id, $"campo-sem-grupo {sufixo}", $"//raiz/SemGrupo{sufixo}", "Campo fora de grupo", ordem: 5);
             var enxuto = CampoLayout.Criar(layout.Id, $"campo-enxuto {sufixo}", $"//raiz/Enxuto{sufixo}", "Campo sem opcionais", ordem: 10, grupo: "Financeiro");
-            var completo = CampoLayout.Criar(layout.Id, $"campo-completo {sufixo}", $"//raiz/Completo{sufixo}", "Campo com todos os opcionais", ordem: 20, grupo: "Financeiro");
+            var completo = CampoLayout.Criar(layout.Id, $"campo-completo {sufixo}", $"//raiz/Completo{sufixo}", "Campo com todos os opcionais", ordem: 20, grupo: "Financeiro", reformaTributaria: true);
             contexto.CamposLayout.AddRange(semGrupo, enxuto, completo);
             await contexto.SaveChangesAsync();
 

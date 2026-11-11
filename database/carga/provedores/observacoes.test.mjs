@@ -49,7 +49,7 @@ test('observações: pendência sai a partir da marca, e o item que só tinha o 
   assert.deepEqual(
     regras.removidos.map((item) => item.motivo),
     [
-      'A lista dos provedores que usam a tabela do Padrão Nacional ainda não foi confirmada provedor a provedor.',
+      'O de-para da natureza da operação tem seção própria na página da versão.',
       'Marcado como pendente.',
       'Marcado como pendente.',
       'Marcado como pendente.',
@@ -153,10 +153,11 @@ const PROVEDORES_DE_LEIAUTE_NACIONAL = Object.keys(PROVEDORES).filter(
 const ALERTA = String.fromCodePoint(0x26a0)
 const TRAVESSAO = String.fromCodePoint(0x2014)
 const MEIA_RISCA_NA_FRASE = ` ${String.fromCodePoint(0x2013)} `
+// Imagem com o caminho que o portal serve (/imagens/) é print escrito no catálogo e pode ficar;
+// imagem ou link com caminho do material (../assets, .md) é marca que vazou.
 const MARCAS_DE_MARKDOWN = [
   String.raw`\[(obs|portal|validado)`,
-  String.raw`!\[`,
-  String.raw`\]\(`,
+  String.raw`\]\((?!/imagens/)`,
   String.raw`\*\*`,
   '`',
 ]
@@ -166,7 +167,7 @@ const PROIBIDOS_NA_ESCRITA = new RegExp(
   'u',
 )
 
-test('material real: nenhum aviso tirado das observações leva marca, imagem ou Markdown', async () => {
+test('material real: nenhum aviso leva marca, imagem fora de /imagens/ ou Markdown', async () => {
   const { elementos } = await lerVocabularioInvoicy()
   assert.equal(PROVEDORES_DE_LEIAUTE_NACIONAL.length, 10)
   for (const id of PROVEDORES_DE_LEIAUTE_NACIONAL) {

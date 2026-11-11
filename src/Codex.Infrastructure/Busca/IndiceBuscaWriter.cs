@@ -442,7 +442,7 @@ public sealed class IndiceBuscaWriter : IIndiceBuscaWriter
             {
                 var versao = await _contexto.VersoesProvedor.AsNoTracking()
                     .Where(v => v.Id == itemId)
-                    .Select(v => new { v.Rotulo, v.Slug, v.ProvedorId })
+                    .Select(v => new { v.Rotulo, v.ProvedorId })
                     .FirstOrDefaultAsync(ct);
                 if (versao is null)
                     return null;
@@ -453,7 +453,7 @@ public sealed class IndiceBuscaWriter : IIndiceBuscaWriter
                     .FirstAsync(ct);
 
                 return new MetadadosItemBusca(
-                    versao.Rotulo, $"/provedores/{provedor.Slug}/{versao.Slug}", null, provedor.Nome,
+                    versao.Rotulo, $"/provedores/{provedor.Slug}", null, provedor.Nome,
                     versao.ProvedorId, itemId, [versao.ProvedorId]);
             }
 
@@ -478,18 +478,18 @@ public sealed class IndiceBuscaWriter : IIndiceBuscaWriter
                         aviso.ProvedorId, null, [aviso.ProvedorId.Value]);
                 }
 
-                var versaoDoAviso = await _contexto.VersoesProvedor.AsNoTracking()
+                var provedorIdDoAviso = await _contexto.VersoesProvedor.AsNoTracking()
                     .Where(v => v.Id == aviso.VersaoProvedorId!.Value)
-                    .Select(v => new { v.Slug, v.ProvedorId })
+                    .Select(v => v.ProvedorId)
                     .FirstAsync(ct);
                 var provedorDoAviso = await _contexto.Provedores.AsNoTracking()
-                    .Where(p => p.Id == versaoDoAviso.ProvedorId)
+                    .Where(p => p.Id == provedorIdDoAviso)
                     .Select(p => new { p.Nome, p.Slug })
                     .FirstAsync(ct);
 
                 return new MetadadosItemBusca(
-                    aviso.Titulo, $"/provedores/{provedorDoAviso.Slug}/{versaoDoAviso.Slug}#avisos", null, provedorDoAviso.Nome,
-                    versaoDoAviso.ProvedorId, aviso.VersaoProvedorId, [versaoDoAviso.ProvedorId]);
+                    aviso.Titulo, $"/provedores/{provedorDoAviso.Slug}#avisos", null, provedorDoAviso.Nome,
+                    provedorIdDoAviso, aviso.VersaoProvedorId, [provedorIdDoAviso]);
             }
 
             case TipoItemIndexado.erro:

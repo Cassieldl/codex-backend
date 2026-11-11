@@ -241,8 +241,9 @@ public sealed class TrocaSlugHttpTests : IAsyncLifetime
 
         await TrocarSlugDoProvedorAsync(provedor.Id, provedor.Versao, slugNovo);
 
-        var urlDaVersao = await BuscarUrlAsync(versao.TermoDeBusca, "versaoprovedor");
-        urlDaVersao.Should().Be($"/provedores/{slugNovo}/{versao.Slug}",
+        // Versão de provedor só aparece na busca interna.
+        var urlDaVersao = await BuscarUrlAsync(versao.TermoDeBusca, "versaoprovedor", interna: true);
+        urlDaVersao.Should().Be($"/provedores/{slugNovo}",
             because: "a URL é derivada do slug corrente do provedor na hidratação, não lida de itensbusca.url");
 
         var urlDoProvedor = await BuscarUrlAsync(provedor.TermoDeBusca, "provedor");
@@ -578,10 +579,15 @@ public sealed class TrocaSlugHttpTests : IAsyncLifetime
         return corpo.GetProperty("data").GetProperty("versaoConcorrencia").GetUInt32();
     }
 
-    /// <summary>URL do único item daquele tipo devolvido pela busca pública — <c>null</c> quando a busca não achou nada.</summary>
-    private async Task<string?> BuscarUrlAsync(string termo, string tipo)
+    /// <summary>URL do único item daquele tipo devolvido pela busca; <c>null</c> quando a busca não achou nada.</summary>
+    private async Task<string?> BuscarUrlAsync(string termo, string tipo, bool interna = false)
     {
-        using var resposta = await _cliente.GetAsync($"/api/v1/busca?q={termo}&tipo={tipo}");
+        var rota = interna ? "/api/v1/interno/busca" : "/api/v1/busca";
+        using var requisicao = new HttpRequestMessage(HttpMethod.Get, $"{rota}?q={termo}&tipo={tipo}");
+        if (interna)
+            requisicao.Headers.Add(TestAuthHandler.HeaderRoles, "indicebusca-buscar");
+
+        using var resposta = await _cliente.SendAsync(requisicao);
         resposta.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var corpo = JsonDocument.Parse(await resposta.Content.ReadAsStringAsync()).RootElement;

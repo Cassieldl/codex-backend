@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises'
 import { test } from 'node:test'
 
 import {
+  lerEstilosDaReformaTributaria,
   lerEstilosRiscados,
   lerLinhas,
   lerTextosCompartilhados,
@@ -38,6 +39,36 @@ test('célula com estilo de fonte riscada conta como vazia, e a linha sem nome s
   assert.deepEqual(
     montarTagsDaPlanilha(linhas).map((tag) => tag.caminho),
     ['Envio'],
+  )
+})
+
+test('tag com o nome pintado de verde ou amarelo é da reforma tributária; outra cor não é', () => {
+  const estilos = `<styleSheet>
+    <fills count="4">
+      <fill><patternFill patternType="none"/></fill>
+      <fill><patternFill patternType="solid"><fgColor rgb="FF00FF00"/></patternFill></fill>
+      <fill><patternFill patternType="solid"><fgColor rgb="FFFFFF00"/></patternFill></fill>
+      <fill><patternFill patternType="solid"><fgColor rgb="FF8DB3E2"/></patternFill></fill>
+    </fills>
+    <cellXfs count="4"><xf fillId="0"/><xf fillId="1"/><xf fillId="2"/><xf fillId="3"/></cellXfs>
+  </styleSheet>`
+  const linhas = [
+    { celulas: { B: 'C01', C: 'Envio', H: '-' }, estilos: { C: 3 } },
+    { celulas: { B: 'C02', C: 'finNFSe', H: 'C01' }, estilos: { C: 1 } },
+    { celulas: { B: 'C03', C: 'ListaDedIBSCBS', H: 'C01' }, estilos: { C: 2 } },
+    { celulas: { B: 'C04', C: 'RPSNumero', H: 'C01' }, estilos: { B: 1, C: 0 } },
+  ]
+
+  const tags = montarTagsDaPlanilha(linhas, lerEstilosDaReformaTributaria(estilos))
+
+  assert.deepEqual(
+    tags.map(({ caminho, reformaTributaria }) => [caminho, reformaTributaria]),
+    [
+      ['Envio', false],
+      ['Envio/finNFSe', true],
+      ['Envio/ListaDedIBSCBS', true],
+      ['Envio/RPSNumero', false],
+    ],
   )
 })
 

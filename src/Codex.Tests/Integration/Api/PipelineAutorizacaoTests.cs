@@ -49,6 +49,7 @@ public sealed class PipelineAutorizacaoTests : IClassFixture<CodexApiFactory>
             (HttpMethod.Delete, "/api/v1/interno/versoes/1", "versoesprovedor-remover"),
             (HttpMethod.Put, "/api/v1/interno/versoes/1/publicacao", "versoesprovedor-publicar"),
             (HttpMethod.Put, "/api/v1/interno/versoes/1/verificacao", "versoesprovedor-atualizar"),
+            (HttpMethod.Put, "/api/v1/interno/versoes/1/naturezas-operacao", "versoesprovedor-atualizar"),
             (HttpMethod.Get, "/api/v1/interno/versoes/1/campos", "camposversao-buscar"),
             (HttpMethod.Post, "/api/v1/interno/versoes/1/campos", "camposversao-adicionar"),
             (HttpMethod.Post, "/api/v1/interno/versoes/1/avisos", "avisos-adicionar"),

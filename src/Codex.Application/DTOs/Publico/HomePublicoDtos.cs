@@ -40,7 +40,7 @@ public sealed record ComunicadoVigenteDto
 
     public string? ProvedorNome { get; init; }
 
-    /// <summary><c>/provedores/{slug}</c> ou <c>/provedores/{slug}/{versao}</c>; <c>null</c> em <c>Global</c>.</summary>
+    /// <summary><c>/provedores/{slug}</c>, também em comunicado de versão; <c>null</c> em <c>Global</c>.</summary>
     public string? Url { get; init; }
 }
 
@@ -122,8 +122,6 @@ public sealed record ComunicadoHomeBrutoDto
     public string? ProvedorNome { get; init; }
 
     public string? ProvedorSlug { get; init; }
-
-    public string? VersaoSlug { get; init; }
 }
 
 /// <summary>Provedor publicado, cru — o agrupamento por categoria acontece no service.</summary>

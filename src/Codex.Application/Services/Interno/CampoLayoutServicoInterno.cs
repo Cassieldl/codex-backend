@@ -35,7 +35,7 @@ public sealed class CampoLayoutServicoInterno : ICampoLayoutServicoInterno
         _ = await _versaoLayoutRepositorio.ObterPorIdAsync(versaoLayoutId, rastreada: false, ct)
             ?? throw new EntidadeNaoEncontradaException("VersaoLayout", versaoLayoutId);
 
-        var campoLayout = CampoLayout.Criar(versaoLayoutId, dto.Nome, dto.CaminhoXml, dto.Significado, dto.Ordem, dto.Grupo);
+        var campoLayout = CampoLayout.Criar(versaoLayoutId, dto.Nome, dto.CaminhoXml, dto.Significado, dto.Ordem, dto.Grupo, dto.ReformaTributaria);
 
         await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
         {
@@ -64,6 +64,9 @@ public sealed class CampoLayoutServicoInterno : ICampoLayoutServicoInterno
 
         if (dto.Ordem.HasValue)
             campoLayout.AtualizarOrdem(dto.Ordem.Value);
+
+        if (dto.ReformaTributaria.HasValue)
+            campoLayout.AtualizarReformaTributaria(dto.ReformaTributaria.Value);
 
         if (dto.Estado == EstadoCampoLayout.Descontinuado && dto.VersaoLayoutDescontinuadoId.HasValue)
         {
@@ -132,6 +135,7 @@ public sealed class CampoLayoutServicoInterno : ICampoLayoutServicoInterno
         Significado = campoLayout.Significado,
         Grupo = campoLayout.Grupo,
         Ordem = campoLayout.Ordem,
+        ReformaTributaria = campoLayout.ReformaTributaria,
         Slug = campoLayout.Slug,
         Estado = campoLayout.Estado.ToString(),
         Publicado = campoLayout.Publicado,

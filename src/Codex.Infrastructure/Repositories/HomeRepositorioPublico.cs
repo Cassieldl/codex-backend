@@ -41,7 +41,6 @@ public sealed class HomeRepositorioPublico : RepositorioBase<CodexDbContext>, IH
                 ProvedorId = c.ProvedorId,
                 ProvedorNome = c.ProvedorNome,
                 ProvedorSlug = c.ProvedorSlug,
-                VersaoSlug = c.VersaoSlug,
             })
             .ToListAsync(ct);
 

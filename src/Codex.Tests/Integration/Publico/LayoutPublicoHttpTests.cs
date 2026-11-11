@@ -93,6 +93,20 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
         indice.GetProperty("vigente").GetProperty("estado").GetString().Should().Be("Vigente");
     }
 
+    [Fact]
+    public async Task P10_Novidades_ComparamAVigenteComAAnteriorPublicada()
+    {
+        var indice = await ObterDadosAsync("/api/v1/layout");
+        var novidades = indice.GetProperty("novidades");
+
+        novidades.GetProperty("versao").GetProperty("slug").GetString().Should().Be(_cenario.V2Slug);
+        // A anterior é a publicada logo abaixo: a oculta, entre ordens mais baixas, não conta.
+        novidades.GetProperty("anterior").GetProperty("slug").GetString().Should().Be(_cenario.V1Slug);
+        novidades.GetProperty("descricao").GetString().Should().Be(DescricaoDaV2);
+        novidades.GetProperty("camposNovos").GetInt32().Should().Be(1, because: "só o campoNovo nasce na V2");
+        novidades.GetProperty("camposDescontinuados").GetInt32().Should().Be(1, because: "só o campoSaindo sai na V2");
+    }
+
     [Theory]
     // V1: campoSempre + campoDescontinuadoEmV2.
     // V2: campoSempre + campoDescontinuadoEmV2 (ainda ativo na versão que o descontinua) + campoNovoEmV2.
@@ -138,6 +152,7 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
         var novo = LocalizarCampo(versao, _cenario.CampoNovoEmV2Slug);
         novo.GetProperty("novoNestaVersao").GetBoolean().Should().BeTrue();
         novo.GetProperty("descontinuadoNestaVersao").GetBoolean().Should().BeFalse();
+        novo.GetProperty("reformaTributaria").GetBoolean().Should().BeTrue();
         novo.GetProperty("urlCanonica").GetString().Should().Be($"/layout/campos/{_cenario.CampoNovoEmV2Slug}");
 
         // M12, limite "descontinuado exatamente em Y": ainda aparece, sinalizado.
@@ -149,11 +164,12 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
         var sempre = LocalizarCampo(versao, _cenario.CampoSempreSlug);
         sempre.GetProperty("novoNestaVersao").GetBoolean().Should().BeFalse();
         sempre.GetProperty("descontinuadoNestaVersao").GetBoolean().Should().BeFalse();
+        sempre.GetProperty("reformaTributaria").GetBoolean().Should().BeFalse();
 
         // R3 — vocabulário canônico puro: comportamento (tipo/tamanho/máscara/obrigatoriedade)
         // é de CampoVersao e não pode vazar para o dicionário do layout.
         sempre.EnumerateObject().Select(p => p.Name).Should().BeEquivalentTo(
-            ["slug", "nome", "caminhoXml", "significado", "ordem", "novoNestaVersao", "descontinuadoNestaVersao", "urlCanonica"]);
+            ["slug", "nome", "caminhoXml", "significado", "ordem", "reformaTributaria", "novoNestaVersao", "descontinuadoNestaVersao", "urlCanonica"]);
 
         TodosOsSlugs(versao).Should().NotContain(_cenario.CampoFuturoEmV3Slug,
             because: "M12: campo cuja origem é POSTERIOR a Y não aparece em Y");
@@ -236,7 +252,7 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
         var verbete = await ObterDadosAsync($"/api/v1/layout/campos/{_cenario.CampoSempreSlug}");
 
         verbete.EnumerateObject().Select(p => p.Name).Should().BeEquivalentTo(
-            ["slug", "nome", "caminhoXml", "significado", "estado", "versaoExibicao", "versaoOrigem", "versaoDescontinuado", "ondeEUsado"]);
+            ["slug", "nome", "caminhoXml", "significado", "reformaTributaria", "estado", "versaoExibicao", "versaoOrigem", "versaoDescontinuado", "ondeEUsado"]);
 
         verbete.GetProperty("estado").GetString().Should().Be("Ativo");
         verbete.GetProperty("versaoExibicao").GetProperty("slug").GetString().Should().Be(_cenario.V2Slug);
@@ -388,6 +404,8 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
         .Replace("{versao}", _cenario.V2Slug, StringComparison.Ordinal)
         .Replace("{campo}", _cenario.CampoSempreSlug, StringComparison.Ordinal);
 
+    private const string DescricaoDaV2 = "Nota da V2.\nCampos novos: campo novo";
+
     private sealed record Cenario
     {
         public required string VocultaSlug { get; init; }
@@ -420,7 +438,7 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
 
         var voculta = VersaoLayout.Criar($"Layout Oculto {_sufixo}", maiorOrdem + 1);
         var v1 = VersaoLayout.Criar($"Layout Um {_sufixo}", maiorOrdem + 2);
-        var v2 = VersaoLayout.Criar($"Layout Dois {_sufixo}", maiorOrdem + 3);
+        var v2 = VersaoLayout.Criar($"Layout Dois {_sufixo}", maiorOrdem + 3, DescricaoDaV2);
         var v3 = VersaoLayout.Criar($"Layout Tres {_sufixo}", maiorOrdem + 4);
 
         // Publicada e depois soft-deletada: o caso que distingue "nunca existiu" (404) de
@@ -443,7 +461,7 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
         var campoOculto = CampoLayout.Criar(voculta.Id, $"campo oculto {_sufixo}", $"//raiz/Oculto{_sufixo}", "Campo de versão não publicada", ordem: 10);
         var campoSempre = CampoLayout.Criar(v1.Id, $"campo sempre {_sufixo}", $"//raiz/Sempre{_sufixo}", "Campo presente em todas as versões", ordem: 20, grupo: "Identificação");
         var campoDescontinuado = CampoLayout.Criar(v1.Id, $"campo saindo {_sufixo}", $"//raiz/Saindo{_sufixo}", "Campo que sai em V2", ordem: 30, grupo: "Identificação");
-        var campoNovo = CampoLayout.Criar(v2.Id, $"campo novo {_sufixo}", $"//raiz/Novo{_sufixo}", "Campo que nasce em V2", ordem: 40);
+        var campoNovo = CampoLayout.Criar(v2.Id, $"campo novo {_sufixo}", $"//raiz/Novo{_sufixo}", "Campo que nasce em V2", ordem: 40, reformaTributaria: true);
         var campoFuturo = CampoLayout.Criar(v3.Id, $"campo futuro {_sufixo}", $"//raiz/Futuro{_sufixo}", "Campo que nasce depois da vigente", ordem: 50);
 
         // Campo despublicado por si, dentro de versão publicada — distinto do campoOculto, que é

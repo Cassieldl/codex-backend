@@ -69,14 +69,9 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
                     Slug = v.Slug,
                     Rotulo = v.Rotulo,
                     VerificadoEm = v.VerificadoEm,
-                    // Path interno relativo (nunca absoluto/com esquema/host — restrição de
-                    // segurança: o frontend injeta este valor direto em <Link to>/<a href> sem
-                    // validação própria, o backend é a última linha de defesa). É a rota do
-                    // FRONTEND (arquitetura.md §3.2: provedores/$provedorSlug/$versaoSlug), não
-                    // a rota da API pública. Garantia contra "//"/"/\\" por slug hostil: Slug
-                    // (Codex.Domain.ValueObjects.Slug.DeTexto) só produz [a-z0-9-], nunca vazio,
-                    // nunca contém '/' ou '\\' — os dois segmentos abaixo nunca colapsam.
-                    Url = $"/provedores/{provedor.Slug}/{v.Slug}",
+                    // Rota relativa do frontend, nunca absoluta: o front usa o valor direto em
+                    // <a href>. Slug só tem [a-z0-9-] e nunca é vazio, então não vira "//".
+                    Url = $"/provedores/{provedor.Slug}",
                 })
                 .ToArray(),
         };
@@ -109,6 +104,7 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
         var erros = await _versaoRepositorio.ListarErrosAplicaveisPublicadosAsync(versao.Id, ct);
         var outrasVersoes = await _versaoRepositorio.ListarOutrasVersoesPublicadasAsync(provedor.Id, versao.Id, ct);
         var exemplos = await _versaoRepositorio.ListarExemplosAsync(versao.Id, ct);
+        var naturezasOperacao = await _versaoRepositorio.ListarNaturezasOperacaoAsync(versao.Id, ct);
 
         var camposPorGrupo = campos
             .GroupBy(c => (c.Grupo, c.GrupoSlug))
@@ -150,6 +146,7 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
                 .Select(v => new VersaoResumoMinimaDto { Slug = v.Slug, Rotulo = v.Rotulo })
                 .ToArray(),
             Exemplos = exemplos,
+            NaturezasOperacao = naturezasOperacao,
         };
     }
 
@@ -240,6 +237,7 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
         Nome = campo.Nome,
         CaminhoXml = campo.CaminhoXml,
         Significado = campo.Significado,
+        ReformaTributaria = campo.ReformaTributaria,
         Tipo = campo.Tipo,
         Tamanho = campo.Tamanho,
         Mascara = campo.Mascara,

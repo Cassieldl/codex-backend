@@ -20,6 +20,9 @@ const ASSINATURA_FIM_DIRETORIO = 0x06054b50
 
 const RISCADO = /<strike(?!\s+val="(?:0|false)")\b/
 
+/** Preenchimentos com que o InvoiCy pinta o campo da reforma tributária: verde e amarelo. */
+const CORES_DA_REFORMA_TRIBUTARIA = new Set(['FF00FF00', 'FFFFFF00'])
+
 /** Arquivos do zip por nome. Lê pelo diretório central, que é quem tem os tamanhos confiáveis. */
 export function lerZip(conteudo) {
   let fim = conteudo.length - 22
@@ -98,6 +101,29 @@ export function lerEstilosRiscados(estilosXml) {
   return new Set(fontePorEstilo.flatMap((fonte, indice) => (fonteRiscada[fonte] ? [indice] : [])))
 }
 
+/**
+ * Índices de estilo de célula pintados com a cor da reforma tributária. A planilha não tem legenda:
+ * o verde marca os campos da reforma e o amarelo os da NT009 v1.01, que também são da reforma.
+ */
+export function lerEstilosDaReformaTributaria(estilosXml) {
+  const blocoPreenchimentos = estilosXml.match(/<fills\b[\s\S]*?<\/fills>/)?.[0] ?? ''
+  const ehDaReforma = [
+    ...blocoPreenchimentos.matchAll(/<fill\b[^>]*\/>|<fill\b[\s\S]*?<\/fill>/g),
+  ].map(([preenchimento]) => {
+    const cor = preenchimento.match(/<fgColor\b[^>]*\brgb="([0-9A-Fa-f]+)"/)?.[1]
+    return cor !== undefined && CORES_DA_REFORMA_TRIBUTARIA.has(cor.toUpperCase())
+  })
+  const blocoEstilos = estilosXml.match(/<cellXfs\b[\s\S]*?<\/cellXfs>/)?.[0] ?? ''
+  const preenchimentoPorEstilo = [
+    ...blocoEstilos.matchAll(/<xf\b[^>]*?(?:\/>|>[\s\S]*?<\/xf>)/g),
+  ].map(([estilo]) => Number(estilo.match(/fillId="(\d+)"/)?.[1] ?? 0))
+  return new Set(
+    preenchimentoPorEstilo.flatMap((preenchimento, indice) =>
+      ehDaReforma[preenchimento] ? [indice] : [],
+    ),
+  )
+}
+
 /** Caminho da planilha de cada aba, pelo nome da aba. */
 export function lerAbas(workbookXml, relacoesXml) {
   const alvoPorId = new Map(
@@ -115,17 +141,20 @@ export function lerAbas(workbookXml, relacoesXml) {
 }
 
 /**
- * Linhas da aba como `{ numero, celulas: { B: 'C01', ... } }`, só com as células preenchidas.
- * Célula com estilo riscado conta como vazia: é assim que a planilha marca tag removida.
+ * Linhas da aba como `{ numero, celulas: { B: 'C01', ... }, estilos: { B: 3, ... } }`, só com
+ * as células preenchidas. Célula com estilo riscado conta como vazia: é assim que a planilha marca
+ * tag removida.
  */
 export function lerLinhas(planilhaXml, textos, estilosRiscados = new Set()) {
   return [...planilhaXml.matchAll(/<row\b[^>]*\br="(\d+)"[^>]*>([\s\S]*?)<\/row>/g)].map(
     ([, numero, corpo]) => {
       const celulas = {}
+      const estilos = {}
       for (const [, atributos, conteudo] of corpo.matchAll(
         /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g,
       )) {
-        if (estilosRiscados.has(Number(atributos.match(/\bs="(\d+)"/)?.[1]))) continue
+        const estilo = Number(atributos.match(/\bs="(\d+)"/)?.[1])
+        if (estilosRiscados.has(estilo)) continue
 
         const coluna = atributos.match(/\br="([A-Z]+)\d+"/)[1]
         const tipo = atributos.match(/\bt="([^"]+)"/)?.[1]
@@ -135,8 +164,9 @@ export function lerLinhas(planilhaXml, textos, estilosRiscados = new Set()) {
             : conteudo?.match(/<v>([\s\S]*?)<\/v>/)?.[1]
         if (valor === undefined) continue
         celulas[coluna] = tipo === 's' ? textos[Number(valor)] : decodificar(valor)
+        estilos[coluna] = estilo
       }
-      return { numero: Number(numero), celulas }
+      return { numero: Number(numero), celulas, estilos }
     },
   )
 }
@@ -155,13 +185,13 @@ function aplicacaoOuNulo(valor) {
 /**
  * Tags da aba de envio, no formato do JSON versionado. O caminho é montado pela coluna Pai (a
  * sequência do elemento superior), como na extração da versão 8. Linha sem nome de tag (riscada
- * ou de título) fica de fora.
+ * ou de título) fica de fora. A marca da reforma tributária vem da cor da célula do nome da tag.
  */
-export function montarTagsDaPlanilha(linhas) {
+export function montarTagsDaPlanilha(linhas, estilosDaReforma = new Set()) {
   const tags = []
   const caminhoPorSeq = new Map()
 
-  for (const { celulas } of linhas) {
+  for (const { celulas, estilos = {} } of linhas) {
     const seq = textoOuNulo(celulas.B)
     const nome = textoOuNulo(celulas.C)
     if (!seq || !/^C\d+$/.test(seq) || !nome) continue
@@ -183,6 +213,7 @@ export function montarTagsDaPlanilha(linhas) {
       observacao: textoOuNulo(celulas.I),
       versaoInvoicy: textoOuNulo(celulas.J),
       aplicacaoNegocio: aplicacaoOuNulo(celulas.K),
+      reformaTributaria: estilosDaReforma.has(estilos.C),
     })
   }
   return tags
@@ -207,6 +238,7 @@ export function extrairPlanilha(conteudoXlsx) {
 
   const textos = lerTextosCompartilhados(texto('xl/sharedStrings.xml'))
   const riscados = lerEstilosRiscados(texto('xl/styles.xml'))
+  const daReforma = lerEstilosDaReformaTributaria(texto('xl/styles.xml'))
   const abas = lerAbas(texto('xl/workbook.xml'), texto('xl/_rels/workbook.xml.rels'))
   const linhasDaAba = (nome) => {
     if (!abas.has(nome)) throw new Error(`Aba "${nome}" não está na planilha.`)
@@ -214,7 +246,7 @@ export function extrairPlanilha(conteudoXlsx) {
   }
 
   return {
-    tags: montarTagsDaPlanilha(linhasDaAba(ABA_DE_ENVIO)),
+    tags: montarTagsDaPlanilha(linhasDaAba(ABA_DE_ENVIO), daReforma),
     versoes: montarVersoesDaPlanilha(linhasDaAba(ABA_DE_VERSOES)),
   }
 }
@@ -236,7 +268,8 @@ async function main() {
     extraidoEm: new Date().toISOString().slice(0, 10),
     observacao:
       'Caminho montado pela coluna Pai; o XSD é a referência de caminho. Linha e trecho riscados ' +
-      'ficam de fora. aplicacaoNegocio vem da coluna K, nulo quando vazia ou "-". versoes vem da ' +
+      'ficam de fora. aplicacaoNegocio vem da coluna K, nulo quando vazia ou "-". ' +
+      'reformaTributaria vem da cor verde ou amarela da célula do nome. versoes vem da ' +
       `aba ${ABA_DE_VERSOES}.`,
     versoes,
     tags,

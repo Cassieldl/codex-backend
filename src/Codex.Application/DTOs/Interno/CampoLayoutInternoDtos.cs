@@ -28,6 +28,8 @@ public sealed record CampoLayoutResponseDto
 
     public required int Ordem { get; init; }
 
+    public required bool ReformaTributaria { get; init; }
+
     public required string Slug { get; init; }
 
     public required string Estado { get; init; }
@@ -49,6 +51,8 @@ public sealed record CriarCampoLayoutDto
     public string? Grupo { get; init; }
 
     public int Ordem { get; init; }
+
+    public bool ReformaTributaria { get; init; }
 }
 
 /// <summary>
@@ -66,6 +70,8 @@ public sealed record AtualizarCampoLayoutDto
     public string? Grupo { get; init; }
 
     public int? Ordem { get; init; }
+
+    public bool? ReformaTributaria { get; init; }
 
     public EstadoCampoLayout? Estado { get; init; }
 

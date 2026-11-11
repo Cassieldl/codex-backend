@@ -29,6 +29,7 @@ public sealed class CampoLayoutConfiguration : IEntityTypeConfiguration<CampoLay
         builder.Property(x => x.Significado).HasColumnName("significado").IsRequired();
         builder.Property(x => x.Grupo).HasColumnName("grupo").HasMaxLength(LimitesCampoLayout.Grupo);
         builder.Property(x => x.Ordem).HasColumnName("ordem").HasDefaultValue(0).IsRequired();
+        builder.Property(x => x.ReformaTributaria).HasColumnName("reformatributaria").HasDefaultValue(false).IsRequired();
         builder.Property(x => x.Slug).HasColumnName("slug").HasMaxLength(LimitesCampoLayout.Slug).IsRequired();
         builder.Property(x => x.Estado).HasColumnName("estado").HasMaxLength(20).HasConversion<string>().IsRequired();
         builder.Property(x => x.Publicado).HasColumnName("publicado").HasDefaultValue(false).IsRequired();

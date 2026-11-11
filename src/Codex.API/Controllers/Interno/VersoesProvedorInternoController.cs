@@ -101,6 +101,31 @@ public sealed class VersoesProvedorInternoController : ControllerBase
         return Ok(new ApiResponse<VersaoAdminDetalheDto> { Data = atualizado });
     }
 
+    /// <summary>Substitui o de-para da natureza da operação da versão.</summary>
+    /// <response code="200">Lista gravada, na ordem enviada.</response>
+    /// <response code="400">Sem If-Match.</response>
+    /// <response code="404">Versão não encontrada.</response>
+    /// <response code="409">A versão mudou desde a leitura.</response>
+    /// <response code="422">Código repetido, fora da faixa ou campo obrigatório vazio.</response>
+    [HttpPut("{id:int}/naturezas-operacao")]
+    [Authorize(Roles = "versoesprovedor-atualizar")]
+    [ProducesResponseType(typeof(ApiResponse<ItemNaturezaOperacaoDto[]>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<ApiResponse<IReadOnlyCollection<ItemNaturezaOperacaoDto>>>> SubstituirNaturezasOperacao(
+        int id, AtualizarNaturezasOperacaoDto dto, CancellationToken ct)
+    {
+        var versaoEsperada = Request.ExigirIfMatch();
+        var naturezas = await _servico.SubstituirNaturezasOperacaoAsync(id, dto, versaoEsperada, ct);
+        return Ok(new ApiResponse<IReadOnlyCollection<ItemNaturezaOperacaoDto>>
+        {
+            Data = naturezas,
+            Message = "Naturezas da operação gravadas com sucesso.",
+        });
+    }
+
     /// <summary>I11 — campos preenchidos + campos canônicos ainda ausentes.</summary>
     [HttpGet("{id:int}/campos")]
     [Authorize(Roles = "camposversao-buscar")]

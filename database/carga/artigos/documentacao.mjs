@@ -24,17 +24,14 @@ export const ARTIGOS_DA_DOCUMENTACAO = [
     doInvoicy('inv0350'),
   ]),
   artigo('checklist-producao-nfse', 'Procedimento', [doInvoicy('inv0303')]),
-  artigo('configuracoes-de-emissao', 'Procedimento'),
+  artigo('configuracoes-de-emissao', 'Configuracao'),
   artigo('consultas-municipio', 'Procedimento', [
     doInvoicy('inv0305'),
     doInvoicy('inv0306'),
     doInvoicy('inv0328'),
   ]),
   artigo('controle-numeracao-rps', 'Procedimento'),
-  artigo('credenciais-autenticacao-prefeitura', 'Procedimento', [
-    { provedor: 'ISS.NET', codigo: 'E157' },
-    doInvoicy('inv0326'),
-  ]),
+  artigo('credenciais-autenticacao-prefeitura', 'Configuracao', [doInvoicy('inv0326')]),
   artigo('e0037-producao-restrita', 'Procedimento', [doEmissorNacional('E0037')]),
   artigo('e1235-falha-esquema-xml', 'Procedimento', [doEmissorNacional('E1235')]),
   artigo('emissao-em-lote', 'Procedimento', [doInvoicy('inv0318')]),
@@ -63,6 +60,7 @@ export const ARTIGOS_DA_DOCUMENTACAO = [
   ]),
   artigo('reforma-tributaria-visao-geral', 'Mudanca'),
   artigo('retencao-de-iss', 'Conceito'),
+  artigo('simples-nacional-emissor-nacional-obrigatorio', 'Mudanca'),
   artigo('solicitar-novo-municipio', 'Procedimento', [doInvoicy('inv0302')]),
   artigo('status-em-conflito', 'Procedimento', [doInvoicy('inv0304'), doInvoicy('inv0339')]),
   artigo('tomador-estrangeiro-padrao-nacional', 'Procedimento', [

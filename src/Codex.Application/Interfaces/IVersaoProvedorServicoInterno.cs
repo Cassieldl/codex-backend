@@ -18,4 +18,7 @@ public interface IVersaoProvedorServicoInterno
     Task<VersaoAdminDetalheDto> AtualizarPublicacaoAsync(int id, bool publicado, uint versaoEsperada, CancellationToken ct);
 
     Task<VersaoAdminDetalheDto> RegistrarVerificacaoAsync(int id, AtualizarVerificacaoDto dto, uint versaoEsperada, CancellationToken ct);
+
+    Task<IReadOnlyCollection<ItemNaturezaOperacaoDto>> SubstituirNaturezasOperacaoAsync(
+        int id, AtualizarNaturezasOperacaoDto dto, uint versaoEsperada, CancellationToken ct);
 }

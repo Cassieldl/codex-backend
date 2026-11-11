@@ -129,6 +129,7 @@ public sealed class LayoutServicoPublicoTests
                 Significado = "Significado",
                 Grupo = null,
                 Ordem = indice,
+                ReformaTributaria = false,
                 VersaoLayoutOrigemId = versao.Id,
                 OrigemOrdem = versao.Ordem,
                 VersaoLayoutDescontinuadoId = null,

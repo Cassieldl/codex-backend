@@ -14,19 +14,20 @@ function mesmaLista(atual, desejada) {
   return [...atual].sort().join('\n') === [...desejada].sort().join('\n')
 }
 
-/** Aliases do catálogo valem para o provedor existente; nome e slug continuam como estão. */
-async function alinharAliases(api, provedorId, provedor) {
+/** Categoria e aliases do catálogo valem para o provedor existente; nome e slug continuam como estão. */
+async function alinharIdentificacao(api, provedorId, provedor) {
   const { dados: atual } = await api.chamar('GET', `/interno/provedores/${provedorId}`)
-  const desejados = provedor.aliases ?? []
-  if (mesmaLista(atual.aliases ?? [], desejados)) return
+  const categoria = provedor.categoria ?? atual.categoria
+  const aliases = provedor.aliases ?? []
+  if (categoria === atual.categoria && mesmaLista(atual.aliases ?? [], aliases)) return
 
   await api.chamar(
     'PUT',
     `/interno/provedores/${provedorId}`,
-    { nome: atual.nome, categoria: atual.categoria, aliases: desejados },
+    { nome: atual.nome, categoria, aliases },
     String(atual.versaoConcorrencia),
   )
-  console.log(`aliases de ${atual.nome} alinhados: ${desejados.join(', ') || 'nenhum'}`)
+  console.log(`${atual.nome} alinhado: ${categoria}; aliases ${aliases.join(', ') || 'nenhum'}`)
 }
 
 export async function garantirProvedor(api, provedor) {
@@ -35,7 +36,7 @@ export async function garantirProvedor(api, provedor) {
   )
   const existente = provedores.find((item) => item.nome === provedor.nome)
   if (existente) {
-    await alinharAliases(api, existente.id, provedor)
+    await alinharIdentificacao(api, existente.id, provedor)
     return existente
   }
 
@@ -76,6 +77,14 @@ export async function garantirVersao(api, provedorId, versaoLayoutId, { rotulo, 
   })
   console.log(`versão ${rotulo} criada (id ${criada.id})`)
   return criada.id
+}
+
+/** Substitui o de-para da natureza da operação da versão pela lista do artigo. */
+export async function sincronizarNaturezasOperacao(api, versaoId, naturezas) {
+  const rota = `/interno/versoes/${versaoId}`
+  const etag = await api.obterEtag(rota)
+  await api.chamar('PUT', `${rota}/naturezas-operacao`, { itens: naturezas }, etag)
+  console.log(`naturezas da operação da versão ${versaoId}: ${naturezas.length}`)
 }
 
 function avisoMudou(existente, desejado) {

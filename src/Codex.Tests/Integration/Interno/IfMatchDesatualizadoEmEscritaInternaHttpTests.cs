@@ -11,7 +11,7 @@ namespace Codex.Tests.Integration.Interno;
 [Collection(PostgresCollection.Nome)]
 public sealed class IfMatchDesatualizadoEmEscritaInternaHttpTests : IAsyncLifetime
 {
-    private const int QuantidadeDeEscritasComIfMatch = 34;
+    private const int QuantidadeDeEscritasComIfMatch = 35;
 
     private static readonly string[] EscritasDeLayoutECamposDeVersao =
     [
@@ -80,6 +80,7 @@ public sealed class IfMatchDesatualizadoEmEscritaInternaHttpTests : IAsyncLifeti
         ["DELETE /api/v1/interno/versoes/1"] = new(Recurso.VersaoProvedor, null),
         ["PUT /api/v1/interno/versoes/1/publicacao"] = new(Recurso.VersaoProvedor, _ => new { publicado = true }),
         ["PUT /api/v1/interno/versoes/1/verificacao"] = new(Recurso.VersaoProvedor, _ => new { verificadoEm = Ontem() }),
+        ["PUT /api/v1/interno/versoes/1/naturezas-operacao"] = new(Recurso.VersaoProvedor, _ => CorpoDeNaturezas()),
 
         ["PUT /api/v1/interno/campos-versao/1"] = new(Recurso.CampoVersao, _ => new { tipo = "numero", estadoPreenchimento = "Obrigatorio", ordem = 1 }),
         ["DELETE /api/v1/interno/campos-versao/1"] = new(Recurso.CampoVersao, null),
@@ -166,6 +167,9 @@ public sealed class IfMatchDesatualizadoEmEscritaInternaHttpTests : IAsyncLifeti
         var raiz = new { nome = "Envio", caminho = "Envio", formato = "ambos", filhos = Array.Empty<object>() };
         return new { xml = raiz, json = raiz };
     }
+
+    private static object CorpoDeNaturezas() =>
+        new { itens = new[] { new { codigoInvoicy = 1, descricao = "Operação tributável", valorProvedor = "1" } } };
 
     private static DateOnly Ontem() => DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1);
 

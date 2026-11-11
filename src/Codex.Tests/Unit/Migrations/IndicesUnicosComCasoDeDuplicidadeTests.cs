@@ -16,6 +16,7 @@ public sealed class IndicesUnicosComCasoDeDuplicidadeTests
         ["uq_codex_aliasesprovedor_provedorid_alias"] = "alias repetido no mesmo corpo é recusado com 422 pelo validator, coberto por ProvedorAliasesValidacaoHttpTests.Criar_ComAliasRepetido_Devolve422 e Atualizar_ComAliasRepetido_Devolve422EMantemOsAliasesAtuais",
         ["uq_codex_exemplos_versaoprovedorid_nome"] = "coberto por ExemplosInternoHttpTests.I39_Criar_ComNomeJaUsadoNaVersao_Devolve409",
         ["uq_codex_exemplos_versaoprovedorid_slug"] = "o service sufixa o slug repetido, coberto por I39_Criar_ComNomeQueColideNoSlug_RecebeSufixoDeterministico",
+        ["uq_codex_naturezasoperacao_versaoprovedorid_codigoinvoicy"] = "código repetido no mesmo corpo é recusado com 422 pelo validator, coberto por NaturezasOperacaoNaPaginaVersaoHttpTests.CodigoRepetido_Devolve422_ENaoTocaAListaAtual",
         ["uq_codex_itensbusca_tipoitem_itemid"] = "índice de busca gravado só pelo IndiceBuscaWriter, sem POST que o escreva",
         ["uq_codex_redirecionamentos_origem"] = "redirecionamento nasce da troca de slug, coberto por TrocaSlugHttpTests",
         ["uq_codex_termosbusca_termo"] = "termo gravado pela busca com ON CONFLICT, nunca colide",

@@ -56,5 +56,27 @@ public sealed class VersaoProvedorRepositorioInterno : RepositorioBase<CodexDbCo
     public async Task AdicionarAsync(VersaoProvedor versao, CancellationToken ct) =>
         await Contexto.VersoesProvedor.AddAsync(versao, ct);
 
+    public async Task<IReadOnlyCollection<ItemNaturezaOperacaoDto>> ListarNaturezasOperacaoAsync(int versaoProvedorId, CancellationToken ct) =>
+        await Contexto.NaturezasOperacao.AsNoTracking()
+            .Where(n => n.VersaoProvedorId == versaoProvedorId && n.DesativadoEm == null)
+            .OrderBy(n => n.Ordem)
+            .Select(n => new ItemNaturezaOperacaoDto
+            {
+                CodigoInvoicy = n.CodigoInvoicy,
+                Descricao = n.Descricao,
+                ValorProvedor = n.ValorProvedor,
+                Observacao = n.Observacao,
+                AConfirmar = n.AConfirmar,
+            })
+            .ToListAsync(ct);
+
+    public async Task SubstituirNaturezasOperacaoAsync(
+        int versaoProvedorId, IReadOnlyCollection<NaturezaOperacao> naturezas, CancellationToken ct)
+    {
+        await Contexto.NaturezasOperacao.Where(n => n.VersaoProvedorId == versaoProvedorId).ExecuteDeleteAsync(ct);
+        await Contexto.NaturezasOperacao.AddRangeAsync(naturezas, ct);
+        await SalvarAsync(ct);
+    }
+
     public Task SalvarAlteracoesAsync(CancellationToken ct) => SalvarAsync(ct);
 }

@@ -26,7 +26,7 @@ public sealed class BuscaController : ControllerBase
         _buscaService = buscaService;
     }
 
-    /// <summary>Busca pública em erros, provedores, versões de provedor e avisos.</summary>
+    /// <summary>Busca pública em erros, provedores, avisos e artigos. Versão de provedor não entra: o conteúdo dela fica na página do provedor.</summary>
     /// <param name="q">Termo de busca (2–300 caracteres).</param>
     /// <param name="provedor">Slug do provedor para restringir o resultado.</param>
     /// <param name="tipo">

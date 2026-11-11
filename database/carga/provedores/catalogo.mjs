@@ -9,7 +9,11 @@
  * O rótulo da versão é a versão do leiaute do provedor, porque o mapeamento exportado não traz o
  * rótulo que o InvoiCy usa; e o identificador InvoiCy é provisório. Os dois se ajustam na área
  * interna quando o InvoiCy confirmar.
+ *
+ * `naturezaOperacao` é a seção do artigo de natureza da operação com o de-para da versão.
  */
+
+import { TABELAS_NATUREZA } from '../naturezas-operacao.mjs'
 
 const ESQUEMA_DPS_NACIONAL = [
   'dps-nacional-1.01/DPS_v1.01.xsd',
@@ -19,6 +23,19 @@ const ESQUEMA_DPS_NACIONAL = [
 
 const informativo = (titulo) => ({ severidade: 'Informativo', titulo })
 const alerta = (titulo) => ({ severidade: 'Alerta', titulo })
+
+// Prints da tela do InvoiCy onde as credenciais são informadas, repetidos nos avisos de credencial.
+const PASTA_DA_TELA_DE_EMISSAO = '/imagens/configuracoes-para-emissao-de-nfs-e-e-particularidades'
+const PRINT_USUARIO_E_SENHA =
+  '![Tela Configurações para a emissão de NFS-e com os campos Usuário de autenticação e Senha de ' +
+  `autenticação destacados no bloco Gerais](${PASTA_DA_TELA_DE_EMISSAO}/usuario-e-senha-de-autenticacao.png ` +
+  '"Usuário e senha de autenticação no InvoiCy")'
+const PRINT_CHAVE_PRIMARIA =
+  '![Tela Configurações para a emissão de NFS-e com o campo Chave primária de autenticação ' +
+  `destacado](${PASTA_DA_TELA_DE_EMISSAO}/chave-primaria-de-autenticacao.png ` +
+  '"Chave primária de autenticação no InvoiCy")'
+const ONDE_FICAM_AS_CREDENCIAIS =
+  'Painel de controle > NFS-e > Configurações para emissão de NFS-e, bloco Gerais'
 
 const INTRODUCAO_DPS =
   'DPS no leiaute nacional v1.01. Tipo, tamanho e obrigatoriedade das tags vêm do XSD nacional.'
@@ -37,7 +54,7 @@ function provedorDeLeiauteNacional(
   { provedor, introducao, envelope, esquema, subsecoes, avisos = [] },
 ) {
   return {
-    provedor: { categoria: 'Proprio', aliases: [], ...provedor },
+    provedor: { categoria: 'Nacional', aliases: [], ...provedor },
     versao: { rotulo: '1.01', introducao: introducao ?? INTRODUCAO_DPS },
     familia: 'dps',
     mapeamento: `${id}/mapeamento.md`,
@@ -48,6 +65,7 @@ function provedorDeLeiauteNacional(
     },
     ...(envelope ? { prefixoDestino: `${envelope}/` } : {}),
     observacoes: { arquivo: `${id}/observacoes.md`, subsecoes },
+    naturezaOperacao: TABELAS_NATUREZA.nacional,
     avisos,
   }
 }
@@ -137,8 +155,18 @@ const PROVEDORES_DE_LEIAUTE_NACIONAL = {
       'DPS no leiaute nacional v1.01, dentro do envelope RecepcionarDpsEnvio. Tipo, tamanho e ' +
       'obrigatoriedade das tags da DPS vêm do XSD nacional; o envelope não está descrito nele.',
     envelope: 'RecepcionarDpsEnvio',
+    avisos: [
+      {
+        severidade: 'Informativo',
+        titulo: 'Usuário e senha do portal nos dados da empresa',
+        corpo:
+          'Informe o usuário e a senha do portal da prefeitura em Usuário de autenticação e Senha ' +
+          `de autenticação, em ${ONDE_FICAM_AS_CREDENCIAIS}.\n\n` +
+          PRINT_USUARIO_E_SENHA,
+      },
+    ],
     subsecoes: {
-      'Autenticação e acesso': informativo('Usuário e senha do portal nos dados da empresa'),
+      'Autenticação e acesso': { ignorar: 'Vira o aviso de credencial, escrito no catálogo.' },
       'Ambiente de homologação': alerta('Sem homologação: os testes são feitos em produção'),
       Processamento: informativo('Cada prefeitura usa uma versão diferente do webservice'),
       Disponibilidade: informativo('O endereço do serviço é um IP que muda com frequência'),
@@ -167,8 +195,24 @@ const PROVEDORES_DE_LEIAUTE_NACIONAL = {
   }),
   rlz: provedorDeLeiauteNacional('rlz', {
     provedor: { nome: 'RLZ', identificadorInvoicy: 'RLZ', aliases: ['RLZ - Modelo Nacional'] },
+    avisos: [
+      {
+        severidade: 'Informativo',
+        titulo: 'Certificado A1, usuário e senha e Token Web Service',
+        corpo:
+          'Vale para RLZ (cidadão online), RLZ - Modelo Nacional, RLZ ABRASF e RLZ ABRASF ' +
+          'Assíncrono. A RLZ exige três credenciais:\n' +
+          '- Certificado digital A1.\n' +
+          `- Usuário e senha de autenticação, em ${ONDE_FICAM_AS_CREDENCIAIS}.\n` +
+          '- Token Web Service, gerado no menu Token Web Service do sistema online do município e ' +
+          'informado em Chave primária de autenticação.\n\n' +
+          '![Sistema online do município no padrão RLZ com o menu Token Web Service](/imagens/rlz/' +
+          'token-web-service-rlz.jpg "Token Web Service no sistema da RLZ")\n\n' +
+          PRINT_CHAVE_PRIMARIA,
+      },
+    ],
     subsecoes: {
-      'Autenticação e acesso': informativo('Certificado A1, usuário e senha e Token Web Service'),
+      'Autenticação e acesso': { ignorar: 'Vira o aviso de credencial, escrito no catálogo.' },
       'Ambiente de homologação': alerta(
         'Homologação obrigatória antes da produção, criada sob demanda',
       ),
@@ -219,7 +263,7 @@ export const PROVEDORES = {
     provedor: {
       nome: 'E&L',
       identificadorInvoicy: 'EL',
-      categoria: 'Proprio',
+      categoria: 'Nacional',
       aliases: ['E e L', 'EL', 'E&L Nacional'],
     },
     versao: {
@@ -231,6 +275,7 @@ export const PROVEDORES = {
     familia: 'dps',
     fonteDeExemplo: 'dps-nacional',
     mapeamento: 'e-l/mapeamento.md',
+    naturezaOperacao: TABELAS_NATUREZA.nacional,
     esquema: { arquivos: ESQUEMA_DPS_NACIONAL, raiz: 'DPS' },
     avisos: [
       {
@@ -248,13 +293,21 @@ export const PROVEDORES = {
           'enviada de novo.',
       },
       {
-        severidade: 'Informativo',
+        severidade: 'Alerta',
         titulo: 'O envio é autenticado por um token do contribuinte',
         corpo:
           'A API da E&L recebe a DPS assinada, compactada em GZip e codificada em Base64, com um ' +
           'token de integração gerado no portal do município. O token vale só para as DPS do ' +
           'contribuinte que o gerou, pode ser inativado a qualquer momento e é recusado depois de ' +
-          'expirar.',
+          'expirar.\n\n' +
+          'Antes da primeira emissão:\n' +
+          '- No portal da prefeitura, depois do login, abra Configurações > Integração e clique ' +
+          'em Gerar Token. O token tem o formato abcdef12-3456-7890-abcd-ef1234567890.\n' +
+          `- No InvoiCy, cole o token em Chave primária de autenticação, em ${ONDE_FICAM_AS_CREDENCIAIS}.\n\n` +
+          '![Portal da prefeitura no padrão E&L com o menu Configurações, a opção Integração e o ' +
+          'botão Gerar Token destacados](/imagens/e-l/gerar-token-de-integracao-e-l.jpg "Gerar ' +
+          'token no portal E&L")\n\n' +
+          PRINT_CHAVE_PRIMARIA,
       },
     ],
   },
@@ -275,9 +328,25 @@ export const PROVEDORES = {
     familia: 'abrasf',
     fonteDeExemplo: 'elotech',
     mapeamento: 'elotech/mapeamento.md',
+    naturezaOperacao: TABELAS_NATUREZA.elotech,
     esquema: { arquivos: ['elotech/nfse_v2_03.xsd'], raiz: 'EnviarLoteRpsSincronoEnvio' },
     prefixoDestino: 'EnviarLoteRpsSincronoEnvio/LoteRps/ListaRps/Rps/',
     avisos: [
+      {
+        severidade: 'Alerta',
+        titulo: 'Antes da primeira emissão: usuário e senha do webservice',
+        corpo:
+          'A Elotech autentica com o usuário e a senha do webservice da empresa, gerados no portal ' +
+          'da prefeitura, e assina o envio com o certificado digital A1.\n\n' +
+          '1. No portal da prefeitura, abra Informações > Informações da Empresa e clique no ' +
+          'cadeado, no canto inferior direito, para gerar a senha.\n' +
+          '2. No InvoiCy, preencha Usuário de autenticação com o CPF do responsável e Senha de ' +
+          `autenticação com a senha gerada, em ${ONDE_FICAM_AS_CREDENCIAIS}.\n\n` +
+          '![Portal da prefeitura no padrão Elotech com o menu Informações da Empresa e o botão de ' +
+          'cadeado destacados](/imagens/elotech/senha-do-webservice-elotech.png "Senha do ' +
+          'webservice no portal Elotech")\n\n' +
+          PRINT_USUARIO_E_SENHA,
+      },
       {
         severidade: 'Alerta',
         titulo: 'Município que adotou o Emissor Nacional bloqueia a emissão na Elotech',
@@ -304,6 +373,7 @@ export const PROVEDORES = {
     },
     familia: 'abrasf',
     mapeamento: 'giss/mapeamento.md',
+    naturezaOperacao: TABELAS_NATUREZA.giss,
     esquema: { arquivos: ['giss/nfse_v2-04.xsd'], raiz: 'EnviarLoteRpsEnvio' },
     prefixoDestino: 'EnviarLoteRpsEnvio/LoteRps/ListaRps/Rps/',
     avisos: [],
@@ -324,9 +394,38 @@ export const PROVEDORES = {
     },
     familia: 'proprio',
     mapeamento: 'ipm/mapeamento.md',
+    naturezaOperacao: TABELAS_NATUREZA.ipm,
     leiauteTranscrito: 'ipm/layout.json',
     erros: 'ipm/erros.json',
     avisos: [
+      {
+        severidade: 'Alerta',
+        titulo: 'Antes da primeira emissão: usuário e senha do portal e liberação do webservice',
+        corpo:
+          'O IPM tem duas obrigatoriedades para emitir via webservice.\n\n' +
+          'No InvoiCy, preencha Usuário de autenticação com o CNPJ/CPF sem máscara e Senha de ' +
+          `autenticação com a senha do portal da prefeitura, em ${ONDE_FICAM_AS_CREDENCIAIS}.\n\n` +
+          `${PRINT_USUARIO_E_SENHA}\n\n` +
+          'No Portal de Autoatendimento do município, libere o usuário para o webservice:\n\n' +
+          '1. No menu Empresa, ou na busca do portal, localize Emissão de NFS-e por WebService.\n\n' +
+          '   ![Busca do Portal de Autoatendimento com o serviço Emissão de NFS-e por WebService no ' +
+          'grupo Empresa](/imagens/ipm/autoatendimento-busca-emissao-por-webservice.png "Emissão ' +
+          'de NFS-e por WebService no autoatendimento")\n\n' +
+          '2. Clique em Acessar para abrir a página de liberação.\n\n' +
+          '   ![Página do serviço Emissão de NFS-e por WebService com o botão Acessar](/imagens/ipm/' +
+          'autoatendimento-acessar-emissao-por-webservice.png "Acessar a página de liberação")\n\n' +
+          '3. Em Liberar Acesso ao Usuário, selecione Sim e clique em Confirmar.\n\n' +
+          '   ![Campo Liberar Acesso ao Usuário com a opção Sim e o botão Confirmar](/imagens/ipm/' +
+          'autoatendimento-liberar-acesso-ao-usuario.png "Liberar acesso ao usuário")',
+      },
+      {
+        severidade: 'Alerta',
+        titulo: 'A natureza da operação do IPM tem valores diferentes dos do InvoiCy',
+        corpo:
+          'O IPM usa códigos próprios de situação tributária. Envie o valor do InvoiCy que ' +
+          'corresponde ao código do IPM, conforme a tabela da seção Natureza da operação desta ' +
+          'versão.',
+      },
       {
         severidade: 'Informativo',
         titulo: 'Envio de teste pela tag nfse_teste',
@@ -341,7 +440,7 @@ export const PROVEDORES = {
     provedor: {
       nome: 'ISS.NET',
       identificadorInvoicy: 'ISSNET',
-      categoria: 'Proprio',
+      categoria: 'Nacional',
       aliases: ['ISSNet', 'ISS Net', 'Nota Control'],
     },
     versao: {
@@ -353,13 +452,51 @@ export const PROVEDORES = {
     },
     familia: 'dps',
     mapeamento: 'issnet/mapeamento.md',
+    naturezaOperacao: TABELAS_NATUREZA.nacional,
     esquema: {
       arquivos: ESQUEMA_DPS_NACIONAL,
       raiz: 'DPS',
       prefixo: 'EnviarLoteDpsSincronoEnvio/LoteDps/ListaDps/',
     },
     prefixoDestino: 'EnviarLoteDpsSincronoEnvio/LoteDps/ListaDps/',
-    avisos: [],
+    avisos: [
+      {
+        severidade: 'Alerta',
+        titulo: 'Liberação na Nota Control e faixa de RPS/DPS antes de emitir',
+        corpo:
+          'Antes de configurar a emissão:\n' +
+          '- Peça à Nota Control (ISS.net) a liberação do ambiente de produção ou de homologação, ' +
+          'pelo e-mail suporte@notaeletronica.com.br. Sem ela, o retorno é o E157 (usuário não ' +
+          'autorizado a utilizar esse serviço para esse contribuinte).\n' +
+          '- Peça a liberação de uma faixa de RPS/DPS no portal ISS.net Online do município, em ' +
+          'Solicitação de Documentos Fiscais > Solicitação, e aguarde a aprovação do fiscal. Só a ' +
+          'numeração liberada pode ser usada.\n\n' +
+          '![Portal ISS.net com o menu Solicitação de Documentos Fiscais, a opção Solicitação e o ' +
+          'formulário com modelo RPS e quantidade de notas](/imagens/issnet/solicitacao-de-faixa-' +
+          'de-rps.png "Solicitação de faixa de RPS no ISS.net")',
+      },
+      {
+        severidade: 'Alerta',
+        titulo: 'Em homologação, use só a série 8',
+        corpo: 'Todas as emissões em homologação precisam usar exclusivamente a série 8.',
+      },
+      {
+        severidade: 'Alerta',
+        titulo: 'Município com tabela própria de código de tributação municipal',
+        corpo:
+          'Alguns municípios usam uma tabela própria de CodigoTributacaoMunicipio. Confira o ' +
+          'código vigente antes de emitir, para evitar rejeição ou alíquota incorreta:\n' +
+          '- No portal ISSNETonline da cidade, clique em Downloads, no menu superior direito.\n' +
+          '- Baixe o arquivo "Correlação Tributação Municipal X Tributação Nacional", atualizado ' +
+          'periodicamente pela prefeitura.\n\n' +
+          '![Portal ISSNETonline de Brasília/DF com o botão Downloads destacado no menu ' +
+          'superior](/imagens/issnet/portal-issnetonline-downloads.png "Downloads do portal ' +
+          'ISSNETonline")\n\n' +
+          '![Lista Arquivos para Download com o arquivo Correlação Tributação Municipal X ' +
+          'Tributação Nacional destacado](/imagens/issnet/arquivo-correlacao-tributacao-municipal-' +
+          'nacional.png "Arquivo de correlação da tributação")',
+      },
+    ],
   },
   ...PROVEDORES_DE_LEIAUTE_NACIONAL,
 }

@@ -81,11 +81,10 @@ public sealed class ProvedorServicoPublicoTests
     }
 
     [Fact]
-    public async Task ObterDetalheAsync_UrlDaVersao_EhSempreUmPathInternoRelativo()
+    public async Task ObterDetalheAsync_UrlDaVersao_EhAPaginaRelativaDoProvedor_SemSegmentoDeVersao()
     {
-        // Restrição de segurança (achado BAIXO-02, auditoria de frontend): o campo `url` vai
-        // direto para <Link to>/<a href> sem validação lá — nunca pode ser absoluto. A garantia
-        // aqui é estrutural: Slug.DeTexto só produz [a-z0-9-], nunca vazio, nunca contém '/'.
+        // O front usa `url` direto em <a href>: precisa ser relativa, e a página pública do
+        // provedor já mostra o conteúdo da versão.
         var provedor = Provedor.Criar("Prefeitura X", "INV-1", CategoriaProvedor.Nacional);
         provedor.Publicar();
         var versao = VersaoProvedor.Criar(provedor.Id, 1, "v1");
@@ -97,10 +96,7 @@ public sealed class ProvedorServicoPublicoTests
 
         var resultado = await _sut.ObterDetalheAsync("prefeitura-x", CancellationToken.None);
 
-        var url = resultado.Versoes.Single().Url;
-        url.Should().StartWith("/");
-        url.Should().NotContain("://");
-        url.Should().NotStartWith("//");
+        resultado.Versoes.Single().Url.Should().Be("/provedores/prefeitura-x");
     }
 
     [Fact]
@@ -184,6 +180,7 @@ public sealed class ProvedorServicoPublicoTests
             Nome = slug,
             CaminhoXml = $"/{slug}",
             Significado = "significado",
+            ReformaTributaria = false,
             Tipo = "texto",
             EstadoPreenchimento = "Obrigatorio",
             Ordem = ordem,

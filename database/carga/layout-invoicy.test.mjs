@@ -9,6 +9,7 @@ import {
   planejarEstados,
   planejarVocabularioMultiversao,
   sincronizarLayoutInvoicy,
+  VERSOES_LAYOUT_INVOICY,
 } from './layout-invoicy.mjs'
 import { lerVocabularioInvoicy } from './vocabulario-invoicy.mjs'
 
@@ -167,10 +168,14 @@ function criarApiDeLayout(versoes, campos) {
     if ((id = rota.match(/^\/interno\/layout\/versoes\/(\d+)$/)?.[1])) {
       const versao = versaoPorId(id)
       exigirIfMatch(versao, etag)
-      assert.equal(transicoes[versao.estado], corpo.estado, `${versao.estado} → ${corpo.estado}`)
-      if (corpo.estado === 'Vigente')
-        assert.ok(!versoes.some((item) => item.estado === 'Vigente'), 'duas Vigentes')
-      Object.assign(versao, { estado: corpo.estado, versaoConcorrencia: proximaConcorrencia++ })
+      if (corpo.descricao !== undefined) versao.descricao = corpo.descricao
+      if (corpo.estado !== undefined) {
+        assert.equal(transicoes[versao.estado], corpo.estado, `${versao.estado} → ${corpo.estado}`)
+        if (corpo.estado === 'Vigente')
+          assert.ok(!versoes.some((item) => item.estado === 'Vigente'), 'duas Vigentes')
+        versao.estado = corpo.estado
+      }
+      versao.versaoConcorrencia = proximaConcorrencia++
       return { dados: { ...versao } }
     }
 
@@ -242,6 +247,10 @@ test('carga sobre o banco de hoje: 9 Vigente, 8 Anterior, ids do 8 intactos, est
 
   const [versao8, versao9] = versoes
   assert.deepEqual([versao8.estado, versao9.estado], ['Anterior', 'Vigente'])
+  assert.deepEqual(
+    [versao8.descricao, versao9.descricao],
+    VERSOES_LAYOUT_INVOICY.map(({ descricao }) => descricao),
+  )
   assert.ok(versao8.estrutura.xml && versao8.estrutura.json)
   assert.ok(versao9.estrutura.xml && versao9.estrutura.json)
   assert.notDeepEqual(versao8.estrutura, versao9.estrutura)

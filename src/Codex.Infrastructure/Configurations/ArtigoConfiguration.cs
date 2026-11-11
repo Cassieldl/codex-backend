@@ -13,7 +13,7 @@ public sealed class ArtigoConfiguration : IEntityTypeConfiguration<Artigo>
     {
         builder.ToTable("artigos", CodexDbContext.Schema, t =>
         {
-            t.HasCheckConstraint("ck_codex_artigos_tipo", "tipo IN ('Conceito', 'Procedimento', 'Mudanca')");
+            t.HasCheckConstraint("ck_codex_artigos_tipo", "tipo IN ('Conceito', 'Procedimento', 'Mudanca', 'Configuracao')");
         });
 
         builder.HasKey(x => x.Id).HasName("pk_codex_artigos");

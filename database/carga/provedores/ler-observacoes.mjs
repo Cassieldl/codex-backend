@@ -18,8 +18,7 @@ const MARCA_DE_PENDENCIA = /\bPendente\b/
 export const TRECHOS_FORA_DO_AVISO = [
   {
     inicio: '**Natureza da operação (leiaute nacional):**',
-    motivo:
-      'A lista dos provedores que usam a tabela do Padrão Nacional ainda não foi confirmada provedor a provedor.',
+    motivo: 'O de-para da natureza da operação tem seção própria na página da versão.',
   },
   {
     inicio: '**`ItemTributavel`:**',
