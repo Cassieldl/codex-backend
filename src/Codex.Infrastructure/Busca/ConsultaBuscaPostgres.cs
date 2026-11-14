@@ -797,6 +797,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
             Versoes = rotulosDoItem.Versoes,
             Meta = rotulosDoItem.Meta,
             DescricaoCasamento = DescricaoCasamentoDoItem(linha, termoUsado, qualidade),
+            SolucaoResumo = rotulosDoItem.SolucaoResumo,
             Publicado = linha.Publicado,
             Pontuacao = linha.Pontuacao,
             Trechos = ParseTrechos(linha.FragmentoBruto),
@@ -873,14 +874,14 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         var versoesPorErro = await CarregarVersoesAplicaveisAsync(erroIds, incluirRascunho, ct);
         var provedores = await CarregarProvedoresAsync(provedorIds, ct);
         var artigos = await CarregarArtigosDiretosAsync(artigoIds, ct);
-        var slugsDeErro = await CarregarSlugsDeErroAsync(erroIds, ct);
+        var errosDiretos = await CarregarErrosDiretosAsync(erroIds, ct);
         var slugsDeCampoLayout = await CarregarSlugsDeCampoLayoutAsync(campoLayoutIds, ct);
 
         var rotulos = new Dictionary<int, RotulosDoItem>(itensDaPagina.Count);
         foreach (var linha in itensDaPagina)
         {
             rotulos[linha.ItemBuscaId] = MontarRotulos(
-                linha, versoesDiretas, versoesPorErro, provedores, artigos, slugsDeErro, slugsDeCampoLayout);
+                linha, versoesDiretas, versoesPorErro, provedores, artigos, errosDiretos, slugsDeCampoLayout);
         }
 
         return rotulos;
@@ -951,21 +952,23 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
     }
 
     /// <summary>
-    /// Slug corrente de cada erro da página (decisão B) — consulta extra, e só quando há erro na
-    /// página. Existe porque <c>codex.itensbusca</c> não tem coluna de slug e a <c>url</c>
-    /// gravada envelhece na troca de slug (I43).
+    /// Slug corrente de cada erro da página (decisão B) e o resumo da solução, numa consulta só
+    /// sobre os ids da página, e só quando há erro nela. Existe porque <c>codex.itensbusca</c> não
+    /// tem coluna de slug e a <c>url</c> gravada envelhece na troca de slug (I43).
     /// </summary>
-    private async Task<IReadOnlyDictionary<int, string>> CarregarSlugsDeErroAsync(int[] erroIds, CancellationToken ct)
+    private async Task<IReadOnlyDictionary<int, ErroDireto>> CarregarErrosDiretosAsync(int[] erroIds, CancellationToken ct)
     {
         if (erroIds.Length == 0)
-            return new Dictionary<int, string>();
+            return new Dictionary<int, ErroDireto>();
 
         var erros = await _contexto.Erros.AsNoTracking()
             .Where(e => erroIds.Contains(e.Id))
-            .Select(e => new { e.Id, e.Slug })
+            .Select(e => new { e.Id, e.Slug, e.SolucaoSugerida })
             .ToListAsync(ct);
 
-        return erros.ToDictionary(e => e.Id, e => e.Slug);
+        return erros.ToDictionary(
+            e => e.Id,
+            e => new ErroDireto(e.Slug, ResumoSolucaoErro.Derivar(e.SolucaoSugerida)));
     }
 
     /// <summary>
@@ -1042,15 +1045,17 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         IReadOnlyDictionary<int, IReadOnlyList<VersaoAplicavel>> versoesPorErro,
         IReadOnlyDictionary<int, ProvedorDireto> provedores,
         IReadOnlyDictionary<int, ArtigoDireto> artigos,
-        IReadOnlyDictionary<int, string> slugsDeErro,
+        IReadOnlyDictionary<int, ErroDireto> errosDiretos,
         IReadOnlyDictionary<int, string> slugsDeCampoLayout)
     {
-        var url = MontarUrl(linha, provedores, artigos, slugsDeErro, slugsDeCampoLayout);
+        var url = MontarUrl(linha, provedores, artigos, errosDiretos, slugsDeCampoLayout);
 
         if (linha.TipoItem == TipoErro)
         {
+            var solucaoResumo = errosDiretos.GetValueOrDefault(linha.ItemId)?.SolucaoResumo;
+
             if (!versoesPorErro.TryGetValue(linha.ItemId, out var aplicaveis) || aplicaveis.Count == 0)
-                return RotulosDoItem.SemContexto(url);
+                return RotulosDoItem.SemContexto(url) with { SolucaoResumo = solucaoResumo };
 
             var nomesDeProvedorAplicaveis = aplicaveis.Select(v => v.ProvedorNome).Distinct().ToArray();
             var provedorUnico = nomesDeProvedorAplicaveis.Length == 1 ? nomesDeProvedorAplicaveis[0] : null;
@@ -1068,7 +1073,8 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                 VersaoRotulo: provedorUnico is not null && versoes.Length == 1 ? versoes[0] : null,
                 Versoes: versoes,
                 Meta: null,
-                Url: url);
+                Url: url,
+                SolucaoResumo: solucaoResumo);
         }
 
         // Artigo não tem contexto de provedor (PQ-06) — só a meta de verificação, quando existe
@@ -1124,13 +1130,13 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         LinhaBusca linha,
         IReadOnlyDictionary<int, ProvedorDireto> provedores,
         IReadOnlyDictionary<int, ArtigoDireto> artigos,
-        IReadOnlyDictionary<int, string> slugsDeErro,
+        IReadOnlyDictionary<int, ErroDireto> errosDiretos,
         IReadOnlyDictionary<int, string> slugsDeCampoLayout)
     {
         switch (linha.TipoItem)
         {
             case TipoErro:
-                var slugDoErro = slugsDeErro.GetValueOrDefault(linha.ItemId);
+                var slugDoErro = errosDiretos.GetValueOrDefault(linha.ItemId)?.Slug;
                 return slugDoErro is null ? linha.Url : $"/erros/{slugDoErro}";
 
             case TipoArtigo:
@@ -1187,13 +1193,16 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         string? VersaoRotulo,
         IReadOnlyCollection<string>? Versoes,
         BuscaMetaDto? Meta,
-        string Url)
+        string Url,
+        string? SolucaoResumo = null)
     {
         /// <summary>Caso "geral" de U9 — os quatro campos de contexto nulos, a URL preservada.</summary>
         public static RotulosDoItem SemContexto(string url) => new(null, null, null, null, url);
     }
 
     private sealed record ProvedorDireto(string Nome, string Slug);
+
+    private sealed record ErroDireto(string Slug, string? SolucaoResumo);
 
     private sealed record ArtigoDireto(string Slug, DateOnly? VerificadoEm);
 

@@ -120,6 +120,13 @@ public sealed record BuscaItemDto
     public required string DescricaoCasamento { get; init; }
 
     /// <summary>
+    /// Primeira linha não vazia da solução sugerida, com até 160 caracteres (corte na última
+    /// palavra inteira, com "…"). Só para <c>erro</c>; <c>null</c> nos demais tipos e no erro sem
+    /// solução.
+    /// </summary>
+    public string? SolucaoResumo { get; init; }
+
+    /// <summary>
     /// Sempre <c>true</c> na busca pública (P1, por construção — nenhuma linha rascunho chega
     /// até aqui). Reflete o estado real na busca interna (I21, <c>incluirRascunho=true</c>) — é o
     /// que permite a UI trocar "Copiar link" por "Copiar link interno" para item em rascunho
