@@ -28,3 +28,6 @@ database/pgdata/
 ## OS
 .DS_Store
 Thumbs.db
+
+## Node (scripts de carga)
+node_modules/
