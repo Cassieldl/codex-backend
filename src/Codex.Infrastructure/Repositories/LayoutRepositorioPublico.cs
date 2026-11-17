@@ -29,9 +29,9 @@ public sealed class LayoutRepositorioPublico : RepositorioBase<CodexDbContext>, 
             .Where(v => v.Slug == versaoSlug && v.DesativadoEm == null)
             .FirstOrDefaultAsync(ct);
 
-    public Task<VersaoLayout?> ObterVersaoPorIdAsync(int id, CancellationToken ct) =>
+    public Task<VersaoLayout?> ObterVersaoPublicadaPorIdAsync(int id, CancellationToken ct) =>
         Contexto.VersoesLayout.AsNoTracking()
-            .Where(v => v.Id == id && v.DesativadoEm == null)
+            .Where(v => v.Id == id && v.Publicado && v.DesativadoEm == null)
             .FirstOrDefaultAsync(ct);
 
     public Task<string?> ObterEstruturaAsync(int versaoLayoutId, CancellationToken ct) =>

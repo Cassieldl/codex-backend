@@ -3,6 +3,8 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
 using Codex.Application.DTOs.Interno;
+using Codex.Application.DTOs.Publico;
+using Codex.Application.Services;
 using FluentAssertions;
 
 namespace Codex.Tests.Unit.Publico;
@@ -25,6 +27,36 @@ public sealed class EstruturaLayoutXsdTests
         var documento = MontarDocumento(LerEstrutura(rotulo).Xml);
 
         Validar(documento, rotulo).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("8", CenarioEnvioModelo.TomadorEstrangeiro)]
+    [InlineData("9", CenarioEnvioModelo.TomadorEstrangeiro)]
+    [InlineData("8", CenarioEnvioModelo.ExportacaoServico)]
+    [InlineData("9", CenarioEnvioModelo.ExportacaoServico)]
+    [InlineData("8", CenarioEnvioModelo.ConstrucaoCivil)]
+    [InlineData("9", CenarioEnvioModelo.ConstrucaoCivil)]
+    [InlineData("8", CenarioEnvioModelo.RetencoesFederais)]
+    [InlineData("9", CenarioEnvioModelo.RetencoesFederais)]
+    public void ValoresDeExemploDoCenario_ValidamContraOXsdDaVersao(string rotulo, CenarioEnvioModelo cenario)
+    {
+        var valores = CenariosEnvioModelo.ValoresDeExemplo(cenario);
+        var estrutura = LerEstrutura(rotulo).Xml;
+        var trocados = Nos(estrutura).Count(no => no.CaminhoCampo is not null && valores.ContainsKey(no.CaminhoCampo));
+
+        var documento = MontarDocumento(ComValores(estrutura, valores));
+
+        trocados.Should().BeGreaterThan(0, because: "o cenário precisa tocar a estrutura para o teste valer");
+        Validar(documento, rotulo).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ValorDeExemplo_ForaDoTipo_ReprovaNoXsd()
+    {
+        // Prova de que a validação dos exemplos não é inerte: o CEP do tomador é número no layout 8.
+        var estrutura = ComValores(LerEstrutura("8").Xml, new Dictionary<string, string> { ["//Tomador/TomaCEP"] = "SW1A 1AA" });
+
+        Validar(MontarDocumento(estrutura), "8").Should().ContainSingle().Which.Should().Contain("TomaCEP");
     }
 
     [Fact]
@@ -72,6 +104,12 @@ public sealed class EstruturaLayoutXsdTests
         JsonSerializer.Deserialize<AtualizarEstruturaVersaoLayoutDto>(
             File.ReadAllText(Path.Combine(PastaDoLayout, $"layout-invoicy-v{rotulo}-estrutura.json")),
             JsonSerializerOptions.Web)!;
+
+    private static NoEstruturaLayoutDto ComValores(NoEstruturaLayoutDto no, IReadOnlyDictionary<string, string> valores) => no with
+    {
+        ValorModelo = no.CaminhoCampo is not null && valores.TryGetValue(no.CaminhoCampo, out var valor) ? valor : no.ValorModelo,
+        Filhos = no.Filhos.Select(filho => ComValores(filho, valores)).ToArray(),
+    };
 
     /// <summary>De cada sequência de alternativas de um <c>xs:choice</c>, só a primeira entra.</summary>
     private static XDocument MontarDocumento(NoEstruturaLayoutDto raiz) => new(MontarElemento(raiz));

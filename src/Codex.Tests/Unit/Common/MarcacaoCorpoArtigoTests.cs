@@ -24,6 +24,20 @@ public sealed class MarcacaoCorpoArtigoTests
         texto.Should().Be("> \n> Confira o lote.\n\n>  Quando o lote volta\n> Veja o protocolo.");
     }
 
+    [Theory]
+    [InlineData("CARTOES")]
+    [InlineData("COMPARATIVO")]
+    [InlineData("CHECKLIST")]
+    [InlineData("SUCESSO")]
+    public void TextoIndexavel_TiraOsMarcadoresNovosEMantemOConteudo(string marcador)
+    {
+        var corpo = $"> [!{marcador}]\n> - Confira o lote.";
+
+        var texto = MarcacaoCorpoArtigo.TextoIndexavel(corpo);
+
+        texto.Should().Be("> \n> - Confira o lote.");
+    }
+
     [Fact]
     public void TextoIndexavel_TrocaImagemPorAltELegendaSemOCaminho()
     {

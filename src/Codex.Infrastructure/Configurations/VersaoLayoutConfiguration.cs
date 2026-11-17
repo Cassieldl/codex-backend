@@ -22,6 +22,16 @@ public sealed class VersaoLayoutConfiguration : IEntityTypeConfiguration<VersaoL
         builder.Property(x => x.Ordem).HasColumnName("ordem").IsRequired();
         builder.Property(x => x.Publicado).HasColumnName("publicado").HasDefaultValue(false).IsRequired();
         builder.Property(x => x.Descricao).HasColumnName("descricao");
+        builder.Property(x => x.NormaOrigem).HasColumnName("normaorigem").HasMaxLength(LimitesVersaoLayout.NormaOrigem);
+        builder.Property(x => x.HomologacaoDesde).HasColumnName("homologacaodesde");
+        builder.Property(x => x.LiberadaNoInvoicyEm).HasColumnName("liberadanoinvoicyem");
+        builder.Property(x => x.ObrigatoriaEm).HasColumnName("obrigatoriaem");
+        builder.Property(x => x.Mudancas)
+            .HasColumnName("mudancas")
+            .HasColumnType("jsonb")
+            .HasConversion(ConversaoMudancasLayout.Conversor, ConversaoMudancasLayout.Comparador)
+            .HasDefaultValueSql("'[]'::jsonb")
+            .IsRequired();
 
         builder.Property(x => x.CriadoEm).HasColumnName("criadoem").HasDefaultValueSql("now()").IsRequired();
         builder.Property(x => x.AtualizadoEm).HasColumnName("atualizadoem").HasDefaultValueSql("now()").IsRequired();

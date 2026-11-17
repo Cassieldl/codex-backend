@@ -3,8 +3,10 @@ using Codex.Application.DTOs.Interno;
 using Codex.Application.DTOs.Publico;
 using Codex.Application.Interfaces;
 using Codex.Application.Services;
+using Codex.Domain.Constantes;
 using Codex.Domain.Entities;
 using Codex.Domain.Enums;
+using Codex.Domain.Exceptions;
 using FluentAssertions;
 using Moq;
 
@@ -49,7 +51,7 @@ public sealed class EnvioModeloServicoTests
     [Fact]
     public async Task Maximo_TrazTodoCampoDaVersaoComPosicao_ComAncestrais_ESemCampoDeFora()
     {
-        var envio = await _sut.ObterEnvioModeloAsync("acme", "v1", AlcanceEnvioModelo.Maximo, CancellationToken.None);
+        var envio = await _sut.ObterEnvioModeloAsync("acme", "v1", AlcanceEnvioModelo.Maximo, CenarioEnvioModelo.Nacional, CancellationToken.None);
 
         envio.Alcance.Should().Be("maximo");
         envio.VersaoLayoutRotulo.Should().Be("8");
@@ -71,7 +73,7 @@ public sealed class EnvioModeloServicoTests
     [Fact]
     public async Task Minimo_SoObrigatorios_UmaAlternativaPorEscolha_EGrupoVazioSai()
     {
-        var envio = await _sut.ObterEnvioModeloAsync("acme", "v1", AlcanceEnvioModelo.Minimo, CancellationToken.None);
+        var envio = await _sut.ObterEnvioModeloAsync("acme", "v1", AlcanceEnvioModelo.Minimo, CenarioEnvioModelo.Nacional, CancellationToken.None);
 
         envio.Alcance.Should().Be("minimo");
         foreach (var raiz in new[] { envio.Xml, envio.Json })
@@ -79,6 +81,17 @@ public sealed class EnvioModeloServicoTests
 
         Nos(envio.Xml).Should().NotContain(no => no.CampoSlug == "toma-nome", because: "condicional nunca entra no mínimo");
         envio.CamposSemPosicao.Should().Equal("fantasma");
+        (envio.Cenario, envio.CenariosDisponiveis).Should().BeEquivalentTo(("nacional", new[] { "nacional" }));
+    }
+
+    [Fact]
+    public async Task TomadorEstrangeiro_VersaoSemIdentificacaoEstrangeira_RecusaComCenarioIndisponivel()
+    {
+        var pedir = () => _sut.ObterEnvioModeloAsync(
+            "acme", "v1", AlcanceEnvioModelo.Maximo, CenarioEnvioModelo.TomadorEstrangeiro, CancellationToken.None);
+
+        (await pedir.Should().ThrowAsync<RegraDeNegocioException>())
+            .Which.Codigo.Should().Be(CodigosErro.CenarioIndisponivel);
     }
 
     [Fact]

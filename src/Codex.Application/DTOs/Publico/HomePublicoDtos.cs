@@ -82,8 +82,8 @@ public sealed record ProvedorHomeDto
 /// <summary>
 /// Bloco "Layout InvoiCy" da Home. SEM <c>PublicadaEm</c> (decisoes.md B-6): não existe coluna
 /// equivalente em <c>versoeslayout</c>, e exibir <c>criadoem</c> sob rótulo de publicação seria a
-/// tela afirmando o que não é verdade. Se o produto quiser a data, é coluna nova e decisão do
-/// usuário.
+/// tela afirmando o que não é verdade. As datas que aparecem aqui são as colunas próprias da
+/// versão vigente (norma, homologação, liberação no InvoiCy e obrigatoriedade).
 /// </summary>
 public sealed record LayoutResumoHomeDto
 {
@@ -99,6 +99,15 @@ public sealed record LayoutResumoHomeDto
 
     /// <summary>Campos visíveis descontinuados NA vigente.</summary>
     public required int CamposDescontinuados { get; init; }
+
+    /// <summary>Da versão vigente; <c>null</c> sem vigente ou sem o dado.</summary>
+    public string? NormaOrigem { get; init; }
+
+    public DateOnly? HomologacaoDesde { get; init; }
+
+    public DateOnly? LiberadaNoInvoicyEm { get; init; }
+
+    public DateOnly? ObrigatoriaEm { get; init; }
 }
 
 /// <summary>
@@ -164,4 +173,12 @@ public sealed record LayoutHomeBrutoDto
     public required int CamposNovos { get; init; }
 
     public required int CamposDescontinuados { get; init; }
+
+    public string? NormaOrigem { get; init; }
+
+    public DateOnly? HomologacaoDesde { get; init; }
+
+    public DateOnly? LiberadaNoInvoicyEm { get; init; }
+
+    public DateOnly? ObrigatoriaEm { get; init; }
 }

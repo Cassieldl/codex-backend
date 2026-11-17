@@ -50,6 +50,11 @@ public sealed class VersaoLayoutRepositorioInterno : RepositorioBase<CodexDbCont
                 Ordem = v.Ordem,
                 Publicado = v.Publicado,
                 Descricao = v.Descricao,
+                NormaOrigem = v.NormaOrigem,
+                HomologacaoDesde = v.HomologacaoDesde,
+                LiberadaNoInvoicyEm = v.LiberadaNoInvoicyEm,
+                ObrigatoriaEm = v.ObrigatoriaEm,
+                Mudancas = MapeamentoMudancaLayout.ParaResposta(v.Mudancas),
                 VersaoConcorrencia = v.Versao,
             })
             .ToListAsync(ct);

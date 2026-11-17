@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Codex.Application.Common;
 using Codex.Application.DTOs.Interno;
 using Codex.Application.DTOs.Publico;
 using Codex.Application.Interfaces;
@@ -143,9 +144,10 @@ public sealed class LayoutServicoPublico : ILayoutServicoPublico
 
         var (versoesPublicadas, camposVisiveis) = await CarregarContextoAsync(ct);
 
+        // Descontinuação em versão não publicada não existe para o público: o campo segue ativo.
         VersaoLayout? versaoDescontinuado = null;
         if (campo.VersaoLayoutDescontinuadoId.HasValue)
-            versaoDescontinuado = await _repositorio.ObterVersaoPorIdAsync(campo.VersaoLayoutDescontinuadoId.Value, ct);
+            versaoDescontinuado = await _repositorio.ObterVersaoPublicadaPorIdAsync(campo.VersaoLayoutDescontinuadoId.Value, ct);
 
         var vigentePublicada = versoesPublicadas.FirstOrDefault(v => v.Estado == EstadoVersaoLayout.Vigente);
         var ativoNaVigente = vigentePublicada is not null
@@ -165,7 +167,7 @@ public sealed class LayoutServicoPublico : ILayoutServicoPublico
             CaminhoXml = campo.CaminhoXml,
             Significado = campo.Significado,
             ReformaTributaria = campo.ReformaTributaria,
-            Estado = campo.Estado.ToString(),
+            Estado = (versaoDescontinuado is null ? EstadoCampoLayout.Ativo : campo.Estado).ToString(),
             VersaoExibicao = MontarResumo(versaoExibicao, camposVisiveis),
             VersaoOrigem = MontarResumo(origem, camposVisiveis),
             VersaoDescontinuado = versaoDescontinuado is null ? null : MontarResumo(versaoDescontinuado, camposVisiveis),
@@ -216,6 +218,11 @@ public sealed class LayoutServicoPublico : ILayoutServicoPublico
         Estado = versao.Estado.ToString(),
         Ordem = versao.Ordem,
         TotalCampos = camposVisiveis.Count(c => CampoAtivoNaVersao(c.OrigemOrdem, c.DescontinuadoOrdem, versao.Ordem)),
+        NormaOrigem = versao.NormaOrigem,
+        HomologacaoDesde = versao.HomologacaoDesde,
+        LiberadaNoInvoicyEm = versao.LiberadaNoInvoicyEm,
+        ObrigatoriaEm = versao.ObrigatoriaEm,
+        Mudancas = MapeamentoMudancaLayout.ParaResposta(versao.Mudancas),
     };
 
     /// <param name="existeAnterior">

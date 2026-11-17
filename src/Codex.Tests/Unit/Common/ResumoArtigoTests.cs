@@ -78,11 +78,35 @@ public sealed class ResumoArtigoTests
     }
 
     [Fact]
-    public void Derivar_RemoveMarcacaoDeCabecalho()
+    public void Derivar_CorpoSoComTituloDeSecao_RetornaNull()
     {
         var resultado = ResumoArtigo.Derivar("## Título da seção");
 
-        resultado.Should().Be("Título da seção");
+        resultado.Should().BeNull(because: "título de seção nunca vira resumo");
+    }
+
+    // Começos reais de artigos da carga: o resumo saía "Resumo", "O que é", "Mensagem" e "Fórmula".
+    [Theory]
+    [InlineData(
+        "## Resumo\n\nO documento fica **em conflito** quando o InvoiCy **não consegue confirmar** se a prefeitura autorizou a nota.\n\n## Risco\n\nReenviar o RPS sem conferir.",
+        "O documento fica em conflito quando o InvoiCy não consegue confirmar se a prefeitura autorizou a nota.")]
+    [InlineData(
+        "> Fonte: [Retenção de ISS](https://desenvolvedores.migrate.info/ModulosFiscais/Documentos/NFSe/RetencaodeISS/) (13/02/2026).\n\n## O que é\n\nNa retenção, o **tomador** recolhe o ISS no lugar do prestador.",
+        "Na retenção, o tomador recolhe o ISS no lugar do prestador.")]
+    [InlineData(
+        "## Mensagem\n\n> O código do município emissor informado na DPS é inexistente no cadastro de convênio municipal do sistema nacional.\n\n## Causa\n\nApesar da mensagem, o município **existe**.",
+        "O código do município emissor informado na DPS é inexistente no cadastro de convênio municipal do sistema nacional.")]
+    [InlineData(
+        "## Fórmula\n\n```\nvLiq = vServ − vDescCond\n```\n\n## Campos usados\n\n| Parcela | Tag |\n| :--- | :--- |\n| Valor do serviço | `vServ` |\n\n**Valores retidos** = soma de:",
+        "Valores retidos = soma de:")]
+    [InlineData(
+        "## O que é\nNa retenção, o tomador recolhe o ISS.",
+        "Na retenção, o tomador recolhe o ISS.")]
+    public void Derivar_SemResumo_PulaTituloDeSecaoETabela(string corpo, string esperado)
+    {
+        var resultado = ResumoArtigo.Derivar(corpo);
+
+        resultado.Should().Be(esperado);
     }
 
     [Fact]
@@ -124,6 +148,20 @@ public sealed class ResumoArtigoTests
         resultado.Should().Be("Primeiro parágrafo de verdade, com no meio.");
     }
 
+    [Theory]
+    [InlineData("CARTOES", "> - **Nome do campo** | Significado e preenchimento. | [Ex.: TomaCNPJ](/busca?q=TomaCNPJ)")]
+    [InlineData("COMPARATIVO", "> **Aviso**\n> - Trata de regra em vigor.")]
+    [InlineData("CHECKLIST", "> - O erro não está documentado.")]
+    [InlineData("SUCESSO", "> A nota foi autorizada.")]
+    public void Derivar_BlocoVisualNovoAntesDoTexto_NaoViraResumo(string marcador, string conteudo)
+    {
+        var corpo = $"> [!{marcador}]\n{conteudo}\n\nO primeiro parágrafo de texto.";
+
+        var resultado = ResumoArtigo.Derivar(corpo);
+
+        resultado.Should().Be("O primeiro parágrafo de texto.");
+    }
+
     [Fact]
     public void Derivar_CercaDentroDoDetalhes_NaoSoltaOFimDoBlocoComoResumo()
     {
@@ -159,5 +197,29 @@ public sealed class ResumoArtigoTests
         var resultado = ResumoArtigo.Derivar(corpo);
 
         resultado.Should().Be(new string('a', 200) + "…");
+    }
+
+    [Theory]
+    [InlineData("Fonte: Webhook - Configurações (12/08/2026).")]
+    [InlineData("**Fonte:** Webhook - Configurações (12/08/2026).")]
+    [InlineData("> Fonte: Webhook - Configurações (12/08/2026).")]
+    [InlineData("> Fontes: [obs] SMARAPDISIL e TIPLAN; [FAQ - Padrão Nacional](https://desenvolvedores.migrate.info/ModulosFiscais/Documentos/NFSe/FAQ/).")]
+    [InlineData("**Fontes:** Impressão de NFS-e (17/07/2026) e Gerar Espelho do RPS e da NFS-e (13/02/2026).")]
+    [InlineData("FONTES: Consulta de Municípios Integrados (16/02/2026).")]
+    public void Derivar_SemResumo_PulaOParagrafoDeFonte(string fonte)
+    {
+        var resultado = ResumoArtigo.Derivar($"{fonte}\n\nO webhook avisa o sistema do parceiro a cada nota.");
+
+        resultado.Should().Be("O webhook avisa o sistema do parceiro a cada nota.");
+    }
+
+    [Fact]
+    public void Derivar_ResumoMarcado_VenceMesmoDepoisDaFonte()
+    {
+        var corpo = "> Fonte: Webhook.\n\nPrimeiro parágrafo.\n\n> [!RESUMO]\n> Resumo escolhido.";
+
+        var resultado = ResumoArtigo.Derivar(corpo);
+
+        resultado.Should().Be("Resumo escolhido.");
     }
 }

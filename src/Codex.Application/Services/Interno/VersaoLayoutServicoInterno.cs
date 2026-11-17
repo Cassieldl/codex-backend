@@ -44,6 +44,9 @@ public sealed class VersaoLayoutServicoInterno : IVersaoLayoutServicoInterno
     {
         var proximaOrdem = await _repositorio.ObterProximaOrdemAsync(ct);
         var versaoLayout = VersaoLayout.Criar(dto.Rotulo, proximaOrdem, dto.Descricao);
+        versaoLayout.AtualizarCalendario(dto.NormaOrigem, dto.HomologacaoDesde, dto.LiberadaNoInvoicyEm, dto.ObrigatoriaEm);
+        if (dto.Mudancas is not null)
+            versaoLayout.AtualizarMudancas(MapeamentoMudancaLayout.ParaDominio(dto.Mudancas));
 
         await _repositorio.AdicionarAsync(versaoLayout, ct);
         await _repositorio.SalvarAlteracoesAsync(ct);
@@ -60,6 +63,16 @@ public sealed class VersaoLayoutServicoInterno : IVersaoLayoutServicoInterno
 
         if (dto.Descricao is not null)
             versaoLayout.AtualizarDescricao(dto.Descricao);
+
+        // Campo ausente mantém o valor atual; presente, mesmo null, substitui.
+        versaoLayout.AtualizarCalendario(
+            dto.NormaOrigemInformada ? dto.NormaOrigem : versaoLayout.NormaOrigem,
+            dto.HomologacaoDesdeInformada ? dto.HomologacaoDesde : versaoLayout.HomologacaoDesde,
+            dto.LiberadaNoInvoicyEmInformada ? dto.LiberadaNoInvoicyEm : versaoLayout.LiberadaNoInvoicyEm,
+            dto.ObrigatoriaEmInformada ? dto.ObrigatoriaEm : versaoLayout.ObrigatoriaEm);
+
+        if (dto.Mudancas is not null)
+            versaoLayout.AtualizarMudancas(MapeamentoMudancaLayout.ParaDominio(dto.Mudancas));
 
         if (dto.Ordem.HasValue)
             versaoLayout.ReordenarPara(dto.Ordem.Value);
@@ -150,6 +163,11 @@ public sealed class VersaoLayoutServicoInterno : IVersaoLayoutServicoInterno
         Ordem = versaoLayout.Ordem,
         Publicado = versaoLayout.Publicado,
         Descricao = versaoLayout.Descricao,
+        NormaOrigem = versaoLayout.NormaOrigem,
+        HomologacaoDesde = versaoLayout.HomologacaoDesde,
+        LiberadaNoInvoicyEm = versaoLayout.LiberadaNoInvoicyEm,
+        ObrigatoriaEm = versaoLayout.ObrigatoriaEm,
+        Mudancas = MapeamentoMudancaLayout.ParaResposta(versaoLayout.Mudancas),
         VersaoConcorrencia = versaoLayout.Versao,
     };
 }

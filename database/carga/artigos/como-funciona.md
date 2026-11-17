@@ -1,79 +1,77 @@
-O Codex reúne o conhecimento acumulado pelo suporte da Migrate sobre a emissão de NFS-e pelo InvoiCy: o significado dos erros de cada provedor, como corrigi-los, como preencher os campos em cada provedor e versão e quais particularidades estão valendo no momento.
+> [!RESUMO]
+> O Codex reúne os erros de NFS-e no InvoiCy e a correção, os campos por provedor e versão e as particularidades em vigor, sem chamado nem login.
 
-A ideia é simples: encontrar, agora, a resposta para algo que já foi resolvido antes, sem precisar abrir um chamado.
+## Comece pela busca
 
-O acesso é aberto. Você não precisa fazer login para consultar o conteúdo.
+A busca fica no topo de qualquer página. Comece pelo que você tem em mãos:
 
-## Comece pelo que você tem em mãos
+> [!CARTOES]
+> - **Código ou mensagem do erro** | Cole como veio: erro documentado abre direto. | [Ex.: E157](/busca?q=E157)
+> - **Nome do campo** | Significado e preenchimento. | [Ex.: TomaCNPJ](/busca?q=TomaCNPJ)
+> - **Provedor** | Tudo o que está documentado. | [Ex.: ISS.NET](/busca?q=ISS.NET)
 
-Quase toda consulta começa por uma destas três informações. Use a busca no topo de qualquer página:
+Sem resultado exato, vêm os mais próximos, marcados como aproximados.
 
-* **Código ou mensagem do erro:** pesquise exatamente como apareceu no retorno. Se o erro estiver documentado, você será levado diretamente à página correspondente.
-* **Nome de um campo:** pesquise o campo do XML, como `TomaCNPJ`, para descobrir seu significado e como ele deve ser preenchido.
-* **Nome do provedor:** consulte tudo o que está documentado para um determinado provedor.
+## Do erro à solução
 
-Se não houver uma correspondência exata, o Codex mostra os resultados mais próximos e identifica quando uma correspondência é aproximada.
+```fluxo
+Você: cola o código ou a mensagem do erro na busca
+Codex: abre o erro documentado, com a correção
+Provedor: confira se há comunicado ativo que explique o erro
+Suporte: se não resolveu, mande o link da página
+```
 
-## Provedor e versão são parte da resposta
+## Provedor e versão
 
-Um mesmo campo pode ter tipo, tamanho ou obrigatoriedade diferentes dependendo do provedor e da versão utilizada pelo município.
+O preenchimento de um campo (tipo, tamanho, obrigatoriedade) muda com o provedor e a versão do município.
 
-Por isso, as informações de preenchimento no Codex sempre estão associadas a um **provedor e uma versão específicos**.
+> [!DICA] Mesmos nomes do InvoiCy
+> O InvoiCy define provedor e versão de cada município, com os nomes do Codex: copie de um e pesquise no outro.
 
-O InvoiCy é quem determina qual provedor e versão atendem cada município. Os nomes usados no Codex são os mesmos do InvoiCy, então você pode copiar o nome de um sistema e pesquisá-lo no outro.
+## Duas tabelas
 
-## Entenda as duas tabelas
+> [!COMPARATIVO]
+> **Layout InvoiCy**
+> - Responde: o que é o campo?
+> - Mostra nome, posição no XML e significado.
+>
+> **Tabela do provedor**
+> - Responde: como preencher nesta versão?
+> - Mostra tipo, tamanho, máscara, obrigatoriedade, condições e campo de destino no XML do provedor.
 
-O Codex usa duas referências diferentes porque elas respondem a perguntas diferentes:
+> [!IMPORTANTE] Divergiu? Vale o provedor
+> Se as duas tabelas divergirem, vale a tabela do provedor: é o formato que a prefeitura valida.
 
-### Layout InvoiCy
+> [!DETALHES] Como ler a página da versão
+> - Campo fora da tabela não se aplica à versão.
+> - Campo em confirmação aparece marcado na página da versão.
+> - Data de verificação: quando a Migrate comparou a versão com o provedor real. Mais recente, mais confiável.
 
-Mostra o vocabulário do InvoiCy: o nome do campo, sua posição no XML e o que ele representa. Ele explica **o que é o campo**, mas não como preenchê-lo.
+## Aviso x comunicado
 
-### Tabela da versão do provedor
+> [!COMPARATIVO]
+> **Aviso**
+> - Trata de regra em vigor (ex.: campo que virou obrigatório).
+> - Dura até mudar.
+> - Aparece na página da versão.
+>
+> **Comunicado**
+> - Trata de situação temporária (ex.: instabilidade na prefeitura).
+> - Tem data para sair.
+> - Aparece na home e, se couber, no topo do provedor, da versão e do erro.
 
-Mostra **como o campo deve ser preenchido** naquela versão: tipo, tamanho, máscara, obrigatoriedade, condições de preenchimento e para qual campo do XML do provedor o valor é enviado.
+> [!DICA] Erro novo?
+> Veja antes se há comunicado ativo do provedor: ele pode explicar o erro sem mudar a integração.
 
-Se houver diferença entre as duas referências, siga a tabela do provedor. É o formato aceito e validado pela prefeitura.
+## Quando chamar o suporte
 
-## Se o campo não estiver na tabela
+Procure o suporte quando:
 
-A tabela de cada versão representa todos os campos aplicáveis àquela versão.
+> [!CHECKLIST]
+> - O erro não está documentado.
+> - A solução indicada não resolveu.
+> - O provedor age diferente do descrito.
 
-Se um campo não estiver listado, ele **não se aplica àquela versão**. Isso não significa que a documentação esteja incompleta.
+Nos dois últimos casos, mande o link da página: o suporte vê o que você seguiu e corrige o texto.
 
-Quando algum campo ainda estiver em confirmação, ele será identificado na própria página da versão. Fora desses casos, o que não estiver na tabela não se aplica.
-
-## Veja quando a informação foi verificada
-
-Cada versão informa a **data da última verificação**.
-
-Ela indica quando alguém da Migrate comparou a documentação com o comportamento real do provedor. Em geral, quanto mais recente essa data, maior a confiança de que a informação ainda corresponde ao ambiente atual.
-
-## Avisos e comunicados
-
-Nem toda informação tem o mesmo prazo de validade.
-
-**Avisos** registram regras ou particularidades que continuam valendo até que sejam alteradas, como um campo que passou a ser obrigatório. Eles ficam na página da versão correspondente.
-
-**Comunicados** tratam de situações temporárias, como instabilidades ou problemas no ambiente da prefeitura. Eles têm uma data para sair do ar e aparecem na página inicial do Codex e, quando aplicável, no topo das páginas do provedor, da versão e do erro.
-
-Por isso, antes de investigar um erro novo, confira se existe algum comunicado ativo para o provedor. Ele pode explicar o comportamento que você está encontrando sem que seja necessário alterar nada na integração.
-
-## Cada informação tem seu próprio link
-
-Erros, campos, avisos e artigos possuem um endereço próprio.
-
-Quando encontrar uma informação útil, guarde ou compartilhe o link. Além de facilitar uma consulta futura, ele permite que você mostre exatamente a mesma referência para outra pessoa da equipe.
-
-## Quando procurar o suporte
-
-O Codex deve ser o primeiro lugar para consultar uma dúvida já conhecida. Procure o suporte da Migrate quando:
-
-* o erro não estiver documentado;
-* a solução indicada no Codex não resolver o problema;
-* o comportamento do provedor for diferente do descrito na documentação.
-
-Nos dois últimos casos, envie também o **link da página consultada**.
-
-Isso ajuda o suporte a entender rapidamente o que foi seguido e permite identificar se a documentação precisa ser atualizada para evitar o mesmo problema no futuro.
+Erro, campo, aviso e artigo têm link próprio para guardar e compartilhar.

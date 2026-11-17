@@ -40,6 +40,9 @@ public static class CodigosErro
     /// <summary>Envio modelo de versão de provedor cuja versão de layout não tem estrutura gravada (404).</summary>
     public const string EstruturaIndisponivel = "ESTRUTURA_INDISPONIVEL";
 
+    /// <summary>Envio modelo pedido num cenário conhecido que a versão do provedor não sustenta (422).</summary>
+    public const string CenarioIndisponivel = "CENARIO_INDISPONIVEL";
+
     /// <summary>
     /// I15d promovendo uma segunda <c>VersaoLayout</c> a <c>Vigente</c> (PQ-17, analise-backend.md
     /// §4.6, 409). Traduzido da violação de <c>uq_codex_versoeslayout_estado_vigente</c> por

@@ -112,5 +112,9 @@ public sealed class HomeServicoPublico : IHomeServicoPublico
         Descricao = layout.Descricao,
         CamposNovos = layout.CamposNovos,
         CamposDescontinuados = layout.CamposDescontinuados,
+        NormaOrigem = layout.NormaOrigem,
+        HomologacaoDesde = layout.HomologacaoDesde,
+        LiberadaNoInvoicyEm = layout.LiberadaNoInvoicyEm,
+        ObrigatoriaEm = layout.ObrigatoriaEm,
     };
 }

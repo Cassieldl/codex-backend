@@ -34,8 +34,149 @@ export const VERSOES_LAYOUT_INVOICY = [
       'Mudaram de posição: dados da substituição (de tpOper para RPSSubs); Fornecedor e DocumentoFiscalOutro (agora dentro de Documento); endereço do imóvel (só na unidade imobiliária).',
       'Saíram ou mudaram: ValServEst saiu; nDI e nRE deram lugar a nroDUIMP e nroDUE; ItermIE virou IntermIE; CEPs passam a texto de 8 posições.',
     ].join('\n'),
+    normaOrigem: 'NT 009 v1.01',
+    homologacaoDesde: '2026-10-01',
+    liberadaNoInvoicyEm: '2026-10-22',
+    obrigatoriaEm: '2026-12-01',
+    // Caminhos canônicos: "antes" na estrutura da 8, "depois" na da 9.
+    mudancas: [
+      {
+        tipo: 'grupoNovo',
+        depois: '//Condominio',
+        descricao:
+          'Grupo do condomínio: cobranças (ListaCobranca), detalhamento de cada cobrança (ListaDetCobranca) e descontos (ListaDesconto).',
+      },
+      {
+        tipo: 'grupoNovo',
+        depois: '//RPSSubs',
+        descricao: 'Grupo com os dados do RPS ou da NFS-e substituída.',
+      },
+      {
+        tipo: 'campoNovo',
+        depois: '//Servico/Valores/nroContCambio',
+        descricao: 'Número do contrato de câmbio da operação de comércio exterior.',
+      },
+      {
+        tipo: 'campoNovo',
+        depois: '//Servico/Valores/IBSCBS/ValAjusteBCIBSCBSComExt',
+        descricao: 'Ajuste da base de cálculo do IBS e da CBS no comércio exterior.',
+      },
+      {
+        tipo: 'campoNovo',
+        depois: '//Destinatario/DestIE',
+        descricao: 'Inscrição estadual do destinatário.',
+      },
+      {
+        tipo: 'campoNovo',
+        depois: '//Destinatario/DestIM',
+        descricao: 'Inscrição municipal do destinatário.',
+      },
+      {
+        tipo: 'mudouDeLugar',
+        antes: '//tpOper',
+        depois: '//RPSSubs',
+        descricao:
+          'Os dados da substituição (SubsNumero, SubsSerie, SubsTipo, SubsNFSeNumero, SubsDEmisNFSe, SubsChave, SubsCodMotivo e SubsDescMotivo) saem de dentro de tpOper e vão para RPSSubs; tpOper vira campo simples.',
+      },
+      {
+        tipo: 'mudouDeLugar',
+        antes: '//ListaBensMoveis/BemMovel/BemMovelcNCM',
+        depois: '//ListaDocumentos/Documento/Fornecedor',
+        descricao:
+          'Os dados do fornecedor (documento, nome e endereço) saem de BemMovelcNCM e passam ao grupo Fornecedor, dentro de Documento.',
+      },
+      {
+        tipo: 'mudouDeLugar',
+        antes: '//ListaNFSeReferenciadas/NFSeReferenciada',
+        depois: '//ListaDocumentos/Documento/DocumentoFiscalOutro',
+        descricao:
+          'O outro documento fiscal (DoccMun, DocNumero e DocDescricao) sai da NFS-e referenciada e passa ao grupo DocumentoFiscalOutro, dentro de Documento.',
+      },
+      {
+        tipo: 'mudouDeLugar',
+        antes: '//Imovel/ImovEndereco',
+        depois: '//Imovel/Locacao/ListaUnidadesImobiliarias/UnidadeImobiliaria/ImovEndereco',
+        descricao:
+          'O endereço do imóvel (ImovEndereco, ImovNumero, ImovBairro, ImovxMun e ImovCEP) fica só na unidade imobiliária.',
+      },
+      {
+        tipo: 'renomeado',
+        antes: '//Servico/Valores/nDI',
+        depois: '//Servico/Valores/nroDUIMP',
+        descricao: 'O número da declaração de importação passa a ser o da DUIMP.',
+      },
+      {
+        tipo: 'renomeado',
+        antes: '//Servico/Valores/nRE',
+        depois: '//Servico/Valores/nroDUE',
+        descricao: 'O número do registro de exportação passa a ser o da DUE.',
+      },
+      {
+        tipo: 'renomeado',
+        antes: '//IntermServico/ItermIE',
+        depois: '//IntermServico/IntermIE',
+        descricao: 'Inscrição estadual do intermediário com a grafia corrigida.',
+      },
+      {
+        tipo: 'saiu',
+        antes: '//Servico/Valores/ValServEst',
+        descricao: 'O valor do serviço em moeda estrangeira saiu do layout.',
+      },
+      {
+        tipo: 'alterado',
+        antes: '//Prestador/enderPrest/CEP',
+        depois: '//Prestador/enderPrest/CEP',
+        descricao: 'CEP do prestador passa de número a texto de 8 posições.',
+      },
+      {
+        tipo: 'alterado',
+        antes: '//Tomador/TomaCEP',
+        depois: '//Tomador/TomaCEP',
+        descricao: 'CEP do tomador passa de número a texto de 8 posições.',
+      },
+      {
+        tipo: 'alterado',
+        antes: '//ConstCivil/ObraCEP',
+        depois: '//ConstCivil/ObraCEP',
+        descricao: 'CEP da obra passa de número a texto de 8 posições.',
+      },
+    ],
   },
 ]
+
+/** Norma e datas da versão, em "yyyy-MM-dd". Chave ausente na configuração não é tocada na API. */
+const CAMPOS_DO_CALENDARIO = [
+  'normaOrigem',
+  'homologacaoDesde',
+  'liberadaNoInvoicyEm',
+  'obrigatoriaEm',
+]
+
+/** Só os campos do calendário configurados que diferem do que a API tem; vazio quando nada muda. */
+export function mudancasDeCalendario(configurada, existente = {}) {
+  return Object.fromEntries(
+    CAMPOS_DO_CALENDARIO.filter(
+      (chave) =>
+        configurada[chave] !== undefined && configurada[chave] !== (existente[chave] ?? null),
+    ).map((chave) => [chave, configurada[chave]]),
+  )
+}
+
+/** Mudança no formato que a API devolve: caminho ausente vira nulo. */
+function normalizarMudanca({ tipo, antes, depois, descricao }) {
+  return { tipo, antes: antes ?? null, depois: depois ?? null, descricao }
+}
+
+/**
+ * A lista de mudanças configurada quando difere da que a API tem; vazio quando é igual ou quando a
+ * versão não configura mudanças. A lista vai inteira: a API substitui, não mescla.
+ */
+export function mudancasDaLista(configurada, existente = {}) {
+  if (configurada.mudancas === undefined) return {}
+  const desejada = configurada.mudancas.map(normalizarMudanca)
+  const atual = (existente.mudancas ?? []).map(normalizarMudanca)
+  return JSON.stringify(desejada) === JSON.stringify(atual) ? {} : { mudancas: desejada }
+}
 
 /** Estrutura gerada de uma versão, versionada ao lado do XSD para o teste do backend validar o XML. */
 export function arquivoDaEstrutura(rotulo) {
@@ -163,31 +304,45 @@ function itensDe(dados) {
 }
 
 /**
- * Cria as versões que faltam e alinha a descrição das existentes, na ordem; devolve as da
- * configuração com o estado atual.
+ * Cria as versões que faltam e alinha a descrição, a norma, as datas e as mudanças das existentes,
+ * na ordem; devolve as da configuração com o estado atual.
  */
 async function garantirVersoes(api, versoes) {
   const { dados } = await api.chamar('GET', '/interno/layout/versoes?tamanhoPagina=200')
   const existentes = itensDe(dados)
 
   const resultado = []
-  for (const { rotulo, descricao } of versoes) {
+  for (const configurada of versoes) {
+    const { rotulo, descricao } = configurada
     let versao = existentes.find((item) => item.rotulo === rotulo)
     if (!versao) {
       ;({ dados: versao } = await api.chamar('POST', '/interno/layout/versoes', {
         rotulo,
         descricao,
+        ...mudancasDeCalendario(configurada),
+        ...mudancasDaLista(configurada),
       }))
       console.log(`versão ${rotulo} do Layout InvoiCy criada (id ${versao.id})`)
-    } else if (versao.descricao !== descricao) {
+      resultado.push(versao)
+      continue
+    }
+
+    const alteracoes = {
+      ...(versao.descricao !== descricao ? { descricao } : {}),
+      ...mudancasDeCalendario(configurada, versao),
+      ...mudancasDaLista(configurada, versao),
+    }
+    if (Object.keys(alteracoes).length > 0) {
       const { dados } = await api.chamar(
         'PUT',
         `/interno/layout/versoes/${versao.id}`,
-        { descricao },
+        alteracoes,
         String(versao.versaoConcorrencia),
       )
-      versao = { ...versao, ...dados, descricao }
-      console.log(`descrição da versão ${rotulo} do Layout InvoiCy atualizada`)
+      versao = { ...versao, ...dados, ...alteracoes }
+      console.log(
+        `versão ${rotulo} do Layout InvoiCy atualizada: ${Object.keys(alteracoes).join(', ')}`,
+      )
     }
     resultado.push(versao)
   }

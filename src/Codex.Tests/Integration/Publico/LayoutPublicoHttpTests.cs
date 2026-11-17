@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 using Codex.Domain.Entities;
 using Codex.Domain.Enums;
+using Codex.Domain.ValueObjects;
 using Codex.Tests.Integration.Api;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -189,6 +190,25 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task P10EP11_CalendarioDaVersao_SaiComDatasEmTexto_ENullSemODado()
+    {
+        var indice = await ObterDadosAsync("/api/v1/layout");
+        var v2 = (await ObterDadosAsync($"/api/v1/layout/versoes/{_cenario.V2Slug}")).GetProperty("versao");
+        var v1 = indice.GetProperty("versoes").EnumerateArray().Single(v => v.GetProperty("slug").GetString() == _cenario.V1Slug);
+
+        foreach (var comCalendario in new[] { v2, indice.GetProperty("vigente") })
+        {
+            comCalendario.GetProperty("normaOrigem").GetString().Should().Be("NT 009 v1.01");
+            comCalendario.GetProperty("homologacaoDesde").GetString().Should().Be("2026-10-01");
+            comCalendario.GetProperty("liberadaNoInvoicyEm").GetString().Should().Be("2026-10-22");
+            comCalendario.GetProperty("obrigatoriaEm").GetString().Should().Be("2026-12-01");
+        }
+
+        foreach (var chave in new[] { "normaOrigem", "homologacaoDesde", "liberadaNoInvoicyEm", "obrigatoriaEm" })
+            v1.GetProperty(chave).ValueKind.Should().Be(JsonValueKind.Null, because: $"versão sem {chave} devolve a chave com null");
+    }
+
+    [Fact]
     public async Task P11_CampoComOrigemPosteriorAVersao_NaoApareceNaVersaoAnterior()
     {
         var v1 = await ObterDadosAsync($"/api/v1/layout/versoes/{_cenario.V1Slug}");
@@ -289,6 +309,48 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
         verbete.GetProperty("estado").GetString().Should().Be("Descontinuado");
         verbete.GetProperty("versaoOrigem").GetProperty("slug").GetString().Should().Be(_cenario.V1Slug);
         verbete.GetProperty("versaoDescontinuado").GetProperty("slug").GetString().Should().Be(_cenario.V2Slug);
+    }
+
+    [Fact]
+    public async Task P12_CampoDescontinuadoEmVersaoNaoPublicada_NaoExpoeNadaDessaVersao()
+    {
+        const string NormaDoRascunho = "NT rascunho";
+        string slugDoCampo;
+        string rotuloDoRascunho;
+
+        await using (var contexto = _fixture.CriarContexto())
+        {
+            var maiorOrdem = await contexto.VersoesLayout.MaxAsync(v => v.Ordem);
+            var v1 = await contexto.VersoesLayout.SingleAsync(v => v.Slug == _cenario.V1Slug);
+
+            var rascunho = VersaoLayout.Criar($"Layout Rascunho {_sufixo}", maiorOrdem + 1);
+            rascunho.AtualizarCalendario(NormaDoRascunho, new DateOnly(2027, 1, 1), new DateOnly(2027, 2, 1), new DateOnly(2027, 3, 1));
+            contexto.VersoesLayout.Add(rascunho);
+            await contexto.SaveChangesAsync();
+
+            var campo = CampoLayout.Criar(v1.Id, $"campo em revisao {_sufixo}", $"//raiz/Revisao{_sufixo}", "Campo que sai num rascunho", ordem: 70);
+            campo.Publicar();
+            contexto.CamposLayout.Add(campo);
+            await contexto.SaveChangesAsync();
+
+            rascunho.AtualizarMudancas([new MudancaLayout(TipoMudancaLayout.Saiu, campo.CaminhoXml, null, "Sai no rascunho.")]);
+            var rastreado = await contexto.CamposLayout.Include(c => c.VersaoLayoutOrigem).FirstAsync(c => c.Id == campo.Id);
+            rastreado.Descontinuar(rascunho);
+            await contexto.SaveChangesAsync();
+
+            slugDoCampo = campo.Slug;
+            rotuloDoRascunho = rascunho.Rotulo;
+        }
+
+        using var resposta = await _cliente.GetAsync($"/api/v1/layout/campos/{slugDoCampo}");
+        var texto = await resposta.Content.ReadAsStringAsync();
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.OK, because: texto);
+        texto.Should().NotContain(rotuloDoRascunho).And.NotContain(NormaDoRascunho).And.NotContain("Sai no rascunho");
+
+        var verbete = JsonDocument.Parse(texto).RootElement.GetProperty("data");
+        verbete.GetProperty("versaoDescontinuado").ValueKind.Should().Be(JsonValueKind.Null);
+        verbete.GetProperty("estado").GetString().Should().Be("Ativo", because: "a descontinuação ainda não é pública");
     }
 
     [Fact]
@@ -449,6 +511,7 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
         v1.Publicar();
         v2.Publicar();
         v2.MarcarVigente();
+        v2.AtualizarCalendario("NT 009 v1.01", new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 22), new DateOnly(2026, 12, 1));
         v3.Publicar();
         vdesativada.Publicar();
         vdesativada.Desativar();

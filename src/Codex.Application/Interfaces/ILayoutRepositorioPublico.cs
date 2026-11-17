@@ -17,7 +17,8 @@ public interface ILayoutRepositorioPublico
 
     Task<VersaoLayout?> ObterVersaoPorSlugAsync(string versaoSlug, CancellationToken ct);
 
-    Task<VersaoLayout?> ObterVersaoPorIdAsync(int id, CancellationToken ct);
+    /// <summary>Só versão publicada e não desativada; a de rascunho não pode vazar pelo verbete do campo.</summary>
+    Task<VersaoLayout?> ObterVersaoPublicadaPorIdAsync(int id, CancellationToken ct);
 
     /// <summary>JSON gravado na coluna <c>estrutura</c>; <c>null</c> quando a versão não tem estrutura.</summary>
     Task<string?> ObterEstruturaAsync(int versaoLayoutId, CancellationToken ct);

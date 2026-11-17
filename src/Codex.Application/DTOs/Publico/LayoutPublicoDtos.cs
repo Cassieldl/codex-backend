@@ -53,6 +53,35 @@ public sealed record LayoutVersaoResumoDto
     public required int Ordem { get; init; }
 
     public required int TotalCampos { get; init; }
+
+    /// <summary>Norma que deu origem à versão, como "NT 009 v1.01". As datas abaixo saem como "yyyy-MM-dd" ou <c>null</c>.</summary>
+    public string? NormaOrigem { get; init; }
+
+    public DateOnly? HomologacaoDesde { get; init; }
+
+    public DateOnly? LiberadaNoInvoicyEm { get; init; }
+
+    public DateOnly? ObrigatoriaEm { get; init; }
+
+    /// <summary>Mudanças estruturadas em relação à versão anterior; lista vazia quando não há.</summary>
+    public required IReadOnlyList<MudancaLayoutDto> Mudancas { get; init; }
+}
+
+/// <summary>
+/// Mudança de uma versão do layout. <c>tipo</c> sai como texto camelCase: <c>grupoNovo</c>,
+/// <c>campoNovo</c>, <c>mudouDeLugar</c>, <c>renomeado</c>, <c>saiu</c> ou <c>alterado</c>.
+/// </summary>
+public sealed record MudancaLayoutDto
+{
+    public required string Tipo { get; init; }
+
+    /// <summary>Caminho canônico na versão anterior; nulo em grupo ou campo novo.</summary>
+    public string? Antes { get; init; }
+
+    /// <summary>Caminho canônico nesta versão; nulo no que saiu.</summary>
+    public string? Depois { get; init; }
+
+    public required string Descricao { get; init; }
 }
 
 /// <summary>Dicionário completo de uma versão publicada do layout (P11, §4.3).</summary>

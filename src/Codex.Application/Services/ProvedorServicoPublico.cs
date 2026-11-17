@@ -151,7 +151,7 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
     }
 
     public async Task<EnvioModeloDto> ObterEnvioModeloAsync(
-        string provedorSlug, string versaoSlug, AlcanceEnvioModelo alcance, CancellationToken ct)
+        string provedorSlug, string versaoSlug, AlcanceEnvioModelo alcance, CenarioEnvioModelo cenario, CancellationToken ct)
     {
         // Oculto responde como inexistente: o envio modelo não existe para o leitor.
         var encontrado = await _versaoRepositorio.ObterPorSlugsAsync(provedorSlug, versaoSlug, ct);
@@ -169,23 +169,33 @@ public sealed class ProvedorServicoPublico : IProvedorServicoPublico
             };
 
         var campos = await _versaoRepositorio.ListarCamposDoEnvioModeloAsync(encontrado.Versao.Id, ct);
+        var cenariosDisponiveis = CenariosEnvioModelo.Disponiveis(campos);
+        if (!cenariosDisponiveis.Contains(cenario))
+            throw new RegraDeNegocioException(
+                CodigosErro.CenarioIndisponivel,
+                $"A versão '{provedorSlug}/{versaoSlug}' não aceita o cenário {CenariosEnvioModelo.ParaTexto(cenario)}.");
+
         var camposDoAlcance = campos
             .Where(campo => alcance == AlcanceEnvioModelo.Maximo || campo.EstadoPreenchimento == EstadoPreenchimento.Obrigatorio)
             .ToArray();
-        var slugPorCaminho = camposDoAlcance
+        var camposDoCenario = CenariosEnvioModelo.Aplicar(cenario, campos, camposDoAlcance);
+        var slugPorCaminho = camposDoCenario
             .GroupBy(campo => campo.CaminhoXml, StringComparer.Ordinal)
             .ToDictionary(grupo => grupo.Key, grupo => grupo.First().CampoLayoutSlug, StringComparer.Ordinal);
 
-        var xml = RecorteEnvioModelo.Recortar(estrutura.Xml, slugPorCaminho, alcance);
-        var json = RecorteEnvioModelo.Recortar(estrutura.Json, slugPorCaminho, alcance);
+        var valoresDeExemplo = CenariosEnvioModelo.ValoresDeExemplo(cenario);
+        var xml = RecorteEnvioModelo.Recortar(estrutura.Xml, slugPorCaminho, alcance, valoresDeExemplo);
+        var json = RecorteEnvioModelo.Recortar(estrutura.Json, slugPorCaminho, alcance, valoresDeExemplo);
 
         return new EnvioModeloDto
         {
             Alcance = AlcancesEnvioModelo.ParaTexto(alcance),
+            Cenario = CenariosEnvioModelo.ParaTexto(cenario),
+            CenariosDisponiveis = cenariosDisponiveis.Select(CenariosEnvioModelo.ParaTexto).ToArray(),
             VersaoLayoutRotulo = encontrado.VersaoLayoutRotulo,
             Xml = xml.Raiz,
             Json = json.Raiz,
-            CamposSemPosicao = camposDoAlcance
+            CamposSemPosicao = camposDoCenario
                 .Where(campo => !xml.CaminhosComNo.Contains(campo.CaminhoXml) && !json.CaminhosComNo.Contains(campo.CaminhoXml))
                 .Select(campo => campo.CampoLayoutSlug)
                 .Distinct(StringComparer.Ordinal)

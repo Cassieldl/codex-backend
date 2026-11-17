@@ -2,16 +2,20 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
 
+import { readFile } from 'node:fs/promises'
+
 import {
   ROTULO_LAYOUT_DOS_PROVEDORES,
+  arquivoDaEstrutura,
   descricaoDaVersao,
   lerLayoutsInvoicy,
+  mudancasDaLista,
   planejarEstados,
   planejarVocabularioMultiversao,
   sincronizarLayoutInvoicy,
   VERSOES_LAYOUT_INVOICY,
 } from './layout-invoicy.mjs'
-import { lerVocabularioInvoicy } from './vocabulario-invoicy.mjs'
+import { lerMaterialDoLayout, lerVocabularioInvoicy } from './vocabulario-invoicy.mjs'
 
 const campo = (caminhoXml, nome = caminhoXml.split('/').at(-1)) => ({
   caminhoXml,
@@ -133,6 +137,75 @@ test('com os arquivos reais: todo campo do 8 segue mapeado na 8, e as mudanças 
   assert.equal(porCaminho.get('//Tomador/TomaCNPJ').descontinuadoEm, null)
 })
 
+/** Caminhos de uma versão, da estrutura gerada do XSD e da planilha, como caminho canônico. */
+async function caminhosCanonicosDaVersao(rotulo) {
+  const estrutura = JSON.parse(await readFile(arquivoDaEstrutura(rotulo), 'utf8'))
+  const { planilha } = await lerMaterialDoLayout(rotulo)
+  const caminhos = []
+  const visitar = (no) => {
+    caminhos.push(no.caminho)
+    no.filhos.forEach(visitar)
+  }
+  visitar(estrutura.xml)
+  caminhos.push(...planilha.tags.map(({ caminho }) => caminho))
+  return new Set(caminhos.map((caminho) => `//${caminho.replace(/^Envio\/(RPS\/)?/, '')}`))
+}
+
+test('mudanças da 9: antes existe na 8, depois existe na 9, e cada tipo leva os caminhos que pede', async () => {
+  const [versao8, versao9] = VERSOES_LAYOUT_INVOICY
+  const [caminhos8, caminhos9] = await Promise.all([
+    caminhosCanonicosDaVersao(versao8.rotulo),
+    caminhosCanonicosDaVersao(versao9.rotulo),
+  ])
+  const pedeAntes = new Set(['mudouDeLugar', 'renomeado', 'saiu', 'alterado'])
+  const pedeDepois = new Set(['grupoNovo', 'campoNovo', 'mudouDeLugar', 'renomeado', 'alterado'])
+
+  for (const { tipo, antes, depois, descricao } of versao9.mudancas) {
+    assert.ok(descricao.length > 0 && descricao.length <= 500, descricao)
+    assert.equal(antes !== undefined, pedeAntes.has(tipo), `${tipo} ${antes}`)
+    assert.equal(depois !== undefined, pedeDepois.has(tipo), `${tipo} ${depois}`)
+    if (antes) assert.ok(caminhos8.has(antes), `${antes} não existe na 8`)
+    if (depois) assert.ok(caminhos9.has(depois), `${depois} não existe na 9`)
+    if (tipo === 'grupoNovo' || tipo === 'campoNovo')
+      // RPSSubs já existia vazio na 8; a 9 é a primeira em que ele é um grupo.
+      assert.ok(!caminhos8.has(depois) || depois === '//RPSSubs', `${depois} já existia na 8`)
+    if (tipo === 'saiu') assert.ok(!caminhos9.has(antes), `${antes} ainda existe na 9`)
+  }
+
+  const renomeados = versao9.mudancas
+    .filter(({ tipo }) => tipo === 'renomeado')
+    .map(({ antes, depois }) => [antes.split('/').at(-1), depois.split('/').at(-1)])
+  assert.deepEqual(renomeados, [
+    ['nDI', 'nroDUIMP'],
+    ['nRE', 'nroDUE'],
+    ['ItermIE', 'IntermIE'],
+  ])
+  assert.equal(versao8.mudancas, undefined)
+})
+
+test('lista de mudanças: igual não escreve, diferente vai inteira, sem configuração não toca', () => {
+  const configurada = {
+    mudancas: [
+      { tipo: 'saiu', antes: '//A', descricao: 'A saiu.' },
+      { tipo: 'campoNovo', depois: '//B', descricao: 'B entrou.' },
+    ],
+  }
+  const naApi = [
+    { tipo: 'saiu', antes: '//A', depois: null, descricao: 'A saiu.' },
+    { tipo: 'campoNovo', antes: null, depois: '//B', descricao: 'B entrou.' },
+  ]
+
+  assert.deepEqual(mudancasDaLista(configurada, { mudancas: naApi }), {})
+  assert.deepEqual(mudancasDaLista(configurada, { mudancas: naApi.slice(0, 1) }), {
+    mudancas: naApi,
+  })
+  assert.deepEqual(mudancasDaLista(configurada, { mudancas: [...naApi].reverse() }), {
+    mudancas: naApi,
+  })
+  assert.deepEqual(mudancasDaLista(configurada), { mudancas: naApi })
+  assert.deepEqual(mudancasDaLista({}, { mudancas: naApi }), {})
+})
+
 /**
  * API falsa com as regras que importam aqui: versão nasce Prevista, estado só anda para frente,
  * uma Vigente por vez, caminho de campo único e If-Match conferido em toda escrita.
@@ -168,7 +241,15 @@ function criarApiDeLayout(versoes, campos) {
     if ((id = rota.match(/^\/interno\/layout\/versoes\/(\d+)$/)?.[1])) {
       const versao = versaoPorId(id)
       exigirIfMatch(versao, etag)
-      if (corpo.descricao !== undefined) versao.descricao = corpo.descricao
+      for (const chave of [
+        'descricao',
+        'normaOrigem',
+        'homologacaoDesde',
+        'liberadaNoInvoicyEm',
+        'obrigatoriaEm',
+        'mudancas',
+      ])
+        if (corpo[chave] !== undefined) versao[chave] = corpo[chave]
       if (corpo.estado !== undefined) {
         assert.equal(transicoes[versao.estado], corpo.estado, `${versao.estado} → ${corpo.estado}`)
         if (corpo.estado === 'Vigente')
@@ -251,6 +332,24 @@ test('carga sobre o banco de hoje: 9 Vigente, 8 Anterior, ids do 8 intactos, est
     [versao8.descricao, versao9.descricao],
     VERSOES_LAYOUT_INVOICY.map(({ descricao }) => descricao),
   )
+  assert.deepEqual(
+    [
+      versao9.normaOrigem,
+      versao9.homologacaoDesde,
+      versao9.liberadaNoInvoicyEm,
+      versao9.obrigatoriaEm,
+    ],
+    ['NT 009 v1.01', '2026-10-01', '2026-10-22', '2026-12-01'],
+  )
+  assert.equal(versao8.normaOrigem, undefined, 'a 8 não tem calendário configurado')
+  assert.equal(versao8.mudancas, undefined, 'a 8 não tem mudanças configuradas')
+  assert.equal(versao9.mudancas.length, VERSOES_LAYOUT_INVOICY[1].mudancas.length)
+  assert.deepEqual(versao9.mudancas.find(({ tipo }) => tipo === 'saiu'), {
+    tipo: 'saiu',
+    antes: '//Servico/Valores/ValServEst',
+    depois: null,
+    descricao: 'O valor do serviço em moeda estrangeira saiu do layout.',
+  })
   assert.ok(versao8.estrutura.xml && versao8.estrutura.json)
   assert.ok(versao9.estrutura.xml && versao9.estrutura.json)
   assert.notDeepEqual(versao8.estrutura, versao9.estrutura)

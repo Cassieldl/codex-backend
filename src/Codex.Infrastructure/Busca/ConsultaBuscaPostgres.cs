@@ -271,10 +271,11 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         // predicado do índice GIN parcial permanece byte a byte o mesmo.
         var selecao = SelecionarItensDaPagina(linhas, provedorFiltro, errosDoProvedor, pagina, tamanhoPagina);
         var rotulos = await CarregarRotulosAsync(selecao.ItensDaPagina, incluirRascunho, ct);
+        var causaOuSolucao = await CarregarCasamentoCausaOuSolucaoAsync(selecao.ItensDaPagina, termoTrabalho, ct);
 
         await transacao.CommitAsync(ct);
 
-        return MontarResultado(termoOriginal, termoTrabalho, qualidade, correcao, selecao, provedorFiltro, rotulos);
+        return MontarResultado(termoOriginal, termoTrabalho, qualidade, correcao, selecao, provedorFiltro, rotulos, causaOuSolucao);
     }
 
     /// <summary>Resposta de sucesso sem nenhum resultado — P1 nunca devolve 404 para busca vazia.</summary>
@@ -704,7 +705,8 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         BuscaCorrecaoDto? correcao,
         SelecaoPagina selecao,
         ProvedorFiltroInfo? provedorFiltro,
-        IReadOnlyDictionary<int, RotulosDoItem> rotulos)
+        IReadOnlyDictionary<int, RotulosDoItem> rotulos,
+        IReadOnlyDictionary<int, CasamentoCausaOuSolucao> causaOuSolucao)
     {
         var dentro = selecao.Dentro;
 
@@ -718,7 +720,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                 Pontuacao = grupo.Max(l => (double)l.Pontuacao),
                 Itens = grupo.OrderByDescending(l => l.Pontuacao)
                     .ThenBy(l => l.ItemBuscaId)
-                    .Select(linha => MapearItem(linha, rotulos, termoUsado, qualidade))
+                    .Select(linha => MapearItem(linha, rotulos, termoUsado, qualidade, causaOuSolucao))
                     .ToArray(),
             })
             .OrderByDescending(g => g.Pontuacao)
@@ -757,7 +759,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
     /// </summary>
     private static string DescricaoCasamentoDoItem(LinhaBusca linha, string termoUsado, string qualidade)
     {
-        if (linha.TipoItem == TipoErro && !string.IsNullOrEmpty(linha.Chave) && CasamentoDeChave(linha.Chave, termoUsado))
+        if (linha.TipoItem == TipoErro && CasouPelaChave(linha, termoUsado))
             return $"casou com o código {linha.Chave}";
 
         var bucket = linha.CasouA ? 'A' : linha.CasouB ? 'B' : linha.CasouC ? 'C' : linha.CasouD ? 'D' : (char?)null;
@@ -777,8 +779,76 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
     private static bool CasamentoDeChave(string chave, string termo) =>
         termo.Contains(chave, StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Mesma origem de <see cref="DescricaoCasamentoDoItem"/> (chave e bucket vencedor), só que como
+    /// valor fechado para a UI decidir pela estrutura. O bucket C junta causa e solução; a separação
+    /// vem de <see cref="CarregarCasamentoCausaOuSolucaoAsync"/>.
+    /// </summary>
+    private static string? CampoCasadoDoItem(
+        LinhaBusca linha, string termoUsado, IReadOnlyDictionary<int, CasamentoCausaOuSolucao> causaOuSolucao)
+    {
+        if (linha.TipoItem != TipoErro)
+            return null;
+
+        if (CasouPelaChave(linha, termoUsado))
+            return CampoCasadoErro.Codigo;
+
+        if (linha.CasouA || linha.CasouB)
+            return CampoCasadoErro.Mensagem;
+
+        if (!linha.CasouC || !causaOuSolucao.TryGetValue(linha.ItemId, out var casamento))
+            return CampoCasadoErro.Outro;
+
+        if (casamento.CasouCausa)
+            return CampoCasadoErro.Causa;
+
+        return casamento.CasouSolucao ? CampoCasadoErro.Solucao : CampoCasadoErro.Outro;
+    }
+
+    private static bool CasouPelaChave(LinhaBusca linha, string termoUsado) =>
+        !string.IsNullOrEmpty(linha.Chave) && CasamentoDeChave(linha.Chave, termoUsado);
+
+    /// <summary>
+    /// Para os erros da página que casaram só no bucket C, diz se o termo está na causa ou na
+    /// solução, cada uma com a mesma normalização do índice. Usa o OU dos lexemas: o passo forte
+    /// exige todos no documento inteiro, e aqui a pergunta é em qual campo eles aparecem.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<int, CasamentoCausaOuSolucao>> CarregarCasamentoCausaOuSolucaoAsync(
+        IReadOnlyList<LinhaBusca> itensDaPagina, string termoUsado, CancellationToken ct)
+    {
+        var erroIds = itensDaPagina
+            .Where(l => l.TipoItem == TipoErro && l.CasouC && !l.CasouA && !l.CasouB && !CasouPelaChave(l, termoUsado))
+            .Select(l => l.ItemId)
+            .Distinct()
+            .ToArray();
+
+        if (erroIds.Length == 0)
+            return new Dictionary<int, CasamentoCausaOuSolucao>();
+
+        var casamentos = await _contexto.Database.SqlQuery<CasamentoCausaOuSolucao>($"""
+            WITH lexemas AS (
+                SELECT string_agg(DISTINCT '''' || replace(replace(lexema, '\', '\\'), '''', '''''') || '''', ' | ')::tsquery AS consulta
+                FROM unnest(tsvector_to_array(
+                    to_tsvector('codex.codex_pt'::regconfig, codex.normalizar_consulta({termoUsado}))
+                )) AS lexema
+            )
+            SELECT e.erroid AS "ErroId",
+                   to_tsvector('codex.codex_pt'::regconfig, codex.normalizar_busca(coalesce(e.causaprovavel, ''))) @@ lexemas.consulta AS "CasouCausa",
+                   to_tsvector('codex.codex_pt'::regconfig, codex.normalizar_busca(coalesce(e.solucaosugerida, ''))) @@ lexemas.consulta AS "CasouSolucao"
+            FROM codex.erros e, lexemas
+            WHERE e.erroid = ANY({erroIds})
+              AND lexemas.consulta IS NOT NULL
+            """).ToListAsync(ct);
+
+        return casamentos.ToDictionary(c => c.ErroId);
+    }
+
     private static BuscaItemDto MapearItem(
-        LinhaBusca linha, IReadOnlyDictionary<int, RotulosDoItem> rotulos, string termoUsado, string qualidade)
+        LinhaBusca linha,
+        IReadOnlyDictionary<int, RotulosDoItem> rotulos,
+        string termoUsado,
+        string qualidade,
+        IReadOnlyDictionary<int, CasamentoCausaOuSolucao> causaOuSolucao)
     {
         // Indexador, não GetValueOrDefault: CarregarRotulosAsync monta uma entrada para CADA linha
         // da página, e é exatamente a mesma lista que chega aqui. Um default silencioso devolveria
@@ -797,6 +867,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
             Versoes = rotulosDoItem.Versoes,
             Meta = rotulosDoItem.Meta,
             DescricaoCasamento = DescricaoCasamentoDoItem(linha, termoUsado, qualidade),
+            CampoCasado = CampoCasadoDoItem(linha, termoUsado, causaOuSolucao),
             SolucaoResumo = rotulosDoItem.SolucaoResumo,
             Publicado = linha.Publicado,
             Pontuacao = linha.Pontuacao,
@@ -1215,6 +1286,15 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         public string Termo { get; set; } = null!;
 
         public double Similaridade { get; set; }
+    }
+
+    private sealed class CasamentoCausaOuSolucao
+    {
+        public int ErroId { get; set; }
+
+        public bool CasouCausa { get; set; }
+
+        public bool CasouSolucao { get; set; }
     }
 
     /// <summary>Linha bruta materializada da projeção de busca — shape interno, nunca exposto fora deste arquivo.</summary>

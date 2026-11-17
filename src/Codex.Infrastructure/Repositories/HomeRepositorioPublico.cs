@@ -90,7 +90,11 @@ public sealed class HomeRepositorioPublico : RepositorioBase<CodexDbContext>, IH
     {
         var publicadas = await Contexto.VersoesLayout.AsNoTracking()
             .Where(v => v.Publicado && v.DesativadoEm == null)
-            .Select(v => new { v.Id, v.Slug, v.Rotulo, v.Estado, v.Ordem, v.Descricao })
+            .Select(v => new
+            {
+                v.Id, v.Slug, v.Rotulo, v.Estado, v.Ordem, v.Descricao,
+                v.NormaOrigem, v.HomologacaoDesde, v.LiberadaNoInvoicyEm, v.ObrigatoriaEm,
+            })
             .ToListAsync(ct);
 
         if (publicadas.Count == 0)
@@ -132,6 +136,10 @@ public sealed class HomeRepositorioPublico : RepositorioBase<CodexDbContext>, IH
             Descricao = vigente?.Descricao,
             CamposNovos = camposNovos,
             CamposDescontinuados = camposDescontinuados,
+            NormaOrigem = vigente?.NormaOrigem,
+            HomologacaoDesde = vigente?.HomologacaoDesde,
+            LiberadaNoInvoicyEm = vigente?.LiberadaNoInvoicyEm,
+            ObrigatoriaEm = vigente?.ObrigatoriaEm,
         };
     }
 

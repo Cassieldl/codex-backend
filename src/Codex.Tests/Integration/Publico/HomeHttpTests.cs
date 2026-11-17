@@ -233,13 +233,21 @@ public sealed class HomeHttpTests : IAsyncLifetime
         var layout = home.GetProperty("layout");
 
         layout.EnumerateObject().Select(p => p.Name).Should().BeEquivalentTo(
-            ["vigente", "prevista", "descricao", "camposNovos", "camposDescontinuados"],
-            because: "B-6 — `publicadaEm` não existe em versoeslayout; exibir `criadoem` sob esse rótulo seria a tela afirmando o que não é verdade");
+            [
+                "vigente", "prevista", "descricao", "camposNovos", "camposDescontinuados",
+                "normaOrigem", "homologacaoDesde", "liberadaNoInvoicyEm", "obrigatoriaEm",
+            ],
+            because: "B-6: `publicadaEm` não existe em versoeslayout; as datas são colunas próprias da vigente, nunca `criadoem`");
 
         layout.GetProperty("vigente").GetProperty("slug").GetString().Should().Be(_cenario.LayoutVigenteSlug);
         layout.GetProperty("descricao").GetString().Should().Be(_cenario.LayoutVigenteDescricao);
         layout.GetProperty("camposNovos").GetInt32().Should().Be(1, because: "só campoNovo tem a Vigente como versão de origem");
         layout.GetProperty("camposDescontinuados").GetInt32().Should().Be(1, because: "só campoSaindo é descontinuado NA Vigente");
+
+        layout.GetProperty("normaOrigem").GetString().Should().Be("NT 009 v1.01");
+        layout.GetProperty("homologacaoDesde").GetString().Should().Be("2026-10-01");
+        layout.GetProperty("liberadaNoInvoicyEm").GetString().Should().Be("2026-10-22");
+        layout.GetProperty("obrigatoriaEm").ValueKind.Should().Be(JsonValueKind.Null, because: "data ausente sai como null, com a chave presente");
     }
 
     // ---------------------------------------------------------------------- artigos (P7)
@@ -348,6 +356,7 @@ public sealed class HomeHttpTests : IAsyncLifetime
         layoutBaixo.Publicar();
         layoutVigente.Publicar();
         layoutVigente.MarcarVigente();
+        layoutVigente.AtualizarCalendario("NT 009 v1.01", new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 22), obrigatoriaEm: null);
         layoutAlto.Publicar();
 
         contexto.VersoesLayout.AddRange(layoutBaixo, layoutVigente, layoutAlto);

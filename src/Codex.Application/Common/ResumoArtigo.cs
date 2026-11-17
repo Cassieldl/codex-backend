@@ -5,8 +5,9 @@ namespace Codex.Application.Common;
 /// <summary>
 /// Deriva o resumo de um artigo (listagem e home) a partir do corpo em Markdown, sem parser
 /// completo. O bloco <c>&gt; [!RESUMO]</c> vence quando existe; sem ele, vale o primeiro parágrafo
-/// de texto, pulando bloco cercado, linha só de imagem e blockquote de marcador (<c>[!DICA]</c> e
-/// afins). A marcação inline sai e o texto é truncado em 200 caracteres.
+/// de texto, pulando bloco cercado, linha só de imagem, título de seção, tabela, blockquote de
+/// marcador (<c>[!DICA]</c> e afins) e o parágrafo de fonte (<c>Fonte:</c> ou <c>Fontes:</c>). A
+/// marcação inline sai e o texto é truncado em 200 caracteres.
 /// </summary>
 public static partial class ResumoArtigo
 {
@@ -87,10 +88,15 @@ public static partial class ResumoArtigo
             if (MarcadorDaPrimeiraLinha(paragrafo) is not null)
                 continue;
 
+            if (EhTabela(paragrafo))
+                continue;
+
+            // Título de seção nunca é resumo: sai a linha dele e vale o texto que vier depois.
             var texto = Limpar(paragrafo
-                .Where(linha => !EhLinhaSoDeImagem(linha))
+                .Where(linha => !EhLinhaSoDeImagem(linha) && !EhTituloDeSecao(linha))
                 .Select(RemoverPrefixoDeCitacao));
-            if (texto is not null)
+            // Comparado depois da limpeza: "**Fontes:**" e "> Fonte:" chegam aqui sem a marcação.
+            if (texto is not null && !RegexFonte().IsMatch(texto))
                 return texto;
         }
 
@@ -102,6 +108,10 @@ public static partial class ResumoArtigo
         var achado = RegexCitacaoComMarcador().Match(paragrafo[0]);
         return achado.Success ? achado.Groups["marcador"].Value.ToUpperInvariant() : null;
     }
+
+    private static bool EhTituloDeSecao(string linha) => RegexTituloDeSecao().IsMatch(linha);
+
+    private static bool EhTabela(List<string> paragrafo) => paragrafo.TrueForAll(linha => linha.TrimStart().StartsWith('|'));
 
     private static bool EhLinhaSoDeImagem(string linha) =>
         MarcacaoCorpoArtigo.Imagem().IsMatch(linha)
@@ -148,6 +158,12 @@ public static partial class ResumoArtigo
 
     [GeneratedRegex(@"^\s*#{1,6}\s*")]
     private static partial Regex RegexCabecalho();
+
+    [GeneratedRegex(@"^\s{0,3}#{1,6}(\s|$)")]
+    private static partial Regex RegexTituloDeSecao();
+
+    [GeneratedRegex(@"^Fontes?:", RegexOptions.IgnoreCase)]
+    private static partial Regex RegexFonte();
 
     [GeneratedRegex(@"\s+")]
     private static partial Regex RegexEspacos();

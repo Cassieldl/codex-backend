@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Codex.API.Common;
 using Codex.Application.DTOs.Publico;
 using Codex.Application.Interfaces;
+using Codex.Application.Services;
 using Codex.Domain.Constantes;
 using Codex.Domain.Enums;
 using Codex.Domain.Exceptions;
@@ -130,29 +131,43 @@ public sealed class ProvedoresController : ControllerBase
         }
     }
 
-    /// <summary>Envio modelo InvoiCy da versão, em XML (SOAP) e JSON (REST), recortado ao alcance.</summary>
+    /// <summary>Envio modelo InvoiCy da versão, em XML (SOAP) e JSON (REST), recortado ao alcance e ao cenário.</summary>
     /// <param name="provedorSlug">Slug do provedor.</param>
     /// <param name="versaoSlug">Slug da versão do provedor.</param>
     /// <param name="alcance"><c>minimo</c> (só os obrigatórios) ou <c>maximo</c> (tudo o que a versão aceita).</param>
+    /// <param name="cenario">
+    /// <c>nacional</c> (padrão), <c>tomador-estrangeiro</c> (tomador com NIF e endereço no exterior),
+    /// <c>exportacao-servico</c> (tomador estrangeiro com comércio exterior), <c>construcao-civil</c> (obra com
+    /// endereço e materiais) ou <c>retencoes-federais</c> (ISS retido e retenções federais).
+    /// </param>
     /// <response code="200">Envio modelo da versão publicada.</response>
     /// <response code="304">If-None-Match casou: o envio modelo não mudou.</response>
-    /// <response code="400">Alcance ausente ou fora de <c>minimo</c> e <c>maximo</c>.</response>
+    /// <response code="400">Alcance ausente ou fora de <c>minimo</c> e <c>maximo</c>; cenário fora dos cinco aceitos.</response>
     /// <response code="404">Provedor ou versão inexistente ou despublicado; <c>ESTRUTURA_INDISPONIVEL</c> quando o layout da versão não tem estrutura.</response>
+    /// <response code="422"><c>CENARIO_INDISPONIVEL</c>: a versão não aceita os campos do cenário pedido.</response>
     [HttpGet("{provedorSlug}/versoes/{versaoSlug}/envio-modelo")]
     [ProducesResponseType(typeof(ApiResponse<EnvioModeloDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status304NotModified)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> ObterEnvioModelo(
         string provedorSlug,
         string versaoSlug,
         [FromQuery, Required, AllowedValues(AlcancesEnvioModelo.Minimo, AlcancesEnvioModelo.Maximo)] string alcance,
+        [FromQuery, AllowedValues(
+            null,
+            CenariosEnvioModelo.Nacional,
+            CenariosEnvioModelo.TomadorEstrangeiro,
+            CenariosEnvioModelo.ExportacaoServico,
+            CenariosEnvioModelo.ConstrucaoCivil,
+            CenariosEnvioModelo.RetencoesFederais)] string? cenario,
         CancellationToken ct)
     {
         try
         {
             var envioModelo = await _servico.ObterEnvioModeloAsync(
-                provedorSlug, versaoSlug, AlcancesEnvioModelo.DeTexto(alcance), ct);
+                provedorSlug, versaoSlug, AlcancesEnvioModelo.DeTexto(alcance), CenariosEnvioModelo.DeTexto(cenario), ct);
 
             // ETag do corpo: campos da versão e estrutura do layout mudam sem tocar a linha da versão.
             var etag = ETagDeConteudo.MontarDoCorpo(envioModelo);

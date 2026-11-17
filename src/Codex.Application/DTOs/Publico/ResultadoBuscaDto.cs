@@ -120,6 +120,12 @@ public sealed record BuscaItemDto
     public required string DescricaoCasamento { get; init; }
 
     /// <summary>
+    /// De onde veio o casamento do <c>erro</c>, um dos valores de <see cref="CampoCasadoErro"/>. É
+    /// <c>null</c> (chave presente) nos demais tipos.
+    /// </summary>
+    public string? CampoCasado { get; init; }
+
+    /// <summary>
     /// Primeira linha não vazia da solução sugerida, com até 160 caracteres (corte na última
     /// palavra inteira, com "…"). Só para <c>erro</c>; <c>null</c> nos demais tipos e no erro sem
     /// solução.
@@ -188,4 +194,20 @@ public sealed record BuscaConsultaEntrada
     public int Pagina { get; init; } = 1;
 
     public int? TamanhoPagina { get; init; }
+}
+
+/// <summary>Valores de <see cref="BuscaItemDto.CampoCasado"/>, em texto camelCase no JSON.</summary>
+public static class CampoCasadoErro
+{
+    public const string Codigo = "codigo";
+
+    /// <summary>Título ou variante da mensagem observada.</summary>
+    public const string Mensagem = "mensagem";
+
+    public const string Causa = "causa";
+
+    public const string Solucao = "solucao";
+
+    /// <summary>O termo casou, mas em nenhum campo isolado (só no conjunto, ou por forma normalizada).</summary>
+    public const string Outro = "outro";
 }

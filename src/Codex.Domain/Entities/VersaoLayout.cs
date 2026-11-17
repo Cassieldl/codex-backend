@@ -1,5 +1,6 @@
 using Codex.Domain.Enums;
 using Codex.Domain.Exceptions;
+using Codex.Domain.ValueObjects;
 using SlugVo = Codex.Domain.ValueObjects.Slug;
 
 namespace Codex.Domain.Entities;
@@ -35,6 +36,20 @@ public class VersaoLayout : EntidadeAuditada
     public bool Publicado { get; private set; }
 
     public string? Descricao { get; private set; }
+
+    /// <summary>Norma que deu origem à versão, como "NT 009 v1.01".</summary>
+    public string? NormaOrigem { get; private set; }
+
+    /// <summary>Dia em que a versão passou a valer em homologação.</summary>
+    public DateOnly? HomologacaoDesde { get; private set; }
+
+    public DateOnly? LiberadaNoInvoicyEm { get; private set; }
+
+    /// <summary>Dia em que a versão passa a ser obrigatória.</summary>
+    public DateOnly? ObrigatoriaEm { get; private set; }
+
+    /// <summary>Mudanças estruturadas em relação à versão anterior; vazia quando não há.</summary>
+    public IReadOnlyList<MudancaLayout> Mudancas { get; private set; } = [];
 
     /// <summary>Concorrência otimista via xmin do Postgres — nunca coluna própria (analise-backend.md §3.1).</summary>
     public uint Versao { get; private set; }
@@ -104,6 +119,22 @@ public class VersaoLayout : EntidadeAuditada
     public void AtualizarDescricao(string? descricao)
     {
         Descricao = descricao;
+    }
+
+    /// <summary>Norma em branco vira nula. As datas não precisam estar em ordem.</summary>
+    public void AtualizarCalendario(
+        string? normaOrigem, DateOnly? homologacaoDesde, DateOnly? liberadaNoInvoicyEm, DateOnly? obrigatoriaEm)
+    {
+        NormaOrigem = string.IsNullOrWhiteSpace(normaOrigem) ? null : normaOrigem.Trim();
+        HomologacaoDesde = homologacaoDesde;
+        LiberadaNoInvoicyEm = liberadaNoInvoicyEm;
+        ObrigatoriaEm = obrigatoriaEm;
+    }
+
+    /// <summary>Substitui a lista inteira, na ordem recebida.</summary>
+    public void AtualizarMudancas(IEnumerable<MudancaLayout> mudancas)
+    {
+        Mudancas = mudancas.ToArray();
     }
 
     /// <summary>Independente de <see cref="Estado"/> — M19.</summary>

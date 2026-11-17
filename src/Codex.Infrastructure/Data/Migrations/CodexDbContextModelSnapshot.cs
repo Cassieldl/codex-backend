@@ -1535,6 +1535,30 @@ namespace Codex.Infrastructure.Data.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("estado");
 
+                    b.Property<DateOnly?>("HomologacaoDesde")
+                        .HasColumnType("date")
+                        .HasColumnName("homologacaodesde");
+
+                    b.Property<DateOnly?>("LiberadaNoInvoicyEm")
+                        .HasColumnType("date")
+                        .HasColumnName("liberadanoinvoicyem");
+
+                    b.Property<string>("Mudancas")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("mudancas")
+                        .HasDefaultValueSql("'[]'::jsonb");
+
+                    b.Property<string>("NormaOrigem")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("normaorigem");
+
+                    b.Property<DateOnly?>("ObrigatoriaEm")
+                        .HasColumnType("date")
+                        .HasColumnName("obrigatoriaem");
+
                     b.Property<int>("Ordem")
                         .HasColumnType("integer")
                         .HasColumnName("ordem");

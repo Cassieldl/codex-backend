@@ -55,8 +55,11 @@ public sealed class EnvioModeloHttpTests : IAsyncLifetime
         resposta.Headers.ETag.Should().NotBeNull();
 
         var dados = JsonDocument.Parse(texto).RootElement.GetProperty("data");
-        dados.EnumerateObject().Select(p => p.Name).Should().Equal("alcance", "versaoLayoutRotulo", "xml", "json", "camposSemPosicao");
+        dados.EnumerateObject().Select(p => p.Name).Should().Equal(
+            "alcance", "cenario", "cenariosDisponiveis", "versaoLayoutRotulo", "xml", "json", "camposSemPosicao");
         dados.GetProperty("alcance").GetString().Should().Be("maximo");
+        dados.GetProperty("cenario").GetString().Should().Be("nacional", because: "sem o parâmetro, o cenário é o nacional");
+        dados.GetProperty("cenariosDisponiveis").EnumerateArray().Select(e => e.GetString()).Should().Equal("nacional");
         dados.GetProperty("versaoLayoutRotulo").GetString().Should().Be(_cenario.RotuloLayout);
         dados.GetProperty("camposSemPosicao").EnumerateArray().Select(e => e.GetString()).Should().Equal(_cenario.SlugFantasma);
 
@@ -117,6 +120,36 @@ public sealed class EnvioModeloHttpTests : IAsyncLifetime
         var erro = JsonDocument.Parse(texto).RootElement.GetProperty("error");
         erro.GetProperty("code").GetString().Should().Be("MALFORMED_REQUEST");
         erro.GetProperty("details").EnumerateArray().Select(d => d.GetProperty("field").GetString()).Should().Equal("alcance");
+    }
+
+    [Theory]
+    [InlineData("?alcance=minimo&cenario=exterior")]
+    [InlineData("?alcance=maximo&cenario=NACIONAL")]
+    [InlineData("?alcance=maximo&cenario=exportacao")]
+    [InlineData("?alcance=minimo&cenario=Retencoes-Federais")]
+    public async Task CenarioDesconhecido_Responde400NoMesmoFormatoDoAlcance(string query)
+    {
+        using var resposta = await _cliente.GetAsync($"{_cenario.RotaPublicada}{query}");
+        var texto = await resposta.Content.ReadAsStringAsync();
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.BadRequest, because: texto);
+        var erro = JsonDocument.Parse(texto).RootElement.GetProperty("error");
+        erro.GetProperty("code").GetString().Should().Be("MALFORMED_REQUEST");
+        erro.GetProperty("details").EnumerateArray().Select(d => d.GetProperty("field").GetString()).Should().Equal("cenario");
+    }
+
+    [Theory]
+    [InlineData("tomador-estrangeiro")]
+    [InlineData("exportacao-servico")]
+    [InlineData("construcao-civil")]
+    [InlineData("retencoes-federais")]
+    public async Task CenarioQueAVersaoNaoAceita_Responde422CenarioIndisponivel(string cenario)
+    {
+        using var resposta = await _cliente.GetAsync($"{_cenario.RotaPublicada}?alcance=minimo&cenario={cenario}");
+        var texto = await resposta.Content.ReadAsStringAsync();
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity, because: texto);
+        JsonDocument.Parse(texto).RootElement.GetProperty("error").GetProperty("code").GetString().Should().Be("CENARIO_INDISPONIVEL");
     }
 
     [Theory]

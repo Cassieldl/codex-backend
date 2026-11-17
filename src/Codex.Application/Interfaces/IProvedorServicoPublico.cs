@@ -22,9 +22,10 @@ public interface IProvedorServicoPublico
     /// <summary>
     /// Envio modelo InvoiCy da versão: a estrutura do layout recortada ao alcance. Versão ou provedor
     /// inexistente ou despublicado responde 404, como a estrutura; layout sem estrutura, 404 com
-    /// <c>ESTRUTURA_INDISPONIVEL</c>.
+    /// <c>ESTRUTURA_INDISPONIVEL</c>; cenário que a versão não sustenta, 422 com <c>CENARIO_INDISPONIVEL</c>.
     /// </summary>
-    Task<EnvioModeloDto> ObterEnvioModeloAsync(string provedorSlug, string versaoSlug, AlcanceEnvioModelo alcance, CancellationToken ct);
+    Task<EnvioModeloDto> ObterEnvioModeloAsync(
+        string provedorSlug, string versaoSlug, AlcanceEnvioModelo alcance, CenarioEnvioModelo cenario, CancellationToken ct);
 
     /// <summary>Estabilidade de URL — resolve slug antigo de provedor, se existir (§4.1, 308).</summary>
     Task<string?> ObterRedirecionamentoAsync(string slugAntigo, CancellationToken ct);
