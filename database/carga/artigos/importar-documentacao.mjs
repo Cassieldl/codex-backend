@@ -4,7 +4,10 @@
  * artigo já publicado não é tocado, fica no relatório. Nada aqui publica.
  *
  *   CODEX_DEV_USUARIO=... CODEX_DEV_SENHA=... node database/carga/artigos/importar-documentacao.mjs \
- *     [--relatorio <arquivo.md>] [--atualizar-publicados]
+ *     [--relatorio <arquivo.md>] [--atualizar-publicados] [--somente <arquivo.md>]
+ *
+ * Com `--somente`, só o artigo daquele arquivo de `documentacao/` é gravado. Os demais continuam
+ * sendo lidos, para os links entre artigos saírem com o slug certo.
  *
  * Com `--atualizar-publicados`, artigo já publicado também recebe o corpo, o tipo e os vínculos
  * novos. Ele continua publicado e a data de verificação não muda.
@@ -202,6 +205,7 @@ async function verificarEPublicar(api, titulos, verificadoEm) {
 
 const arquivoRelatorio = valorDoArgumento('--relatorio')
 const atualizarPublicados = process.argv.includes('--atualizar-publicados')
+const somente = valorDoArgumento('--somente')
 const verificadoEm = process.argv.includes('--verificado-em')
   ? lerDataDeVerificacao(process.argv)
   : null
@@ -226,13 +230,16 @@ await executarCarga(async () => {
     }),
   }))
 
-  const { resolvidos, naoResolvidos } = await resolverErros(api, preparados, provedores.slugPorNome)
+  const alvos = somente ? preparados.filter((artigo) => artigo.arquivo === somente) : preparados
+  if (alvos.length === 0) throw new Error(`Nenhum artigo da carga vem do arquivo "${somente}".`)
+
+  const { resolvidos, naoResolvidos } = await resolverErros(api, alvos, provedores.slugPorNome)
   const existentes = await api.listarTudo('/interno/artigos')
   const existentePorTitulo = new Map(existentes.map((artigo) => [artigo.titulo, artigo]))
   const slugsOcupados = new Map(existentes.map((artigo) => [artigo.slug, artigo.titulo]))
 
   const situacoes = []
-  for (const artigo of preparados) {
+  for (const artigo of alvos) {
     const desejado = {
       tipo: artigo.tipo,
       titulo: artigo.titulo,
@@ -254,12 +261,12 @@ await executarCarga(async () => {
   if (arquivoRelatorio) {
     await writeFile(
       arquivoRelatorio,
-      montarRelatorio({ fora, preparados, situacoes, naoResolvidos }),
+      montarRelatorio({ fora, preparados: alvos, situacoes, naoResolvidos }),
     )
     console.log(`relatório: ${arquivoRelatorio}`)
   }
   if (verificadoEm) {
-    const titulos = preparados.map((artigo) => artigo.titulo)
+    const titulos = alvos.map((artigo) => artigo.titulo)
     const { verificados, publicados } = await verificarEPublicar(api, titulos, verificadoEm)
     console.log(
       `verificação de ${verificadoEm} registrada em ${verificados} artigo(s); ${publicados} publicado(s)`,
