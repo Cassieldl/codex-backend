@@ -189,6 +189,68 @@ public sealed class LayoutPublicoHttpTests : IAsyncLifetime
         slugs.Should().Contain(_cenario.CampoFuturoEmV3Slug);
     }
 
+    /// <summary>
+    /// Só versão publicada e não desativada descontinua para o público. As três descontinuações
+    /// têm ordem menor que a da versão alvo, então qualquer uma que contasse tiraria o campo dela.
+    /// </summary>
+    [Fact]
+    public async Task P11_DescontinuacaoEmRascunhoOuVersaoDesativada_NaoTiraOCampoDoDicionario()
+    {
+        string slugBase, slugAlvo, campoNoRascunho, campoNaDesativada, campoNaPublicada;
+
+        await using (var contexto = _fixture.CriarContexto())
+        {
+            var maiorOrdem = await contexto.VersoesLayout.MaxAsync(v => v.Ordem);
+
+            var vBase = VersaoLayout.Criar($"Layout Base {_sufixo}", maiorOrdem + 1);
+            var vRascunho = VersaoLayout.Criar($"Layout Rascunho {_sufixo}", maiorOrdem + 2);
+            var vDesativada = VersaoLayout.Criar($"Layout Desativada {_sufixo}", maiorOrdem + 3);
+            var vPublicada = VersaoLayout.Criar($"Layout Publicada {_sufixo}", maiorOrdem + 4);
+            var vAlvo = VersaoLayout.Criar($"Layout Alvo {_sufixo}", maiorOrdem + 5);
+
+            foreach (var publicada in new[] { vBase, vDesativada, vPublicada, vAlvo })
+                publicada.Publicar();
+            vDesativada.Desativar();
+
+            contexto.VersoesLayout.AddRange(vBase, vRascunho, vDesativada, vPublicada, vAlvo);
+            await contexto.SaveChangesAsync();
+
+            var noRascunho = CampoLayout.Criar(vBase.Id, $"sai no rascunho {_sufixo}", $"//raiz/SaiRascunho{_sufixo}", "Sai num rascunho", ordem: 80);
+            var naDesativada = CampoLayout.Criar(vBase.Id, $"sai na desativada {_sufixo}", $"//raiz/SaiDesativada{_sufixo}", "Sai numa versão removida", ordem: 81);
+            var naPublicada = CampoLayout.Criar(vBase.Id, $"sai na publicada {_sufixo}", $"//raiz/SaiPublicada{_sufixo}", "Sai numa versão publicada", ordem: 82);
+
+            foreach (var campo in new[] { noRascunho, naDesativada, naPublicada })
+                campo.Publicar();
+
+            contexto.CamposLayout.AddRange(noRascunho, naDesativada, naPublicada);
+            await contexto.SaveChangesAsync();
+
+            foreach (var (campo, versao) in new[] { (noRascunho, vRascunho), (naDesativada, vDesativada), (naPublicada, vPublicada) })
+            {
+                var rastreado = await contexto.CamposLayout.Include(c => c.VersaoLayoutOrigem).FirstAsync(c => c.Id == campo.Id);
+                rastreado.Descontinuar(versao);
+            }
+
+            await contexto.SaveChangesAsync();
+
+            (slugBase, slugAlvo) = (vBase.Slug, vAlvo.Slug);
+            (campoNoRascunho, campoNaDesativada, campoNaPublicada) = (noRascunho.Slug, naDesativada.Slug, naPublicada.Slug);
+        }
+
+        var versaoBase = await ObterDadosAsync($"/api/v1/layout/versoes/{slugBase}");
+        var versaoAlvo = await ObterDadosAsync($"/api/v1/layout/versoes/{slugAlvo}");
+        var slugsDoAlvo = TodosOsSlugs(versaoAlvo);
+
+        slugsDoAlvo.Should().Contain(campoNoRascunho).And.Contain(campoNaDesativada);
+        slugsDoAlvo.Should().NotContain(campoNaPublicada, because: "descontinuação em versão publicada continua valendo");
+
+        versaoAlvo.GetProperty("totalCampos").GetInt32().Should().Be(
+            versaoBase.GetProperty("totalCampos").GetInt32() - 1,
+            because: "entre a base e o alvo só a descontinuação publicada tira campo");
+        versaoAlvo.GetProperty("versao").GetProperty("totalCampos").GetInt32()
+            .Should().Be(versaoAlvo.GetProperty("totalCampos").GetInt32());
+    }
+
     [Fact]
     public async Task P10EP11_CalendarioDaVersao_SaiComDatasEmTexto_ENullSemODado()
     {

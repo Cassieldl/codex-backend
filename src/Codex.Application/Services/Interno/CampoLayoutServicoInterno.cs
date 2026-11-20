@@ -76,6 +76,9 @@ public sealed class CampoLayoutServicoInterno : ICampoLayoutServicoInterno
             campoLayout.Descontinuar(versaoDescontinuacao); // lança RegraDeNegocioException (422) se a ordem não for posterior — risco #2.
         }
 
+        if (dto.Estado == EstadoCampoLayout.Ativo && campoLayout.Estado == EstadoCampoLayout.Descontinuado)
+            campoLayout.DesfazerDescontinuacao();
+
         await _unidadeDeTrabalho.ExecutarAsync(async ctInterno =>
         {
             await _repositorio.SalvarAlteracoesAsync(ctInterno);

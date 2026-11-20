@@ -102,6 +102,13 @@ public class CampoLayout : EntidadeAuditada
         VersaoLayoutDescontinuadoId = versaoDescontinuacao.Id;
     }
 
+    /// <summary>Desfaz <see cref="Descontinuar"/>: o campo volta a valer em todas as versões a partir da origem.</summary>
+    public void DesfazerDescontinuacao()
+    {
+        Estado = EstadoCampoLayout.Ativo;
+        VersaoLayoutDescontinuadoId = null;
+    }
+
     /// <summary>Nunca toca <see cref="Slug"/> — renomear não recalcula slug (§7 do modelo de dados).</summary>
     public void AtualizarNome(string nome)
     {

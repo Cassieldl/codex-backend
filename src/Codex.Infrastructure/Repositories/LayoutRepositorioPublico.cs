@@ -44,7 +44,9 @@ public sealed class LayoutRepositorioPublico : RepositorioBase<CodexDbContext>, 
         await (
             from cl in Contexto.CamposLayout.AsNoTracking()
             join origem in Contexto.VersoesLayout.AsNoTracking() on cl.VersaoLayoutId equals origem.Id
+            // Descontinuação em versão não publicada ou desativada não existe para o público, igual ao verbete.
             join descontinuado in Contexto.VersoesLayout.AsNoTracking()
+                    .Where(v => v.Publicado && v.DesativadoEm == null)
                 on cl.VersaoLayoutDescontinuadoId equals descontinuado.Id into descontinuadoGroup
             from descontinuado in descontinuadoGroup.DefaultIfEmpty()
             where cl.Publicado && cl.DesativadoEm == null
@@ -60,7 +62,7 @@ public sealed class LayoutRepositorioPublico : RepositorioBase<CodexDbContext>, 
                 ReformaTributaria = cl.ReformaTributaria,
                 VersaoLayoutOrigemId = cl.VersaoLayoutId,
                 OrigemOrdem = origem.Ordem,
-                VersaoLayoutDescontinuadoId = cl.VersaoLayoutDescontinuadoId,
+                VersaoLayoutDescontinuadoId = descontinuado != null ? cl.VersaoLayoutDescontinuadoId : null,
                 DescontinuadoOrdem = descontinuado != null ? (int?)descontinuado.Ordem : null,
             }
         ).ToListAsync(ct);
