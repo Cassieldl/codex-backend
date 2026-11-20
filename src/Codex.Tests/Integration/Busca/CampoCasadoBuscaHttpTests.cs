@@ -96,6 +96,63 @@ public sealed class CampoCasadoBuscaHttpTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetBusca_ErroCasadoPelaCausa_TrechoNaoRepeteOTitulo()
+    {
+        const string Titulo = "Inscrição municipal do tomador não confere com o cadastro";
+        string provedorSlug;
+
+        await using (var contexto = _fixture.CriarContexto())
+        {
+            var (provedorId, versaoId, slug) = await CriarProvedorPublicadoAsync(contexto);
+            provedorSlug = slug;
+
+            var erro = Erro.Criar(
+                "E0710", OrigemErro.Prefeitura, $"{Titulo} {_sufixo}",
+                causaProvavel: "A alíquota enviada é de outro município.");
+            erro.SubstituirVariantes([$"{Titulo} informado na DPS."]);
+            await IndexarErroLigadoAsync(contexto, erro, provedorId, versaoId);
+        }
+
+        var itens = await BuscarItensAsync($"/api/v1/busca?q=aliquota&provedor={provedorSlug}&tamanhoPagina=50");
+
+        var erro0710 = itens.Should().ContainSingle(item => item.GetProperty("chave").GetString() == "E0710").Subject;
+        erro0710.GetProperty("campoCasado").GetString().Should().Be("causa");
+
+        var trecho = string.Concat(erro0710.GetProperty("trechos").EnumerateArray().Select(t => t.GetProperty("texto").GetString()));
+        trecho.Should().Contain("alíquota").And.NotContain("Inscrição municipal");
+    }
+
+    [Fact]
+    public async Task GetBusca_ErroComTituloCortado_VoltaComAVarianteInteira_SoQuandoElaComecaPeloTitulo()
+    {
+        var inicio = $"É obrigatório informar alíquota {_sufixo} para o prestador na data de";
+        string provedorSlug;
+
+        await using (var contexto = _fixture.CriarContexto())
+        {
+            var (provedorId, versaoId, slug) = await CriarProvedorPublicadoAsync(contexto);
+            provedorSlug = slug;
+
+            var comVariante = Erro.Criar("E0720", OrigemErro.Prefeitura, $"{inicio}…");
+            comVariante.SubstituirVariantes(["Mensagem antiga de outra regra.", $"{inicio}\ncompetência informada na DPS."]);
+
+            var semVariante = Erro.Criar("E0721", OrigemErro.Prefeitura, $"{inicio} emissão…");
+            semVariante.SubstituirVariantes(["Texto que não começa pelo título."]);
+
+            await IndexarErroLigadoAsync(contexto, comVariante, provedorId, versaoId);
+            await IndexarErroLigadoAsync(contexto, semVariante, provedorId, versaoId);
+        }
+
+        var itens = await BuscarItensAsync($"/api/v1/busca?q=obrigatorio&provedor={provedorSlug}&tamanhoPagina=50");
+        var tituloPorChave = itens
+            .Where(item => item.GetProperty("tipo").GetString() == "erro")
+            .ToDictionary(item => item.GetProperty("chave").GetString()!, item => item.GetProperty("titulo").GetString());
+
+        tituloPorChave["E0720"].Should().Be($"{inicio} competência informada na DPS.");
+        tituloPorChave["E0721"].Should().Be($"{inicio} emissão…", because: "sem variante que comece pelo título, o título fica como está");
+    }
+
+    [Fact]
     public async Task GetBusca_PeloCodigo_ErroVemPeloCodigo_EItemQueNaoEErroTemCampoCasadoNulo()
     {
         var codigo = $"E9{_sufixo[..6]}";

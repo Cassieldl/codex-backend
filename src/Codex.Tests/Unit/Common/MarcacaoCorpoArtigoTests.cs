@@ -39,6 +39,19 @@ public sealed class MarcacaoCorpoArtigoTests
     }
 
     [Fact]
+    public void TextoIndexavel_ItemDeListaSemPontuacaoFinal_GanhaPontoParaNaoEmendarNoSeguinte()
+    {
+        var corpo = "> [!CARTOES]\n> - **Código** | Cole. | [Ex.: E157](/busca?q=E157)\n> - **Nome do campo** | Significado.\n1. Passo um\n- Lista:"
+            + "\n- ![Tela](a.png \"Tela de login.\")\n- Item com virgula,\n- Item com reticencias…";
+
+        var texto = MarcacaoCorpoArtigo.TextoIndexavel(corpo);
+
+        texto.Should().Be(
+            "> \n> - **Código** | Cole. | [Ex.: E157](/busca?q=E157).\n> - **Nome do campo** | Significado.\n1. Passo um.\n- Lista:"
+            + "\n- Tela Tela de login.\n- Item com virgula,\n- Item com reticencias…");
+    }
+
+    [Fact]
     public void TextoIndexavel_TrocaImagemPorAltELegendaSemOCaminho()
     {
         var corpo = "Antes ![Tela do lote](/imagens/emissao-em-lote/tela.png \"Menu Lote\") e ![Sem legenda](/imagens/a/b.png).";

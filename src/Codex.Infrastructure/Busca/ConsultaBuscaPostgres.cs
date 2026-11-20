@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Codex.Application.Common;
 using Codex.Application.DTOs.Publico;
 using Codex.Application.Interfaces;
@@ -23,7 +24,7 @@ namespace Codex.Infrastructure.Busca;
 /// mudasse sem passar pela cascata de publicação.
 /// </para>
 /// </summary>
-public sealed class ConsultaBuscaPostgres : IConsultaBusca
+public sealed partial class ConsultaBuscaPostgres : IConsultaBusca
 {
     private const int CapLinhas = 300;
 
@@ -66,6 +67,9 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
     private const string SeparadorProvedorVersao = " · ";
 
     private const string TipoArtigo = "artigo";
+
+    /// <summary>Marca do título de erro cortado na carga (ver <see cref="TituloInteiro"/>).</summary>
+    private const string Reticencias = "…";
 
     private static readonly IReadOnlyDictionary<string, string> RotulosGrupo = new Dictionary<string, string>
     {
@@ -812,6 +816,8 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
     /// Para os erros da página que casaram só no bucket C, diz se o termo está na causa ou na
     /// solução, cada uma com a mesma normalização do índice. Usa o OU dos lexemas: o passo forte
     /// exige todos no documento inteiro, e aqui a pergunta é em qual campo eles aparecem.
+    /// O trecho sai só de causa e solução: o do índice começa pelo código e pela mensagem, que o
+    /// card já mostra no título.
     /// </summary>
     private async Task<IReadOnlyDictionary<int, CasamentoCausaOuSolucao>> CarregarCasamentoCausaOuSolucaoAsync(
         IReadOnlyList<LinhaBusca> itensDaPagina, string termoUsado, CancellationToken ct)
@@ -834,7 +840,11 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
             )
             SELECT e.erroid AS "ErroId",
                    to_tsvector('codex.codex_pt'::regconfig, codex.normalizar_busca(coalesce(e.causaprovavel, ''))) @@ lexemas.consulta AS "CasouCausa",
-                   to_tsvector('codex.codex_pt'::regconfig, codex.normalizar_busca(coalesce(e.solucaosugerida, ''))) @@ lexemas.consulta AS "CasouSolucao"
+                   to_tsvector('codex.codex_pt'::regconfig, codex.normalizar_busca(coalesce(e.solucaosugerida, ''))) @@ lexemas.consulta AS "CasouSolucao",
+                   ts_headline('codex.codex_pt'::regconfig,
+                       replace(replace(concat_ws(' ', e.causaprovavel, e.solucaosugerida), '⟦', ''), '⟧', ''),
+                       lexemas.consulta,
+                       'StartSel=⟦, StopSel=⟧, MaxFragments=1, MaxWords=35, MinWords=15') AS "Trecho"
             FROM codex.erros e, lexemas
             WHERE e.erroid = ANY({erroIds})
               AND lexemas.consulta IS NOT NULL
@@ -860,7 +870,7 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
             Tipo = linha.TipoItem,
             Rotulo = RotulosItem.GetValueOrDefault(linha.TipoItem, linha.TipoItem.ToUpperInvariant()),
             Chave = linha.Chave,
-            Titulo = linha.Titulo,
+            Titulo = rotulosDoItem.TituloInteiro ?? linha.Titulo,
             Url = rotulosDoItem.Url,
             ProvedorNome = rotulosDoItem.ProvedorNome,
             VersaoRotulo = rotulosDoItem.VersaoRotulo,
@@ -871,9 +881,14 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
             SolucaoResumo = rotulosDoItem.SolucaoResumo,
             Publicado = linha.Publicado,
             Pontuacao = linha.Pontuacao,
-            Trechos = ParseTrechos(linha.FragmentoBruto),
+            Trechos = ParseTrechos(TrechoDoItem(linha, causaOuSolucao)),
         };
     }
+
+    private static string? TrechoDoItem(LinhaBusca linha, IReadOnlyDictionary<int, CasamentoCausaOuSolucao> causaOuSolucao) =>
+        linha.TipoItem == TipoErro && causaOuSolucao.TryGetValue(linha.ItemId, out var casamento) && casamento.Trecho is not null
+            ? casamento.Trecho
+            : linha.FragmentoBruto;
 
     private static IReadOnlyCollection<BuscaTrechoDto> ParseTrechos(string? headline)
     {
@@ -1025,7 +1040,8 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
     /// <summary>
     /// Slug corrente de cada erro da página (decisão B) e o resumo da solução, numa consulta só
     /// sobre os ids da página, e só quando há erro nela. Existe porque <c>codex.itensbusca</c> não
-    /// tem coluna de slug e a <c>url</c> gravada envelhece na troca de slug (I43).
+    /// tem coluna de slug e a <c>url</c> gravada envelhece na troca de slug (I43). Também traz o
+    /// título inteiro do erro cujo título foi cortado em "…" na carga.
     /// </summary>
     private async Task<IReadOnlyDictionary<int, ErroDireto>> CarregarErrosDiretosAsync(int[] erroIds, CancellationToken ct)
     {
@@ -1034,13 +1050,47 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
 
         var erros = await _contexto.Erros.AsNoTracking()
             .Where(e => erroIds.Contains(e.Id))
-            .Select(e => new { e.Id, e.Slug, e.SolucaoSugerida })
+            .Select(e => new { e.Id, e.Slug, e.Titulo, e.SolucaoSugerida })
             .ToListAsync(ct);
+
+        var idsComTituloCortado = erros.Where(e => TituloCortado(e.Titulo)).Select(e => e.Id).ToArray();
+        var variantes = idsComTituloCortado.Length == 0
+            ? []
+            : await _contexto.VariantesMensagem.AsNoTracking()
+                .Where(v => idsComTituloCortado.Contains(v.ErroId) && v.DesativadoEm == null)
+                .OrderBy(v => v.Id)
+                .Select(v => new VarianteDoErro(v.ErroId, v.Texto))
+                .ToListAsync(ct);
+        var variantesPorErro = variantes.ToLookup(v => v.ErroId, v => v.Texto);
 
         return erros.ToDictionary(
             e => e.Id,
-            e => new ErroDireto(e.Slug, ResumoSolucaoErro.Derivar(e.SolucaoSugerida)));
+            e => new ErroDireto(
+                e.Slug,
+                ResumoSolucaoErro.Derivar(e.SolucaoSugerida),
+                TituloInteiro(e.Titulo, variantesPorErro[e.Id])));
     }
+
+    private static bool TituloCortado(string titulo) => titulo.EndsWith(Reticencias, StringComparison.Ordinal);
+
+    /// <summary>
+    /// A carga corta a mensagem longa para caber no título e guarda a inteira como variante. Vale a
+    /// primeira variante que começa pelo título sem o "…"; sem nenhuma, fica nulo e o título segue.
+    /// </summary>
+    private static string? TituloInteiro(string titulo, IEnumerable<string> variantes)
+    {
+        if (!TituloCortado(titulo))
+            return null;
+
+        var inicio = titulo[..^Reticencias.Length].TrimEnd();
+
+        return variantes
+            .Select(texto => EspacosSeguidos().Replace(texto, " ").Trim())
+            .FirstOrDefault(texto => inicio.Length > 0 && texto.StartsWith(inicio, StringComparison.Ordinal));
+    }
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex EspacosSeguidos();
 
     /// <summary>
     /// Slug corrente de cada campo de layout da página. O valor coincide com o que o writer grava
@@ -1123,10 +1173,12 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
 
         if (linha.TipoItem == TipoErro)
         {
-            var solucaoResumo = errosDiretos.GetValueOrDefault(linha.ItemId)?.SolucaoResumo;
+            var erroDireto = errosDiretos.GetValueOrDefault(linha.ItemId);
+            var solucaoResumo = erroDireto?.SolucaoResumo;
+            var tituloInteiro = erroDireto?.TituloInteiro;
 
             if (!versoesPorErro.TryGetValue(linha.ItemId, out var aplicaveis) || aplicaveis.Count == 0)
-                return RotulosDoItem.SemContexto(url) with { SolucaoResumo = solucaoResumo };
+                return RotulosDoItem.SemContexto(url) with { SolucaoResumo = solucaoResumo, TituloInteiro = tituloInteiro };
 
             var nomesDeProvedorAplicaveis = aplicaveis.Select(v => v.ProvedorNome).Distinct().ToArray();
             var provedorUnico = nomesDeProvedorAplicaveis.Length == 1 ? nomesDeProvedorAplicaveis[0] : null;
@@ -1145,7 +1197,8 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
                 Versoes: versoes,
                 Meta: null,
                 Url: url,
-                SolucaoResumo: solucaoResumo);
+                SolucaoResumo: solucaoResumo,
+                TituloInteiro: tituloInteiro);
         }
 
         // Artigo não tem contexto de provedor (PQ-06) — só a meta de verificação, quando existe
@@ -1265,7 +1318,8 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         IReadOnlyCollection<string>? Versoes,
         BuscaMetaDto? Meta,
         string Url,
-        string? SolucaoResumo = null)
+        string? SolucaoResumo = null,
+        string? TituloInteiro = null)
     {
         /// <summary>Caso "geral" de U9 — os quatro campos de contexto nulos, a URL preservada.</summary>
         public static RotulosDoItem SemContexto(string url) => new(null, null, null, null, url);
@@ -1273,7 +1327,9 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
 
     private sealed record ProvedorDireto(string Nome, string Slug);
 
-    private sealed record ErroDireto(string Slug, string? SolucaoResumo);
+    private sealed record ErroDireto(string Slug, string? SolucaoResumo, string? TituloInteiro);
+
+    private sealed record VarianteDoErro(int ErroId, string Texto);
 
     private sealed record ArtigoDireto(string Slug, DateOnly? VerificadoEm);
 
@@ -1295,6 +1351,8 @@ public sealed class ConsultaBuscaPostgres : IConsultaBusca
         public bool CasouCausa { get; set; }
 
         public bool CasouSolucao { get; set; }
+
+        public string? Trecho { get; set; }
     }
 
     /// <summary>Linha bruta materializada da projeção de busca — shape interno, nunca exposto fora deste arquivo.</summary>
