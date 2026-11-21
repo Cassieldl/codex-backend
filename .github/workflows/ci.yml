@@ -1,46 +1,52 @@
 name: CI
 
-# O gate do backend só existia na máquina do desenvolvedor. Aqui ele roda a cada push e em toda
-# proposta de merge, para que "a suíte passa" pare de ser uma afirmação sobre uma máquina só.
+# Valida e não publica. Os três jobs têm nome fixo porque a proteção de branch aponta para eles.
 on:
   push:
-    branches: [main]
+    branches: [develop, main]
   pull_request:
-    branches: [main]
+    branches: [develop, main]
 
-# Push seguido de push cancela o run anterior: o que importa é o estado do topo da branch, e dois
-# runs da mesma branch disputando o mesmo Docker só gastam minuto.
+permissions:
+  contents: read
+
+# Push seguido de push cancela o run anterior: o que importa é o estado do topo da branch.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-e-testes:
-    # `ubuntu-latest` traz Docker no runner, que é requisito dos testes de integração: a suíte usa
-    # Testcontainers e sobe um Postgres real. Sem Docker, dezenas de testes caem por ambiente, não
-    # por defeito — e um vermelho de ambiente é pior que nenhum sinal.
+  qualidade:
+    # O runner precisa de Docker: a suíte sobe um Postgres real com Testcontainers.
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
+      # --locked-mode: pacote fora do packages.lock.json, ou com hash diferente, reprova o build.
       - name: Restaurar dependências
-        run: dotnet restore src/Codex.API/Codex.API.csproj
+        run: dotnet restore Codex.slnx --locked-mode
 
-      # `--no-incremental` porque incremental reaproveita saída de build anterior e pode esconder
-      # um erro que só aparece do zero — que é exatamente o caso que o CI existe para pegar.
+      # O comando sai 0 mesmo quando acha vulnerabilidade: quem decide é a contagem no JSON.
+      - name: Pacotes vulneráveis
+        run: |
+          dotnet list Codex.slnx package --vulnerable --include-transitive --format json > vulneraveis.json
+          jq -e '[.projects[].frameworks[]? | (.topLevelPackages[]?, .transitivePackages[]?)] | length == 0' vulneraveis.json \
+            || { jq '.projects[].frameworks[]?' vulneraveis.json; exit 1; }
+
+      # --no-incremental: saída de build anterior pode esconder erro que só aparece do zero.
       - name: Compilar
-        run: dotnet build --no-incremental --configuration Release
+        run: dotnet build Codex.slnx -c Release --no-restore --no-incremental -warnaserror
 
       - name: Testes
-        run: dotnet test --configuration Release --no-build --logger "console;verbosity=normal"
+        run: dotnet test Codex.slnx -c Release --no-build --logger "console;verbosity=normal"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
 
@@ -48,21 +54,35 @@ jobs:
       - name: Testes da carga
         run: node --test "database/carga/**/*.test.mjs"
 
-      # O comando sai 0 mesmo quando acha vulnerabilidade: quem decide é a contagem no JSON. Um
-      # pacote só aparece na lista quando tem vulnerabilidade conhecida.
-      - name: Dependências sem vulnerabilidade conhecida
+  vazamento:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # segredo apagado depois continua nos commits antigos
+
+      - name: gitleaks
         run: |
-          dotnet list package --vulnerable --include-transitive --format json > vulneraveis.json
-          jq -e '[.projects[].frameworks[]? | (.topLevelPackages[]?, .transitivePackages[]?)] | length == 0' vulneraveis.json \
-            || { jq '.projects[].frameworks[]?' vulneraveis.json; exit 1; }
+          docker run --rm -v "$PWD:/repo" \
+            -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/repo \
+            zricethezav/gitleaks:v8.30.1 git /repo --redact --no-banner
 
   imagem:
-    # A imagem nunca era construída fora da máquina de quem fazia o smoke. Construir aqui pega
-    # Dockerfile quebrado antes do deploy, que é onde ele custaria mais.
+    needs: qualidade
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Construir a imagem da API
         run: docker build -t codex-backend:ci .
+
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: codex-backend:ci
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          ignore-unfixed: true
