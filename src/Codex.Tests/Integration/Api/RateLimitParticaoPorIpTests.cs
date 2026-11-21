@@ -136,6 +136,38 @@ public sealed class RateLimitParticaoPorIpTests
             because: "as duas politicas mantem baldes independentes, ainda que particionem pela mesma chave");
     }
 
+    /// <summary>
+    /// Um assinante IPv6 recebe um /64 inteiro: particionar pelo endereço completo daria uma cota
+    /// nova a cada troca de endereço dentro do próprio prefixo.
+    /// </summary>
+    [Fact]
+    public async Task Ipv6DoMesmoPrefixo64_DividemACota()
+    {
+        using var fabrica = new FabricaComIpControlado();
+        using var cliente = fabrica.CreateClient();
+
+        var primeiroEndereco = await Disparar(cliente, "2001:db8:aa:1::10", LimitePorIp);
+        var outroEnderecoDoPrefixo = (await Disparar(cliente, "2001:db8:aa:1:ffff:ffff:ffff:20", 1))[0];
+
+        primeiroEndereco.Should().NotContain(HttpStatusCode.TooManyRequests);
+        outroEnderecoDoPrefixo.Should().Be(HttpStatusCode.TooManyRequests,
+            because: "os dois endereços são do mesmo /64 e a cota dele já foi gasta");
+    }
+
+    [Fact]
+    public async Task Ipv6DePrefixos64Diferentes_NaoDividemACota()
+    {
+        using var fabrica = new FabricaComIpControlado();
+        using var cliente = fabrica.CreateClient();
+
+        var naCotaEstourada = await Disparar(cliente, "2001:db8:bb:1::10", LimitePorIp + 1);
+        var emOutroPrefixo = (await Disparar(cliente, "2001:db8:bb:2::10", 1))[0];
+
+        naCotaEstourada[^1].Should().Be(HttpStatusCode.TooManyRequests);
+        emOutroPrefixo.Should().NotBe(HttpStatusCode.TooManyRequests,
+            because: "outro /64 é outro assinante e tem cota própria");
+    }
+
     private static async Task<List<HttpStatusCode>> Disparar(
         HttpClient cliente,
         string? ip,

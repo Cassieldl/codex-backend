@@ -11,6 +11,10 @@ namespace Codex.API.Extensoes;
 /// <item><b>Keycloak</b> — sem <c>auth-server-url</c>/<c>realm</c> a <c>Authority</c> nunca é
 /// atribuída e, com <c>ValidateIssuer</c>/<c>ValidateIssuerSigningKey</c> ligados, TODO token é
 /// reprovado. Obrigatório fora de Development.</item>
+/// <item><b>Keycloak:MetadataAddress</b>: em HTTP fora de Development, só com a mesma dispensa
+/// explícita da Authority.</item>
+/// <item><b>Cors:OrigemPermitida</b>: uma origem exata, nunca <c>"*"</c>. Obrigatória fora de
+/// Development.</item>
 /// <item><b>AllowedHosts</b> — <c>"*"</c> desliga o host filtering (A05). Proibido fora de
 /// Development.</item>
 /// <item><b>Busca:TimeoutMs</b> — <c>0</c> DESLIGA o <c>statement_timeout</c> no Postgres, que é
@@ -61,6 +65,21 @@ public static class ConfiguracaoSegurancaExtensoes
                     + "Keycloak:RequireHttpsMetadata=false para assumir o risco explicitamente.");
             }
 
+            // Mesmo efeito da Authority em HTTP: o JwtBearer lança no primeiro request e toda rota,
+            // inclusive a sonda de liveness, responde 500.
+            var enderecoMetadata = configuracao["Keycloak:MetadataAddress"];
+            if (!string.IsNullOrWhiteSpace(enderecoMetadata)
+                && !enderecoMetadata.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                && !ExigenciaDeHttpsFoiDispensada(configuracao))
+            {
+                falhas.Add($"Keycloak:MetadataAddress precisa ser HTTPS fora de Development; veio '{enderecoMetadata}'. "
+                    + "Declare Keycloak:RequireHttpsMetadata=false para assumir o risco explicitamente.");
+            }
+
+            var falhaCors = ValidarOrigemCors(configuracao["Cors:OrigemPermitida"]);
+            if (falhaCors is not null)
+                falhas.Add(falhaCors);
+
             var hostsPermitidos = configuracao["AllowedHosts"];
             if (string.IsNullOrWhiteSpace(hostsPermitidos) || hostsPermitidos.Split(';').Any(host => host.Trim() == "*"))
             {
@@ -102,6 +121,27 @@ public static class ConfiguracaoSegurancaExtensoes
             throw new InvalidOperationException(
                 "Configuração de segurança inválida: " + string.Join(" | ", falhas));
         }
+    }
+
+    /// <summary>
+    /// Uma origem só, no formato exato do header <c>Origin</c> do navegador: esquema, host e porta,
+    /// sem caminho nem barra final (com eles o CORS nunca casa e o portal quebra sem diagnóstico).
+    /// <c>"*"</c> liga <c>AllowAnyOrigin</c>. HTTP só em loopback, que é o ambiente de smoke local.
+    /// </summary>
+    private static string? ValidarOrigemCors(string? origem)
+    {
+        const string formato = "Cors:OrigemPermitida precisa ser UMA origem absoluta, sem caminho, sem barra final "
+            + "e nunca \"*\" (ex.: https://codex.exemplo.com.br); HTTP só é aceito em loopback";
+
+        if (string.IsNullOrWhiteSpace(origem))
+            return $"{formato}; veio vazio.";
+
+        var ehOrigemValida = Uri.TryCreate(origem, UriKind.Absolute, out var uri)
+            && string.IsNullOrEmpty(uri.UserInfo)
+            && string.Equals(uri.GetLeftPart(UriPartial.Authority), origem, StringComparison.OrdinalIgnoreCase)
+            && (uri.Scheme == Uri.UriSchemeHttps || (uri.Scheme == Uri.UriSchemeHttp && uri.IsLoopback));
+
+        return ehOrigemValida ? null : $"{formato}; veio '{origem}'.";
     }
 
     /// <summary>

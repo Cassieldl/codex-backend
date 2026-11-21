@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -26,6 +28,7 @@ public static class RateLimitingExtensoes
     private const string ParticaoDesconhecida = "desconhecido";
     private const int LimitePorIp = 30;
     private const int LimiteSemIp = 5;
+    private const int BytesDoPrefixoIpv6 = 8;
 
     /// <summary>
     /// Agregadores anônimos da vitrine (<c>GET /home</c>, <c>GET /layout*</c>): leitura de catálogo,
@@ -89,7 +92,7 @@ public static class RateLimitingExtensoes
         int limitePorIp,
         int limiteSemIp)
     {
-        var ip = httpContext.Connection.RemoteIpAddress?.ToString();
+        var ip = ChaveDoCliente(httpContext.Connection.RemoteIpAddress);
 
         return RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: ip ?? ParticaoDesconhecida,
@@ -103,5 +106,27 @@ public static class RateLimitingExtensoes
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                 QueueLimit = 0,
             });
+    }
+
+    /// <summary>
+    /// IPv4 particiona pelo endereço. IPv6 particiona pelo prefixo /64, que é o que um único
+    /// assinante recebe: pelo endereço inteiro, ele trocaria de origem dentro do próprio prefixo e
+    /// ganharia uma cota nova a cada troca.
+    /// </summary>
+    private static string? ChaveDoCliente(IPAddress? endereco)
+    {
+        if (endereco is null)
+            return null;
+
+        if (endereco.IsIPv4MappedToIPv6)
+            endereco = endereco.MapToIPv4();
+
+        if (endereco.AddressFamily != AddressFamily.InterNetworkV6)
+            return endereco.ToString();
+
+        var bytes = endereco.GetAddressBytes();
+        Array.Clear(bytes, BytesDoPrefixoIpv6, bytes.Length - BytesDoPrefixoIpv6);
+
+        return $"{new IPAddress(bytes)}/64";
     }
 }

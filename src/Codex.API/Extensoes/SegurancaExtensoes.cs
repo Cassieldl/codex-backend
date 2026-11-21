@@ -60,6 +60,10 @@ public static class SegurancaExtensoes
                 options.RequireHttpsMetadata = !ambiente.IsDevelopment()
                     && !ConfiguracaoSegurancaExtensoes.ExigenciaDeHttpsFoiDispensada(configuration);
 
+                // error_description diz por que o token caiu (assinatura, issuer, expiração): ajuda
+                // no desenvolvimento e vira oráculo para quem forja token em produção.
+                options.IncludeErrorDetails = ambiente.IsDevelopment();
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,

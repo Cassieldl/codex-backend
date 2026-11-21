@@ -13,6 +13,9 @@ var builder = WebApplication.CreateBuilder(args);
 // com host filtering desligado, é degradação silenciosa — rules/security.md manda fail securely.
 ConfiguracaoSegurancaExtensoes.ValidarConfiguracaoDeSeguranca(builder.Configuration, builder.Environment);
 
+// Sem header Server: ele só revela a tecnologia do servidor (rules/security.md A05).
+builder.WebHost.ConfigureKestrel(opcoes => opcoes.AddServerHeader = false);
+
 builder.Host.UseSerilog(
     (context, services, loggerConfiguration) => loggerConfiguration
         // WriteTo em CÓDIGO, antes do ReadFrom (MED-B03): UseSerilog substitui todo o provedor de

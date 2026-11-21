@@ -2,8 +2,8 @@ namespace Codex.API.Middleware;
 
 /// <summary>
 /// Headers de segurança obrigatórios (rules/security.md A05) — genérico, sem lógica de negócio,
-/// por isso escopo da fundação (BACK-1). Nunca <c>X-Powered-By</c>/<c>Server</c> (removidos por
-/// padrão do Kestrel/ASP.NET Core).
+/// por isso escopo da fundação (BACK-1). O header <c>Server</c> é desligado no Kestrel
+/// (<c>AddServerHeader = false</c> em <c>Program.cs</c>); o ASP.NET Core não emite <c>X-Powered-By</c>.
 /// </summary>
 public sealed class SecurityHeadersMiddleware
 {

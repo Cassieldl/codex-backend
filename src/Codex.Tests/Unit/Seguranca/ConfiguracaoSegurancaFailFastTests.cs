@@ -44,6 +44,7 @@ public sealed class ConfiguracaoSegurancaFailFastTests
         ("Keycloak:auth-server-url", "https://auth.exemplo.com"),
         ("Keycloak:realm", "codex"),
         ("AllowedHosts", "codex.exemplo.com"),
+        ("Cors:OrigemPermitida", "https://portal.exemplo.com"),
         ("Busca:TimeoutMs", "2000"),
         ("Busca:OrcamentoRequisicaoMs", "2000"),
     ];
@@ -230,15 +231,103 @@ public sealed class ConfiguracaoSegurancaFailFastTests
         acao.Should().NotThrow(because: "o Keycloak local roda em HTTP e é o fluxo normal de desenvolvimento");
     }
 
-    private static string DiretorioDoProjetoApi()
+    /// <summary>
+    /// <c>"*"</c> liga AllowAnyOrigin; vazio, caminho ou barra final sobem e bloqueiam o portal sem
+    /// diagnóstico, porque nunca casam com o header Origin do navegador.
+    /// </summary>
+    [Theory]
+    [InlineData("*")]
+    [InlineData("")]
+    [InlineData("http://portal.exemplo.com")]
+    [InlineData("https://portal.exemplo.com/")]
+    [InlineData("https://portal.exemplo.com/app")]
+    public void OrigemCorsInvalidaForaDeDevelopment_RecusaSubir(string origem)
+    {
+        var configuracao = Configuracao([
+            .. ProducaoValida().Where(par => par.Chave != "Cors:OrigemPermitida"),
+            ("Cors:OrigemPermitida", origem),
+        ]);
+
+        var acao = () => ConfiguracaoSegurancaExtensoes.ValidarConfiguracaoDeSeguranca(configuracao, Ambiente("Production"));
+
+        acao.Should().Throw<InvalidOperationException>().WithMessage("*Cors:OrigemPermitida*");
+    }
+
+    /// <summary>O ambiente de smoke roda em Production com o portal em http://localhost:5173.</summary>
+    [Fact]
+    public void OrigemCorsHttpEmLoopback_Sobe()
+    {
+        var configuracao = Configuracao([
+            .. ProducaoValida().Where(par => par.Chave != "Cors:OrigemPermitida"),
+            ("Cors:OrigemPermitida", "http://localhost:5173"),
+        ]);
+
+        var acao = () => ConfiguracaoSegurancaExtensoes.ValidarConfiguracaoDeSeguranca(configuracao, Ambiente("Production"));
+
+        acao.Should().NotThrow();
+    }
+
+    /// <summary>
+    /// Authority em HTTPS e descoberta em HTTP, sem dispensa: o JwtBearer lança no primeiro request
+    /// e toda rota responde 500, inclusive a sonda de liveness. Tem de falhar na partida.
+    /// </summary>
+    [Fact]
+    public void MetadataAddressSemHttpsForaDeDevelopment_RecusaSubir()
+    {
+        var configuracao = Configuracao([
+            .. ProducaoValida(),
+            ("Keycloak:MetadataAddress", "http://keycloak.interno:8080/realms/codex/.well-known/openid-configuration"),
+        ]);
+
+        var acao = () => ConfiguracaoSegurancaExtensoes.ValidarConfiguracaoDeSeguranca(configuracao, Ambiente("Production"));
+
+        acao.Should().Throw<InvalidOperationException>().WithMessage("*Keycloak:MetadataAddress*");
+    }
+
+    /// <summary>
+    /// O exemplo de produção versionado passa na partida como está e também com o bloco opcional
+    /// do Keycloak interno descomentado, que é o caminho que levava a 500 em todas as rotas.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExemploDeProducaoDoRepositorio_PassaNaValidacaoDePartida(bool comKeycloakInterno)
+    {
+        var configuracao = Configuracao(LerExemploDeProducao(comKeycloakInterno));
+
+        (configuracao["Keycloak:MetadataAddress"] is not null).Should().Be(comKeycloakInterno,
+            because: "o caso com Keycloak interno precisa de fato exercitar o MetadataAddress do exemplo");
+
+        var acao = () => ConfiguracaoSegurancaExtensoes.ValidarConfiguracaoDeSeguranca(configuracao, Ambiente("Production"));
+
+        acao.Should().NotThrow();
+    }
+
+    private static (string Chave, string? Valor)[] LerExemploDeProducao(bool descomentarKeycloakInterno)
+    {
+        const string prefixoComentadoDoKeycloak = "# Keycloak__";
+
+        return File.ReadAllLines(Path.Combine(DiretorioRaizDoRepositorio(), ".env.production.example"))
+            .Select(linha => descomentarKeycloakInterno && linha.StartsWith(prefixoComentadoDoKeycloak, StringComparison.Ordinal)
+                ? linha[2..]
+                : linha)
+            .Where(linha => !string.IsNullOrWhiteSpace(linha) && !linha.TrimStart().StartsWith('#'))
+            .Select(linha => linha.Split('=', 2))
+            .Select(partes => (partes[0].Trim().Replace("__", ":", StringComparison.Ordinal), (string?)partes[1].Trim()))
+            .ToArray();
+    }
+
+    private static string DiretorioDoProjetoApi() => Path.Combine(DiretorioRaizDoRepositorio(), "src", "Codex.API");
+
+    private static string DiretorioRaizDoRepositorio()
     {
         var diretorio = new DirectoryInfo(AppContext.BaseDirectory);
 
         while (diretorio is not null && !File.Exists(Path.Combine(diretorio.FullName, "Codex.slnx")))
             diretorio = diretorio.Parent;
 
-        diretorio.Should().NotBeNull(because: "o teste precisa localizar a raiz do repositório para ler o appsettings real");
+        diretorio.Should().NotBeNull(because: "o teste precisa localizar a raiz do repositório para ler os arquivos reais");
 
-        return Path.Combine(diretorio!.FullName, "src", "Codex.API");
+        return diretorio!.FullName;
     }
 }
