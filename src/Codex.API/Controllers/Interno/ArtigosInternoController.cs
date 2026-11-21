@@ -20,7 +20,15 @@ public sealed class ArtigosInternoController : ControllerBase
         _servico = servico;
     }
 
-    /// <summary>I23 — lista paginada (enxerga rascunho).</summary>
+    /// <summary>I23 - lista paginada (enxerga rascunho). Padrão: mais recentes primeiro.</summary>
+    /// <param name="q">Busca por trecho do título.</param>
+    /// <param name="tipo">Tipo do artigo.</param>
+    /// <param name="publicado">Filtra por publicado ou rascunho; omitido traz os dois.</param>
+    /// <param name="sortBy"><c>titulo</c>, <c>tipo</c>, <c>verificadoem</c> ou <c>publicado</c>; vazio ou desconhecido usa o padrão. Em <c>verificadoem</c>, artigo nunca verificado fica no fim nas duas direções.</param>
+    /// <param name="sortDirection"><c>asc</c> ou <c>desc</c> (padrão).</param>
+    /// <param name="pagina">Página, a partir de 1.</param>
+    /// <param name="tamanhoPagina">Itens por página (padrão 25, máximo 200).</param>
+    /// <response code="200">Página de artigos.</response>
     [HttpGet]
     [Authorize(Roles = "artigos-buscar")]
     [ProducesResponseType(typeof(PaginatedResponse<ArtigoAdminListaItemDto>), StatusCodes.Status200OK)]
@@ -28,11 +36,13 @@ public sealed class ArtigosInternoController : ControllerBase
         [FromQuery] string? q,
         [FromQuery] TipoArtigo? tipo,
         [FromQuery] bool? publicado,
+        [FromQuery] string? sortBy,
+        [FromQuery] string? sortDirection,
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanhoPagina = 25,
         CancellationToken ct = default)
     {
-        var filtro = new FiltroArtigoInterno(q, tipo, publicado, pagina, tamanhoPagina);
+        var filtro = new FiltroArtigoInterno(q, tipo, publicado, sortBy, sortDirection, pagina, tamanhoPagina);
         var resultado = await _servico.ListarAsync(filtro, ct);
 
         return Ok(new PaginatedResponse<ArtigoAdminListaItemDto>

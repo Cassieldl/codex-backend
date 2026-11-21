@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Codex.Application.Common;
 using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
@@ -39,9 +40,10 @@ public sealed class ErroRepositorioInterno : RepositorioBase<CodexDbContext>, IE
         if (!string.IsNullOrWhiteSpace(filtro.Busca))
         {
             var padrao = PadraoBusca.Contendo(filtro.Busca);
+            // Sem acento dos dois lados: "aliquota" acha "Alíquota".
             query = query.Where(e =>
-                EF.Functions.ILike(e.Titulo, padrao, PadraoBusca.CaractereDeEscape)
-                || EF.Functions.ILike(e.Codigo, padrao, PadraoBusca.CaractereDeEscape));
+                EF.Functions.ILike(FuncoesBanco.SemAcento(e.Titulo), FuncoesBanco.SemAcento(padrao), PadraoBusca.CaractereDeEscape)
+                || EF.Functions.ILike(FuncoesBanco.SemAcento(e.Codigo), FuncoesBanco.SemAcento(padrao), PadraoBusca.CaractereDeEscape));
         }
 
         if (filtro.Origem.HasValue)
@@ -67,9 +69,7 @@ public sealed class ErroRepositorioInterno : RepositorioBase<CodexDbContext>, IE
 
         var totalCount = await query.CountAsync(ct);
 
-        var itens = await query
-            .OrderByDescending(e => e.CriadoEm)
-            .ThenByDescending(e => e.Id)
+        var itens = await Ordenar(query, filtro)
             .Skip((filtro.Pagina - 1) * filtro.TamanhoPagina)
             .Take(filtro.TamanhoPagina)
             .Select(e => new ErroAdminListaItemDto
@@ -134,4 +134,30 @@ public sealed class ErroRepositorioInterno : RepositorioBase<CodexDbContext>, IE
 
     private static async Task<IReadOnlyCollection<int>> MaterializarAsync(IQueryable<int> query, CancellationToken ct) =>
         await query.ToListAsync(ct);
+
+    /// <summary>
+    /// Whitelist de colunas (nunca OrderBy por string). <c>sortBy</c> vazio ou desconhecido cai no
+    /// padrão, mais recentes primeiro. Texto ordena pela collation do português
+    /// (<see cref="OrdenacaoTexto"/>). Todo caminho termina no <c>Id</c> para o OFFSET ter ordem total.
+    /// </summary>
+    private static IOrderedQueryable<Erro> Ordenar(IQueryable<Erro> query, FiltroErroInterno filtro)
+    {
+        const string collation = OrdenacaoTexto.CollationPortugues;
+        var crescente = string.Equals(filtro.SortDirection, "asc", StringComparison.OrdinalIgnoreCase);
+
+        return filtro.SortBy?.ToLowerInvariant() switch
+        {
+            "codigo" => PorColuna(query, e => EF.Functions.Collate(e.Codigo, collation), crescente),
+            "titulo" => PorColuna(query, e => EF.Functions.Collate(e.Titulo, collation), crescente),
+            "origem" => PorColuna(query, e => EF.Functions.Collate(e.Origem, collation), crescente),
+            "publicado" => PorColuna(query, e => e.Publicado, crescente),
+            _ => query.OrderByDescending(e => e.CriadoEm).ThenByDescending(e => e.Id),
+        };
+    }
+
+    private static IOrderedQueryable<Erro> PorColuna<TChave>(
+        IQueryable<Erro> query, Expression<Func<Erro, TChave>> coluna, bool crescente) =>
+        crescente
+            ? query.OrderBy(coluna).ThenBy(e => e.Id)
+            : query.OrderByDescending(coluna).ThenByDescending(e => e.Id);
 }

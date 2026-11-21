@@ -8,6 +8,8 @@ public sealed record FiltroErroInterno(
     string? ProvedorSlug,
     OrigemErro? Origem,
     bool? Publicado,
+    string? SortBy,
+    string? SortDirection,
     int Pagina,
     int TamanhoPagina);
 

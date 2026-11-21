@@ -7,6 +7,8 @@ public sealed record FiltroArtigoInterno(
     string? Busca,
     TipoArtigo? Tipo,
     bool? Publicado,
+    string? SortBy,
+    string? SortDirection,
     int Pagina,
     int TamanhoPagina);
 

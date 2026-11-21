@@ -20,7 +20,16 @@ public sealed class ErrosInternoController : ControllerBase
         _servico = servico;
     }
 
-    /// <summary>I18 — lista paginada (enxerga rascunho).</summary>
+    /// <summary>I18 - lista paginada (enxerga rascunho). Padrão: mais recentes primeiro.</summary>
+    /// <param name="q">Busca por trecho do título ou do código.</param>
+    /// <param name="provedor">Slug do provedor.</param>
+    /// <param name="origem">Origem do erro.</param>
+    /// <param name="publicado">Filtra por publicado ou rascunho; omitido traz os dois.</param>
+    /// <param name="sortBy"><c>codigo</c>, <c>titulo</c>, <c>origem</c> ou <c>publicado</c>; vazio ou desconhecido usa o padrão.</param>
+    /// <param name="sortDirection"><c>asc</c> ou <c>desc</c> (padrão).</param>
+    /// <param name="pagina">Página, a partir de 1.</param>
+    /// <param name="tamanhoPagina">Itens por página (padrão 25, máximo 200).</param>
+    /// <response code="200">Página de erros.</response>
     [HttpGet]
     [Authorize(Roles = "erros-buscar")]
     [ProducesResponseType(typeof(PaginatedResponse<ErroAdminListaItemDto>), StatusCodes.Status200OK)]
@@ -29,11 +38,13 @@ public sealed class ErrosInternoController : ControllerBase
         [FromQuery] string? provedor,
         [FromQuery] OrigemErro? origem,
         [FromQuery] bool? publicado,
+        [FromQuery] string? sortBy,
+        [FromQuery] string? sortDirection,
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanhoPagina = 25,
         CancellationToken ct = default)
     {
-        var filtro = new FiltroErroInterno(q, provedor, origem, publicado, pagina, tamanhoPagina);
+        var filtro = new FiltroErroInterno(q, provedor, origem, publicado, sortBy, sortDirection, pagina, tamanhoPagina);
         var resultado = await _servico.ListarAsync(filtro, ct);
 
         return Ok(new PaginatedResponse<ErroAdminListaItemDto>

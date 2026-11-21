@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Codex.Application.Common;
 using Codex.Application.DTOs.Interno;
 using Codex.Application.Interfaces;
@@ -42,7 +43,9 @@ public sealed class ArtigoRepositorioInterno : RepositorioBase<CodexDbContext>, 
         if (!string.IsNullOrWhiteSpace(filtro.Busca))
         {
             var padrao = PadraoBusca.Contendo(filtro.Busca);
-            query = query.Where(a => EF.Functions.ILike(a.Titulo, padrao, PadraoBusca.CaractereDeEscape));
+            // Sem acento dos dois lados: "emissao" acha "Emissão".
+            query = query.Where(a =>
+                EF.Functions.ILike(FuncoesBanco.SemAcento(a.Titulo), FuncoesBanco.SemAcento(padrao), PadraoBusca.CaractereDeEscape));
         }
 
         if (filtro.Tipo.HasValue)
@@ -53,9 +56,7 @@ public sealed class ArtigoRepositorioInterno : RepositorioBase<CodexDbContext>, 
 
         var totalCount = await query.CountAsync(ct);
 
-        var brutos = await query
-            .OrderByDescending(a => a.CriadoEm)
-            .ThenByDescending(a => a.Id)
+        var brutos = await Ordenar(query, filtro)
             .Skip((filtro.Pagina - 1) * filtro.TamanhoPagina)
             .Take(filtro.TamanhoPagina)
             .Select(a => new { a.Id, a.Slug, a.Tipo, a.Titulo, a.Publicado, a.VerificadoEm, a.Versao })
@@ -125,4 +126,40 @@ public sealed class ArtigoRepositorioInterno : RepositorioBase<CodexDbContext>, 
         await Contexto.Artigos.AddAsync(artigo, ct);
 
     public Task SalvarAlteracoesAsync(CancellationToken ct) => SalvarAsync(ct);
+
+    /// <summary>
+    /// Whitelist de colunas (nunca OrderBy por string). <c>sortBy</c> vazio ou desconhecido cai no
+    /// padrão, mais recentes primeiro. Texto ordena pela collation do português
+    /// (<see cref="OrdenacaoTexto"/>). Todo caminho termina no <c>Id</c> para o OFFSET ter ordem total.
+    /// </summary>
+    private static IOrderedQueryable<Artigo> Ordenar(IQueryable<Artigo> query, FiltroArtigoInterno filtro)
+    {
+        const string collation = OrdenacaoTexto.CollationPortugues;
+        var crescente = string.Equals(filtro.SortDirection, "asc", StringComparison.OrdinalIgnoreCase);
+
+        return filtro.SortBy?.ToLowerInvariant() switch
+        {
+            "titulo" => PorColuna(query, a => EF.Functions.Collate(a.Titulo, collation), crescente),
+            "tipo" => PorColuna(query, a => EF.Functions.Collate(a.Tipo, collation), crescente),
+            "publicado" => PorColuna(query, a => a.Publicado, crescente),
+            "verificadoem" => PorVerificacao(query, crescente),
+            _ => query.OrderByDescending(a => a.CriadoEm).ThenByDescending(a => a.Id),
+        };
+    }
+
+    private static IOrderedQueryable<Artigo> PorColuna<TChave>(
+        IQueryable<Artigo> query, Expression<Func<Artigo, TChave>> coluna, bool crescente) =>
+        crescente
+            ? query.OrderBy(coluna).ThenBy(a => a.Id)
+            : query.OrderByDescending(coluna).ThenByDescending(a => a.Id);
+
+    // O Postgres põe NULL no fim do ASC e no começo do DESC; nunca verificado fica no fim nas duas.
+    private static IOrderedQueryable<Artigo> PorVerificacao(IQueryable<Artigo> query, bool crescente)
+    {
+        var nuncaVerificadoPorUltimo = query.OrderBy(a => a.VerificadoEm == null);
+
+        return crescente
+            ? nuncaVerificadoPorUltimo.ThenBy(a => a.VerificadoEm).ThenBy(a => a.Id)
+            : nuncaVerificadoPorUltimo.ThenByDescending(a => a.VerificadoEm).ThenByDescending(a => a.Id);
+    }
 }

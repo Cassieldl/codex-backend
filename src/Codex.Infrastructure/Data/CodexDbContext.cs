@@ -53,5 +53,10 @@ public sealed class CodexDbContext : DbContext
     {
         modelBuilder.HasDefaultSchema(Schema);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CodexDbContext).Assembly);
+
+        // A função já existe no banco (init.sql); o mapeamento só ensina o EF a chamá-la.
+        modelBuilder.HasDbFunction(typeof(FuncoesBanco).GetMethod(nameof(FuncoesBanco.SemAcento))!)
+            .HasSchema(Schema)
+            .HasName("f_unaccent");
     }
 }

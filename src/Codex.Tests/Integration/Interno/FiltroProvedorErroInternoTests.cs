@@ -75,7 +75,7 @@ public sealed class FiltroProvedorErroInternoTests
         var repositorio = new ErroRepositorioInterno(contexto);
 
         var pagina = await repositorio.ListarAsync(
-            new FiltroErroInterno(null, provedorSlug, null, null, 1, 100), CancellationToken.None);
+            new FiltroErroInterno(null, provedorSlug, null, null, null, null, 1, 100), CancellationToken.None);
 
         return [.. pagina.Itens];
     }
