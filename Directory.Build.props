@@ -5,4 +5,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <!-- Transitivas presas por hash no packages.lock.json; CI e Dockerfile restauram com locked-mode. -->
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
 </Project>

@@ -15,6 +15,12 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
   </ItemGroup>
 
+  <!-- Configuração de desenvolvimento não vai para o publish: um ambiente marcado como
+       Development por engano carregaria Keycloak local e Swagger. -->
+  <ItemGroup>
+    <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Codex.Application\Codex.Application.csproj" />
     <ProjectReference Include="..\Codex.Infrastructure\Codex.Infrastructure.csproj" />
