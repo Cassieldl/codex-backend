@@ -15,15 +15,19 @@
 #
 # ATENÇÃO: `IP_DO_HOST` é obrigatório, e precisa ser o IP da máquina na rede — nunca `localhost`:
 #
-#   IP_DO_HOST=192.168.1.2 docker compose -p codex-smoke -f docker/docker-compose.smoke.yml up -d
+#   SMOKE_SENHA=<senha-forte> IP_DO_HOST=192.168.1.2 docker compose -p codex-smoke -f docker/docker-compose.smoke.yml up -d
 #
 # O porquê, que custou a maior parte do tempo do primeiro smoke: o Keycloak anuncia no documento
 # de descoberta um `issuer` E um `jwks_uri` montados a partir de `KC_HOSTNAME`. A API precisa
 # baixar as chaves de assinatura DESSE `jwks_uri`. Com `localhost`, o navegador acha o Keycloak e
-# a API acha a si mesma — nunca as chaves. O efeito é `401` em toda rota interna com
-# `error_description="The issuer ... is invalid"`, mensagem que aponta para o issuer quando o
-# problema é rede. Apontar só o `MetadataAddress` para o endereço interno NÃO resolve: o
+# a API acha a si mesma, nunca as chaves. O efeito é `401` em toda rota interna, sem pista no
+# `WWW-Authenticate` (o `error_description` só sai em Development), e o problema é rede. Apontar só o `MetadataAddress` para o endereço interno NÃO resolve: o
 # `jwks_uri` continua vindo público. O endereço precisa ser o mesmo, e alcançável, dos dois lados.
+#
+# `SMOKE_SENHA` também é obrigatório: é a senha do superusuário do banco, do `codex_user` e do
+# admin do Keycloak. Sem `;` nem aspas, porque ela entra na connection string da API. Banco, API e
+# portal escutam só em 127.0.0.1; o Keycloak escuta no IP da rede por desenho (ver acima), então a
+# senha é a defesa que sobra contra quem está na mesma rede.
 
 name: codex-smoke
 
@@ -32,11 +36,11 @@ services:
     image: postgres:18-alpine
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: smoke-local
+      POSTGRES_PASSWORD: ${SMOKE_SENHA:?defina SMOKE_SENHA}
       POSTGRES_DB: codex_db
-      CODEX_APP_DB_PASSWORD: smoke-local
+      CODEX_APP_DB_PASSWORD: ${SMOKE_SENHA:?defina SMOKE_SENHA}
     ports:
-      - '5433:5432'
+      - '127.0.0.1:5433:5432'
     volumes:
       - pgdata-smoke:/var/lib/postgresql
       - ../database/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -51,11 +55,12 @@ services:
     command: start-dev --import-realm
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: smoke-local
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${SMOKE_SENHA:?defina SMOKE_SENHA}
       # O `issuer` e o `jwks_uri` do documento de descoberta saem DESTE endereço. Ele precisa ser
       # alcançável pelo navegador E pela API: com `localhost`, cada um resolve para um lugar
       # diferente e a API nunca baixa as chaves de assinatura — 401 em tudo (ver cabeçalho).
       KC_HOSTNAME: 'http://${IP_DO_HOST}:8080'
+    # Em todas as interfaces de propósito: a API, de dentro do container, chega pelo IP do host.
     ports:
       - '8080:8080'
     volumes:
@@ -75,7 +80,7 @@ services:
       ASPNETCORE_HTTP_PORTS: '8080'
       # `db` é o nome do serviço na rede do compose — de dentro do container, `localhost` seria o
       # próprio container da API.
-      ConnectionStrings__Default: 'Host=db;Port=5432;Database=codex_db;Username=codex_user;Password=smoke-local'
+      ConnectionStrings__Default: 'Host=db;Port=5432;Database=codex_db;Username=codex_user;Password=${SMOKE_SENHA:?defina SMOKE_SENHA}'
       # O MESMO endereço que o navegador usa — é o issuer que vem no token e a origem das chaves.
       Keycloak__auth-server-url: 'http://${IP_DO_HOST}:8080'
       Keycloak__realm: codex
@@ -89,7 +94,7 @@ services:
       Busca__LimiarAutocorrecao: '0.45'
       Busca__TimeoutMs: '2000'
     ports:
-      - '5000:8080'
+      - '127.0.0.1:5000:8080'
 
   portal:
     image: codex-frontend:smoke
@@ -103,7 +108,7 @@ services:
       # vive. Sem esta diretiva a CSP bloqueia o iframe e o logout feito em outra aba não é visto.
       CSP_FRAME_SRC: 'http://${IP_DO_HOST}:8080'
     ports:
-      - '5173:8080'
+      - '127.0.0.1:5173:8080'
 
 volumes:
   pgdata-smoke:

@@ -28,7 +28,7 @@ src/
 ### 1. Subir Postgres + Keycloak
 
 ```bash
-cp .env.example .env   # edite as senhas se quiser
+cp .env.example .env   # troque as senhas antes de subir: os valores do exemplo são públicos
 docker compose up -d
 ```
 
